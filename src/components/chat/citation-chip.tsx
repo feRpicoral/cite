@@ -2,6 +2,7 @@
 
 import type { InitialCitation } from "@/app/(app)/conversations/[id]/chat-panel";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useViewer } from "@/components/viewer/viewer-state";
 
 interface CitationChipProps {
   displayIndex: number;
@@ -9,9 +10,19 @@ interface CitationChipProps {
 }
 
 export function CitationChip({ displayIndex, citation }: CitationChipProps) {
+  const { open } = useViewer();
+
   const chip = (
     <button
       type="button"
+      onClick={() => {
+        if (!citation) return;
+        open({
+          documentId: citation.documentId,
+          documentName: citation.documentName,
+          location: citation.location,
+        });
+      }}
       className="bg-highlight/30 text-highlight-foreground hover:bg-highlight/50 mx-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded px-1 align-baseline text-[10px] leading-none font-semibold transition-colors"
       aria-label={`Open citation ${displayIndex}`}
     >
