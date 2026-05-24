@@ -9,6 +9,8 @@ import { synthesize } from "@/lib/chat/synthesize";
 import { getPrisma } from "@/lib/db/client";
 import { asCollectionId, asConversationId } from "@/lib/db/types";
 import { getDb } from "@/lib/db/with-org";
+import { inngest } from "@/lib/inngest/client";
+import { messageSynthesized } from "@/lib/inngest/functions/audit-message";
 
 export const maxDuration = 60;
 
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
       const markers = extractCitationMarkers(content);
       const prisma = getPrisma();
 
-      await prisma.$transaction(async (tx) => {
+      const savedId = await prisma.$transaction(async (tx) => {
         const saved = await tx.message.create({
           data: {
             orgId: session.orgId,
@@ -100,7 +102,14 @@ export async function POST(request: Request) {
           where: { id: asConversationId(conversation.id) },
           data: { updatedAt: new Date() },
         });
+        return saved.id;
       });
+
+      // Kick off the citation-accuracy audit in the background. The user
+      // doesn't wait for it; the verdict lands on the audit dashboard.
+      if (markers.length > 0) {
+        await inngest.send(messageSynthesized.create({ orgId: session.orgId, messageId: savedId }));
+      }
     },
   });
 }
