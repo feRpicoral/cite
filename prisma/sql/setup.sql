@@ -82,7 +82,10 @@ DECLARE
     'documents',
     'document_parts',
     'document_chunks',
-    'embeddings'
+    'embeddings',
+    'conversations',
+    'messages',
+    'message_citations'
   ];
 BEGIN
   FOREACH t IN ARRAY tenant_tables LOOP

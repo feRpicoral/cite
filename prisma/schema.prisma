@@ -142,7 +142,8 @@ model Collection {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  documents Document[]
+  documents     Document[]
+  conversations Conversation[]
 
   @@index([orgId])
   @@map("collections")
@@ -213,9 +214,10 @@ model DocumentChunk {
   location           Json
   createdAt          DateTime @default(now()) @map("created_at")
 
-  document  Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  part      DocumentPart @relation(fields: [partId], references: [id], onDelete: Cascade)
+  document  Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  part      DocumentPart      @relation(fields: [partId], references: [id], onDelete: Cascade)
   embedding Embedding?
+  citations MessageCitation[]
 
   @@unique([documentId, index])
   @@index([orgId])
@@ -234,4 +236,70 @@ model Embedding {
 
   @@index([orgId])
   @@map("embeddings")
+}
+
+// ─────────────────────────────────────────────
+// Conversations + messages
+// ─────────────────────────────────────────────
+
+enum MessageRole {
+  USER
+  ASSISTANT
+
+  @@map("message_role")
+}
+
+model Conversation {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @map("org_id") @db.Uuid
+  collectionId    String   @map("collection_id") @db.Uuid
+  title           String
+  createdByUserId String   @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@index([orgId, collectionId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid()) @db.Uuid
+  orgId          String      @map("org_id") @db.Uuid
+  conversationId String      @map("conversation_id") @db.Uuid
+  role           MessageRole
+  content        String
+  // For ASSISTANT messages: classify/sufficiency/sub-queries/rounds JSON.
+  // Stored so the audit dashboard (Phase 8) can replay the agent's reasoning.
+  agentState     Json?       @map("agent_state")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  citations    MessageCitation[]
+
+  @@index([conversationId, createdAt])
+  @@index([orgId])
+  @@map("messages")
+}
+
+model MessageCitation {
+  id           String   @id @default(uuid()) @db.Uuid
+  orgId        String   @map("org_id") @db.Uuid
+  messageId    String   @map("message_id") @db.Uuid
+  chunkId      String   @map("chunk_id") @db.Uuid
+  // The [n] marker the assistant used in the rendered text.
+  displayIndex Int      @map("display_index")
+  // Snapshot of the chunk text at synthesis time so the popover survives
+  // chunk deletion. The viewer still resolves to the live chunk's location.
+  quote        String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  message Message       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  chunk   DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, displayIndex])
+  @@index([orgId])
+  @@map("message_citations")
 }

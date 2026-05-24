@@ -10,6 +10,9 @@ const MULTI_TENANT_MODELS = new Set<string>([
   "DocumentPart",
   "DocumentChunk",
   "Embedding",
+  "Conversation",
+  "Message",
+  "MessageCitation",
 ]);
 
 const READ_OR_MUTATE_OPS = new Set([
