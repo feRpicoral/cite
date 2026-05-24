@@ -1,0 +1,110 @@
+// Cite — Prisma schema
+//
+// Multi-tenant B2B. Every tenant table carries `orgId`. Three layers of isolation:
+//   1. Branded TypeScript IDs at call sites (src/lib/db/types.ts)
+//   2. Prisma `$extends` middleware injects `orgId` (src/lib/db/with-org.ts)
+//   3. Postgres RLS policies (prisma/sql/setup.sql)
+//
+// `User` mirrors Supabase `auth.users` via shared UUID; a trigger keeps it in sync.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector, pgcrypto, uuidOssp(map: "uuid-ossp")]
+}
+
+// ─────────────────────────────────────────────
+// Identity (mirror of Supabase auth.users)
+// ─────────────────────────────────────────────
+
+enum Locale {
+  EN_US
+  PT_BR
+
+  @@map("locale")
+}
+
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+
+  @@map("theme_preference")
+}
+
+model User {
+  id              String          @id @db.Uuid
+  email           String          @unique
+  name            String?
+  avatarUrl       String?         @map("avatar_url")
+  locale          Locale          @default(EN_US)
+  themePreference ThemePreference @default(SYSTEM) @map("theme_preference")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  memberships    Membership[]
+  invitesCreated Invite[]     @relation("InviteCreatedBy")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// Organization + membership
+// ─────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  invites     Invite[]
+
+  @@map("organizations")
+}
+
+enum MembershipRole {
+  ADMIN
+  MEMBER
+
+  @@map("membership_role")
+}
+
+model Membership {
+  id        String         @id @default(uuid()) @db.Uuid
+  orgId     String         @map("org_id") @db.Uuid
+  userId    String         @map("user_id") @db.Uuid
+  role      MembershipRole @default(MEMBER)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model Invite {
+  id              String         @id @default(uuid()) @db.Uuid
+  orgId           String         @map("org_id") @db.Uuid
+  token           String         @unique
+  email           String?
+  role            MembershipRole @default(MEMBER)
+  expiresAt       DateTime       @map("expires_at")
+  acceptedAt      DateTime?      @map("accepted_at")
+  createdByUserId String         @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation("InviteCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([orgId])
+  @@map("invites")
+}
