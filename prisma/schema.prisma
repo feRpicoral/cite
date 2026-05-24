@@ -108,3 +108,130 @@ model Invite {
   @@index([orgId])
   @@map("invites")
 }
+
+// ─────────────────────────────────────────────
+// Document ingestion + retrieval
+// ─────────────────────────────────────────────
+
+enum DocumentFormat {
+  PDF
+  DOCX
+  HTML
+  MD
+
+  @@map("document_format")
+}
+
+enum DocumentStatus {
+  UPLOADING
+  EXTRACTING
+  CHUNKING
+  EMBEDDING
+  INDEXED
+  FAILED
+
+  @@map("document_status")
+}
+
+model Collection {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @map("org_id") @db.Uuid
+  name            String
+  description     String?
+  createdByUserId String   @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  documents Document[]
+
+  @@index([orgId])
+  @@map("collections")
+}
+
+model Document {
+  id              String         @id @default(uuid()) @db.Uuid
+  orgId           String         @map("org_id") @db.Uuid
+  collectionId    String         @map("collection_id") @db.Uuid
+  name            String
+  format          DocumentFormat
+  status          DocumentStatus @default(UPLOADING)
+  storagePath     String         @map("storage_path")
+  mimeType        String         @map("mime_type")
+  sizeBytes       Int            @map("size_bytes")
+  pageCount       Int?           @map("page_count")
+  errorMessage    String?        @map("error_message")
+  createdByUserId String         @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  indexedAt       DateTime?      @map("indexed_at")
+
+  collection Collection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  parts      DocumentPart[]
+  chunks     DocumentChunk[]
+
+  @@index([orgId, status])
+  @@index([collectionId])
+  @@map("documents")
+}
+
+model DocumentPart {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.Uuid
+  documentId String   @map("document_id") @db.Uuid
+  // 0-based ordinal. For PDF, also the page number minus one. For
+  // HTML-family, a section index in document order.
+  index      Int
+  // Sanitized HTML (for HTML-family) or raw text (for PDF).
+  body       String
+  // Per-format metadata. PDF: { pageNumber, width, height, rotation }.
+  // HTML-family: { rootSelector, heading? }.
+  metadata   Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunks   DocumentChunk[]
+
+  @@unique([documentId, index])
+  @@index([orgId])
+  @@map("document_parts")
+}
+
+model DocumentChunk {
+  id                 String   @id @default(uuid()) @db.Uuid
+  orgId              String   @map("org_id") @db.Uuid
+  documentId         String   @map("document_id") @db.Uuid
+  partId             String   @map("part_id") @db.Uuid
+  // 0-based ordinal across the whole document.
+  index              Int
+  text               String
+  // 1-2 sentence preamble produced by Anthropic Contextual Retrieval
+  // (Phase 1 decision). Prepended to `text` before embedding; not used
+  // when displaying the citation back to the user.
+  contextualPreamble String?  @map("contextual_preamble")
+  tokenCount         Int      @map("token_count")
+  // Discriminated union matching DocumentLocation in src/lib/ingestion/location.ts.
+  location           Json
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  document  Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  part      DocumentPart @relation(fields: [partId], references: [id], onDelete: Cascade)
+  embedding Embedding?
+
+  @@unique([documentId, index])
+  @@index([orgId])
+  @@map("document_chunks")
+}
+
+model Embedding {
+  id        String                      @id @default(uuid()) @db.Uuid
+  orgId     String                      @map("org_id") @db.Uuid
+  chunkId   String                      @unique @map("chunk_id") @db.Uuid
+  // Voyage 3 large = 2048 dims (Phase 1 decision). Migrate if the provider changes.
+  embedding Unsupported("vector(2048)")
+  createdAt DateTime                    @default(now()) @map("created_at")
+
+  chunk DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("embeddings")
+}

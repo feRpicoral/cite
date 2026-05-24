@@ -3,7 +3,14 @@ import type { OrgId } from "./types";
 
 // Models that carry `orgId` and must be auto-scoped at the app layer. Update
 // this set when new tenant tables are added to schema.prisma.
-const MULTI_TENANT_MODELS = new Set<string>(["Invite"]);
+const MULTI_TENANT_MODELS = new Set<string>([
+  "Invite",
+  "Collection",
+  "Document",
+  "DocumentPart",
+  "DocumentChunk",
+  "Embedding",
+]);
 
 const READ_OR_MUTATE_OPS = new Set([
   "findFirst",

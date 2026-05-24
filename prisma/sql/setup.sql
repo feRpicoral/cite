@@ -77,7 +77,12 @@ DO $$
 DECLARE
   t text;
   tenant_tables text[] := ARRAY[
-    'invites'
+    'invites',
+    'collections',
+    'documents',
+    'document_parts',
+    'document_chunks',
+    'embeddings'
   ];
 BEGIN
   FOREACH t IN ARRAY tenant_tables LOOP
@@ -116,3 +121,49 @@ CREATE POLICY user_visibility ON public.users
       WHERE public.is_member_of(m.org_id)
     )
   );
+
+-- ─────────────────────────────────────────────────────────────
+-- pgvector indexes — multi-tenant pattern
+--
+-- HNSW doesn't support a composite (org_id, embedding) index. Instead:
+-- btree on org_id narrows to tenant rows, HNSW on embedding orders the
+-- narrowed set. The planner uses both.
+-- ─────────────────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS embeddings_org_idx
+  ON public.embeddings (org_id);
+
+CREATE INDEX IF NOT EXISTS embeddings_hnsw
+  ON public.embeddings
+  USING hnsw (embedding vector_cosine_ops);
+
+-- ─────────────────────────────────────────────────────────────
+-- Full-text search index for the keyword side of hybrid retrieval.
+-- ─────────────────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS document_chunks_text_search_idx
+  ON public.document_chunks
+  USING gin (to_tsvector('simple', text));
+
+-- ─────────────────────────────────────────────────────────────
+-- Storage bucket for uploaded documents (private; signed URLs only).
+-- ─────────────────────────────────────────────────────────────
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'cite-documents',
+  'cite-documents',
+  false,
+  104857600,
+  ARRAY[
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/html',
+    'text/markdown',
+    'text/plain'
+  ]
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
