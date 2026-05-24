@@ -85,7 +85,9 @@ DECLARE
     'embeddings',
     'conversations',
     'messages',
-    'message_citations'
+    'message_citations',
+    'comments',
+    'comment_replies'
   ];
 BEGIN
   FOREACH t IN ARRAY tenant_tables LOOP

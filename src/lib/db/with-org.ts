@@ -13,6 +13,8 @@ const MULTI_TENANT_MODELS = new Set<string>([
   "Conversation",
   "Message",
   "MessageCitation",
+  "Comment",
+  "CommentReply",
 ]);
 
 const READ_OR_MUTATE_OPS = new Set([
