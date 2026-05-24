@@ -15,6 +15,8 @@ const MULTI_TENANT_MODELS = new Set<string>([
   "MessageCitation",
   "Comment",
   "CommentReply",
+  "CitationAudit",
+  "MessageMetrics",
 ]);
 
 const READ_OR_MUTATE_OPS = new Set([

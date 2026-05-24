@@ -349,3 +349,49 @@ model CommentReply {
   @@index([orgId])
   @@map("comment_replies")
 }
+
+// ─────────────────────────────────────────────
+// Citation-accuracy audit (Phase 8 — the differential metric)
+// ─────────────────────────────────────────────
+
+enum CitationVerdict {
+  SUPPORTED
+  PARTIAL
+  UNSUPPORTED
+
+  @@map("citation_verdict")
+}
+
+model CitationAudit {
+  id           String          @id @default(uuid()) @db.Uuid
+  orgId        String          @map("org_id") @db.Uuid
+  messageId    String          @map("message_id") @db.Uuid
+  displayIndex Int             @map("display_index")
+  verdict      CitationVerdict
+  reasoning    String
+  confidence   Float
+  resolves     Boolean?
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  @@unique([messageId, displayIndex])
+  @@index([orgId])
+  @@map("citation_audits")
+}
+
+model MessageMetrics {
+  id              String   @id @default(uuid()) @db.Uuid
+  orgId           String   @map("org_id") @db.Uuid
+  messageId       String   @unique @map("message_id") @db.Uuid
+  classifyMs      Int?     @map("classify_ms")
+  retrievalMs     Int?     @map("retrieval_ms")
+  sufficiencyMs   Int?     @map("sufficiency_ms")
+  synthesisMs     Int?     @map("synthesis_ms")
+  totalMs         Int      @map("total_ms")
+  inputTokens     Int      @map("input_tokens")
+  outputTokens    Int      @map("output_tokens")
+  chunksRetrieved Int      @map("chunks_retrieved")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([orgId, createdAt])
+  @@map("message_metrics")
+}

@@ -87,7 +87,9 @@ DECLARE
     'messages',
     'message_citations',
     'comments',
-    'comment_replies'
+    'comment_replies',
+    'citation_audits',
+    'message_metrics'
   ];
 BEGIN
   FOREACH t IN ARRAY tenant_tables LOOP
