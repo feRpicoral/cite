@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg"],
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "mammoth", "@anthropic-ai/sdk"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
