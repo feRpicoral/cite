@@ -1,0 +1,67 @@
+{
+  "common": {
+    "appName": "Cite",
+    "tagline": "Agentic RAG with clickable citations and synced document viewer.",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "back": "Back",
+    "continue": "Continue",
+    "signOut": "Sign out",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to Cite",
+      "subtitle": "Welcome back.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Create one"
+    },
+    "signup": {
+      "title": "Create your Cite account",
+      "subtitle": "Set up your workspace and start chatting with your documents.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    }
+  },
+  "onboarding": {
+    "createOrg": {
+      "title": "Create your organization",
+      "subtitle": "Workspaces in Cite are organized by org. Pick a name your team will recognize.",
+      "nameLabel": "Organization name",
+      "namePlaceholder": "Acme Inc.",
+      "submit": "Create organization"
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "documents": "Documents",
+      "conversations": "Conversations",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "emptyTitle": "No activity yet",
+      "emptyBody": "Upload a document to get started.",
+      "uploadCta": "Upload document"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found.",
+    "unauthorized": "You don't have access to this page."
+  }
+}

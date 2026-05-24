@@ -1,0 +1,67 @@
+{
+  "common": {
+    "appName": "Cite",
+    "tagline": "RAG agêntico com citações clicáveis e visualizador de documentos sincronizado.",
+    "loading": "Carregando…",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "create": "Criar",
+    "back": "Voltar",
+    "continue": "Continuar",
+    "signOut": "Sair",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "themeSystem": "Sistema"
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar no Cite",
+      "subtitle": "Bem-vindo de volta.",
+      "emailLabel": "E-mail",
+      "passwordLabel": "Senha",
+      "submit": "Entrar",
+      "noAccount": "Ainda não tem uma conta?",
+      "signUpLink": "Crie agora"
+    },
+    "signup": {
+      "title": "Crie sua conta no Cite",
+      "subtitle": "Configure seu workspace e comece a conversar com seus documentos.",
+      "emailLabel": "E-mail",
+      "passwordLabel": "Senha",
+      "submit": "Criar conta",
+      "haveAccount": "Já tem uma conta?",
+      "signInLink": "Entrar"
+    }
+  },
+  "onboarding": {
+    "createOrg": {
+      "title": "Crie sua organização",
+      "subtitle": "Workspaces no Cite são organizados por org. Escolha um nome que seu time reconheça.",
+      "nameLabel": "Nome da organização",
+      "namePlaceholder": "Acme Inc.",
+      "submit": "Criar organização"
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Painel",
+      "documents": "Documentos",
+      "conversations": "Conversas",
+      "settings": "Configurações"
+    },
+    "dashboard": {
+      "title": "Painel",
+      "emptyTitle": "Nenhuma atividade ainda",
+      "emptyBody": "Faça upload de um documento para começar.",
+      "uploadCta": "Enviar documento"
+    }
+  },
+  "errors": {
+    "generic": "Algo deu errado. Tente novamente.",
+    "notFound": "Página não encontrada.",
+    "unauthorized": "Você não tem acesso a esta página."
+  }
+}
