@@ -8,6 +8,7 @@ import { ChatComposer } from "@/components/chat/chat-composer";
 import { CitationChip } from "@/components/chat/citation-chip";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { StreamingStatus } from "@/components/chat/streaming-status";
+import { CommentButton } from "@/components/comments/comment-button";
 import type { DocumentLocation } from "@/lib/ingestion/location";
 
 export interface InitialCitation {
@@ -30,9 +31,15 @@ interface ChatPanelProps {
   conversationId: string;
   initialMessages: InitialMessage[];
   collectionName: string;
+  currentUserId: string;
 }
 
-export function ChatPanel({ conversationId, initialMessages, collectionName }: ChatPanelProps) {
+export function ChatPanel({
+  conversationId,
+  initialMessages,
+  collectionName,
+  currentUserId,
+}: ChatPanelProps) {
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/chat", body: { conversationId } }),
     [conversationId],
@@ -73,14 +80,28 @@ export function ChatPanel({ conversationId, initialMessages, collectionName }: C
               .map((p) => p.text)
               .join("");
             const citations = citationsByMessage.get(m.id) ?? [];
+            // Persisted messages have a real UUID — those can host comments.
+            // Streaming-only IDs (assigned by useChat) get filtered out.
+            const isPersisted = /^[0-9a-f-]{36}$/.test(m.id);
             return (
-              <MessageBubble key={m.id} role={m.role === "user" ? "user" : "assistant"}>
-                {m.role === "assistant" ? (
-                  <RenderedAssistantText text={text} citations={citations} />
-                ) : (
-                  <p className="whitespace-pre-wrap">{text}</p>
+              <div key={m.id} className="group flex items-start gap-1">
+                <div className="flex-1">
+                  <MessageBubble role={m.role === "user" ? "user" : "assistant"}>
+                    {m.role === "assistant" ? (
+                      <RenderedAssistantText text={text} citations={citations} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{text}</p>
+                    )}
+                  </MessageBubble>
+                </div>
+                {isPersisted && (
+                  <CommentButton
+                    targetType="MESSAGE"
+                    targetId={m.id}
+                    currentUserId={currentUserId}
+                  />
                 )}
-              </MessageBubble>
+              </div>
             );
           })}
           <StreamingStatus status={status} onStop={stop} />

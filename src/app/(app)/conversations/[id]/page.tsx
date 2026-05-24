@@ -4,7 +4,8 @@ import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 import { parseLocation } from "@/lib/ingestion/location";
 
-import { ChatPanel, type InitialMessage } from "./chat-panel";
+import type { InitialMessage } from "./chat-panel";
+import { ConversationLayout } from "./conversation-layout";
 
 interface ConversationPageProps {
   params: Promise<{ id: string }>;
@@ -63,16 +64,12 @@ export default async function ConversationPage({ params }: ConversationPageProps
   }));
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="border-b px-6 py-3">
-        <h1 className="truncate text-base font-semibold">{conversation.title}</h1>
-        <p className="text-muted-foreground text-xs">{conversation.collection.name}</p>
-      </header>
-      <ChatPanel
-        conversationId={conversation.id}
-        initialMessages={initial}
-        collectionName={conversation.collection.name}
-      />
-    </div>
+    <ConversationLayout
+      conversationId={conversation.id}
+      title={conversation.title}
+      collectionName={conversation.collection.name}
+      initialMessages={initial}
+      me={{ userId: session.userId, name: session.userName, email: session.email }}
+    />
   );
 }
