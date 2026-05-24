@@ -5,6 +5,8 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { resolveLocale } from "@/lib/i18n/resolve-locale";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -13,23 +15,27 @@ export const metadata: Metadata = {
     template: "%s — Cite",
   },
   description: "Agentic RAG with clickable citations and synced document viewer.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // `<html lang>` only — actual translations live inside each segment's
+  // NextIntlClientProvider. Resolver here uses cookie / Accept-Language
+  // only (DB tier is applied downstream by the (app) layout).
+  const locale = await resolveLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning className={cn(GeistSans.variable, GeistMono.variable)}>
-      <body className="font-sans">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={cn(
+          GeistSans.variable,
+          GeistMono.variable,
+          "bg-background text-foreground min-h-screen font-sans antialiased",
+        )}
+      >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
     </html>
