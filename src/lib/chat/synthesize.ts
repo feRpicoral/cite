@@ -1,0 +1,64 @@
+import "server-only";
+
+import { anthropic } from "@ai-sdk/anthropic";
+import { streamText } from "ai";
+
+import { runAgent } from "@/lib/agents/runner";
+import type { AgentState } from "@/lib/agents/state";
+import { type CollectionId, type OrgId } from "@/lib/db/types";
+
+const SYNTHESIS_SYSTEM = `You answer the user's question using only the provided passages.
+
+Rules:
+- Cite the passages that support your answer using square brackets, e.g. [1], [2], or [1, 3] when one sentence is supported by multiple sources.
+- Cite at the end of the sentence the claim appears in, not mid-clause.
+- Every non-trivial claim needs at least one citation. If no passage supports a claim, do not make the claim.
+- If the passages don't contain enough information to answer, say so plainly. Do not invent facts.
+- Match the user's language. If they ask in Portuguese, answer in Portuguese.
+- Be concise. No filler, no restating the question.`;
+
+interface SynthesizeInput {
+  orgId: OrgId;
+  collectionId: CollectionId;
+  query: string;
+  conversationContext?: { role: "user" | "assistant"; content: string }[];
+}
+
+export interface SynthesizeResult {
+  stream: ReturnType<typeof streamText>;
+  state: AgentState;
+}
+
+/**
+ * Runs the agent to gather retrieved chunks, then streams an Anthropic
+ * Sonnet synthesis grounded in those chunks. The caller hooks
+ * `stream.toUIMessageStreamResponse()` or persists tokens as they arrive.
+ *
+ * Citations are emitted inline by the model in `[n]` format; the n maps
+ * 1-indexed into `state.finalChunks`.
+ */
+export async function synthesize(input: SynthesizeInput): Promise<SynthesizeResult> {
+  const state = await runAgent({
+    orgId: input.orgId,
+    collectionId: input.collectionId,
+    query: input.query,
+  });
+
+  const passages = state.finalChunks
+    .map((c, i) => `[${i + 1}] from ${c.documentName}:\n${c.text}`)
+    .join("\n\n");
+
+  const stream = streamText({
+    model: anthropic("claude-sonnet-4-6"),
+    system: SYNTHESIS_SYSTEM,
+    messages: [
+      ...(input.conversationContext ?? []),
+      {
+        role: "user",
+        content: `Passages:\n${passages}\n\nQuestion: ${input.query}`,
+      },
+    ],
+  });
+
+  return { stream, state };
+}
