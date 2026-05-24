@@ -20,6 +20,7 @@
     "db:push": "prisma db push",
     "db:reset": "prisma migrate reset",
     "db:setup": "tsx scripts/apply-rls.ts",
+    "eval": "tsx scripts/eval.ts",
     "prepare": "husky",
     "postinstall": "prisma generate"
   },

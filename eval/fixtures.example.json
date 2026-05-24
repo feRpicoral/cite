@@ -1,0 +1,10 @@
+[
+  {
+    "query": "What is the maximum response time defined in the SLA?",
+    "expectedDocumentIds": ["00000000-0000-0000-0000-000000000001"]
+  },
+  {
+    "query": "How do I renew the contract?",
+    "expectedDocumentIds": ["00000000-0000-0000-0000-000000000001"]
+  }
+]
