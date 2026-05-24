@@ -8,6 +8,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // `import "server-only"` is a Next.js boundary marker that throws if
+      // pulled into a client bundle. Vitest doesn't render to clients;
+      // stub it so the source files under test can be imported.
+      "server-only": fileURLToPath(new URL("./src/test/server-only-stub.ts", import.meta.url)),
     },
   },
   test: {
