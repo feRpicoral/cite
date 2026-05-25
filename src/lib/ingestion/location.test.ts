@@ -19,6 +19,7 @@ describe("parseLocation", () => {
   it("parses an html location", () => {
     const loc = parseLocation({
       kind: "html",
+      partIndex: 0,
       selector: "div > p:nth-of-type(1)",
       charStart: 0,
       charEnd: 50,

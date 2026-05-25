@@ -158,6 +158,9 @@ export function unionLocation(locs: DocumentLocation[]): DocumentLocation {
   const htmls = locs as Extract<DocumentLocation, { kind: "html" }>[];
   return {
     kind: "html",
+    // All chunked segments are guaranteed to come from the same part by the
+    // chunker (chunkPart processes one part at a time).
+    partIndex: htmls[0]!.partIndex,
     selector: commonSelectorPrefix(htmls.map((h) => h.selector)),
     charStart: Math.min(...htmls.map((h) => h.charStart)),
     charEnd: Math.max(...htmls.map((h) => h.charEnd)),

@@ -4,10 +4,10 @@ import { chunkDocument, countTokens, unionLocation } from "./chunk";
 import type { DocumentLocation } from "./location";
 import type { NormalizedDocument, NormalizedPart, TextSegment } from "./parsers/types";
 
-function htmlSeg(text: string, selector: string): TextSegment {
+function htmlSeg(text: string, selector: string, partIndex: number = 0): TextSegment {
   return {
     text,
-    location: { kind: "html", selector, charStart: 0, charEnd: text.length },
+    location: { kind: "html", partIndex, selector, charStart: 0, charEnd: text.length },
   };
 }
 
@@ -111,12 +111,14 @@ describe("unionLocation", () => {
     const locs: DocumentLocation[] = [
       {
         kind: "html",
+        partIndex: 0,
         selector: "div > section:nth-of-type(1) > p:nth-of-type(1)",
         charStart: 0,
         charEnd: 10,
       },
       {
         kind: "html",
+        partIndex: 0,
         selector: "div > section:nth-of-type(1) > p:nth-of-type(2)",
         charStart: 0,
         charEnd: 20,

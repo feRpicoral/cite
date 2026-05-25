@@ -55,7 +55,7 @@ export function parseHtmlToNormalized(html: string): NormalizedDocument {
     const body = unified()
       .use(rehypeStringify)
       .stringify({ type: "root", children: section.nodes });
-    const segments = extractSegments(section.nodes, "div");
+    const segments = extractSegments(section.nodes, "div", index);
     return {
       index,
       body,
@@ -94,14 +94,15 @@ function splitIntoSections(tree: Root): Section[] {
 /**
  * Walks a section's nodes and emits one TextSegment per block-level
  * element (p, li, h1, etc). Each segment's selector pins it to a stable
- * structural path the viewer can resolve at click time.
+ * structural path the viewer can resolve at click time, scoped to the
+ * part via partIndex.
  */
-function extractSegments(nodes: RootContent[], basePath: string): TextSegment[] {
+function extractSegments(nodes: RootContent[], basePath: string, partIndex: number): TextSegment[] {
   const out: TextSegment[] = [];
   const counters = new Map<string, number>();
 
   for (const node of nodes) {
-    walkBlock(node, basePath, counters, out);
+    walkBlock(node, basePath, counters, partIndex, out);
   }
   return out;
 }
@@ -110,6 +111,7 @@ function walkBlock(
   node: RootContent,
   parentPath: string,
   counters: Map<string, number>,
+  partIndex: number,
   out: TextSegment[],
 ): void {
   if (node.type !== "element") return;
@@ -124,6 +126,7 @@ function walkBlock(
     if (text.length > 0) {
       const location: DocumentLocation = {
         kind: "html",
+        partIndex,
         selector,
         charStart: 0,
         charEnd: text.length,
@@ -135,7 +138,7 @@ function walkBlock(
 
   const childCounters = new Map<string, number>();
   for (const child of el.children) {
-    walkBlock(child as RootContent, selector, childCounters, out);
+    walkBlock(child as RootContent, selector, childCounters, partIndex, out);
   }
 }
 

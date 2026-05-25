@@ -9,7 +9,7 @@ function chunk(id: string, score: number = 0): RetrievedChunk {
     documentId: "d",
     documentName: "doc",
     text: "t",
-    location: { kind: "html", selector: "div", charStart: 0, charEnd: 1 },
+    location: { kind: "html", partIndex: 0, selector: "div", charStart: 0, charEnd: 1 },
     score,
   };
 }

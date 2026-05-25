@@ -19,6 +19,10 @@ export type DocumentLocation =
     }
   | {
       kind: "html";
+      // Index of the DocumentPart this location is scoped to. Two parts of
+      // the same document can yield the same structural selector, so the
+      // viewer needs to know which part wrapper to query inside.
+      partIndex: number;
       selector: string;
       charStart: number;
       charEnd: number;
@@ -34,6 +38,7 @@ const PdfLocation = z.object({
 
 const HtmlLocation = z.object({
   kind: z.literal("html"),
+  partIndex: z.number().int().nonnegative(),
   selector: z.string().min(1),
   charStart: z.number().int().nonnegative(),
   charEnd: z.number().int().nonnegative(),
