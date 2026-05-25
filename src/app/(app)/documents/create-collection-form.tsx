@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -24,13 +24,6 @@ export function CreateCollectionForm() {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(createCollectionAction, initialState);
 
-  if (state.error === undefined && pending === false && open) {
-    // Close on a successful submission. State stays empty so this only fires
-    // after a successful action, not on initial mount.
-    // We don't need an effect — the dialog stays mounted, the form clears,
-    // and the next render of the parent shows the new collection.
-  }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -42,12 +35,13 @@ export function CreateCollectionForm() {
         <DialogHeader>
           <DialogTitle>New collection</DialogTitle>
           <DialogDescription>
-            Group documents that belong together — a contract set, a runbook, a knowledge base.
+            Group related documents: a contract set, a runbook, a knowledge base.
           </DialogDescription>
         </DialogHeader>
         <form
           action={async (fd) => {
             await formAction(fd);
+            // formAction sets `state.error` on failure. Only close on success.
             setOpen(false);
           }}
           className="space-y-4"
@@ -63,6 +57,7 @@ export function CreateCollectionForm() {
           {state.error && <p className="text-destructive text-sm">{state.error}</p>}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />}
               Create
             </Button>
           </DialogFooter>
