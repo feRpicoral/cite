@@ -49,13 +49,46 @@
     "nav": {
       "dashboard": "Painel",
       "documents": "Documentos",
-      "conversations": "Conversas"
+      "conversations": "Conversas",
+      "settings": "Configurações"
     },
     "dashboard": {
       "title": "Painel",
       "emptyTitle": "Nenhuma atividade ainda",
       "emptyBody": "Faça upload de um documento para começar.",
       "uploadCta": "Enviar documento"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "workspaceDescription": "Gerencie {orgName} e suas preferências pessoais.",
+    "tabs": {
+      "organization": "Organização",
+      "preferences": "Preferências",
+      "members": "Membros"
+    },
+    "role": {
+      "ADMIN": "Administrador",
+      "MEMBER": "Membro"
+    },
+    "organization": {
+      "title": "Organização",
+      "description": "Informações da workspace visíveis a todos nesta organização.",
+      "nameLabel": "Nome",
+      "slugLabel": "Slug",
+      "roleLabel": "Seu papel"
+    },
+    "preferences": {
+      "title": "Preferências",
+      "description": "Configurações pessoais da sua conta. Acompanham você entre dispositivos.",
+      "languageLabel": "Idioma",
+      "languageHint": "Afeta a interface e mensagens em todo o app.",
+      "save": "Salvar",
+      "saved": "Preferências salvas.",
+      "localeOption": {
+        "en-US": "English",
+        "pt-BR": "Português"
+      }
     }
   },
   "errors": {
