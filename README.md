@@ -12,7 +12,7 @@ Inspired by Google NotebookLM, with two differentiators:
 ## Stack
 
 - **Next.js 16** (App Router, RSC, streaming) + **TypeScript**
-- **Yarn 4** via Corepack, Node 22 LTS
+- **Yarn 4** via Corepack, Node 24 LTS
 - **Tailwind v4** + **shadcn/ui** (Radix Nova preset, custom warm-stone + teal palette)
 - **Prisma 7** + **Supabase** (Auth + Postgres + Storage + Realtime + pgvector)
 - **next-intl 4** (en-US, pt-BR)
@@ -29,7 +29,7 @@ The project is intentionally env-gated end-to-end — it builds, lints, types, a
 ### 1. Local dependencies
 
 ```bash
-nvm use   # picks up Node 22 from .nvmrc
+nvm use   # picks up Node 24 from .nvmrc
 corepack enable
 yarn install
 yarn db:generate
