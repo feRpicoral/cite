@@ -228,8 +228,11 @@ model Embedding {
   id        String                      @id @default(uuid()) @db.Uuid
   orgId     String                      @map("org_id") @db.Uuid
   chunkId   String                      @unique @map("chunk_id") @db.Uuid
-  // Voyage 3 large = 2048 dims. Migrate this column if the provider changes.
-  embedding Unsupported("vector(2048)")
+  // Voyage 3 large = 2048 dims. halfvec (16-bit floats) instead of vector
+  // (32-bit) because pgvector's HNSW index caps at 2000 dims for vector_*
+  // ops but supports up to 4000 for halfvec_*. Recall loss is negligible
+  // for cosine search. Migrate this column if the provider changes.
+  embedding Unsupported("halfvec(2048)")
   createdAt DateTime                    @default(now()) @map("created_at")
 
   chunk DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)

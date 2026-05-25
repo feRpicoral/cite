@@ -140,9 +140,11 @@ CREATE POLICY user_visibility ON public.users
 CREATE INDEX IF NOT EXISTS embeddings_org_idx
   ON public.embeddings (org_id);
 
+-- halfvec_cosine_ops because the column is halfvec(2048); HNSW's vector_*
+-- ops cap at 2000 dims, halfvec_* goes to 4000.
 CREATE INDEX IF NOT EXISTS embeddings_hnsw
   ON public.embeddings
-  USING hnsw (embedding vector_cosine_ops);
+  USING hnsw (embedding halfvec_cosine_ops);
 
 -- ─────────────────────────────────────────────────────────────
 -- Full-text search index for the keyword side of hybrid retrieval.

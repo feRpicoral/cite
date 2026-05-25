@@ -84,12 +84,12 @@ export async function processDocument(orgId: OrgId, documentId: DocumentId): Pro
         },
       });
 
-      // Raw SQL — pgvector's `vector` type isn't part of Prisma's generated
+      // Raw SQL — pgvector's `halfvec` type isn't part of Prisma's generated
       // client. Tenant scope is enforced by the application-level `orgId`
       // column on the insert; RLS is the second layer.
       await tx.$executeRawUnsafe(
         `INSERT INTO embeddings (id, org_id, chunk_id, embedding, created_at)
-         VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3::vector, NOW())`,
+         VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3::halfvec, NOW())`,
         orgId,
         createdChunk.id,
         `[${vector.join(",")}]`,

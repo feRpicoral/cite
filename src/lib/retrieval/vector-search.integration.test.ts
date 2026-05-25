@@ -16,7 +16,9 @@ import { vectorSearch } from "./vector-search";
  */
 describe("vectorSearch tenant isolation", () => {
   let prisma: PrismaClient;
-  let cleanup: () => Promise<void>;
+  // Initialized to no-op so afterAll never throws if beforeAll fails — that
+  // would shadow the real setup error in CI output.
+  let cleanup: () => Promise<void> = async () => {};
 
   beforeAll(async () => {
     ({ prisma, cleanup } = await setupIntegrationDb());
@@ -190,7 +192,7 @@ async function seedDocumentWithChunks(
     const vector = `[${new Array(2048).fill(0.5).join(",")}]`;
     await prisma.$executeRawUnsafe(
       `INSERT INTO embeddings (id, org_id, chunk_id, embedding, created_at)
-       VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3::vector, NOW())`,
+       VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3::halfvec, NOW())`,
       orgId,
       chunkId,
       vector,

@@ -33,14 +33,14 @@ export async function vectorSearch(
       d.name          AS "documentName",
       c.text          AS "text",
       c.location      AS "location",
-      1 - (e.embedding <=> $3::vector) AS "score"
+      1 - (e.embedding <=> $3::halfvec) AS "score"
     FROM embeddings e
     INNER JOIN document_chunks c ON c.id = e.chunk_id
     INNER JOIN documents d       ON d.id = c.document_id
     WHERE e.org_id = $1::uuid
       AND d.collection_id = $2::uuid
       AND d.status = 'INDEXED'
-    ORDER BY e.embedding <=> $3::vector
+    ORDER BY e.embedding <=> $3::halfvec
     LIMIT $4
     `,
     orgId,
