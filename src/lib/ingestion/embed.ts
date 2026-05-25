@@ -3,11 +3,16 @@ import { requireEnv } from "@/lib/env";
 const ENDPOINT = "https://api.voyageai.com/v1/embeddings";
 const MODEL = "voyage-3-large";
 const BATCH_SIZE = 128;
+// voyage-3-large supports 256, 512, 1024 (default), and 2048. We pick 2048
+// to match the `halfvec(2048)` column in the embeddings table. The API
+// returns 1024 if this is omitted, which then fails the INSERT with
+// "expected 2048 dimensions, not 1024".
+const OUTPUT_DIMENSION = 2048;
 
 /**
- * Embeds chunks via Voyage 3 large (2048 dims — must match the vector
- * column width in `embeddings`). The contextual preamble shaping happens
- * upstream in `buildEmbeddingInput`.
+ * Embeds chunks via Voyage 3 large. Output dim is pinned to match the
+ * vector column width in `embeddings`. Contextual preamble shaping
+ * happens upstream in `buildEmbeddingInput`.
  *
  * Calls the Voyage REST API directly. The official SDK ships ESM-incompatible
  * directory imports that break the Next.js bundler.
@@ -23,7 +28,12 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
     const batch = texts.slice(i, i + BATCH_SIZE);
     const data = await withRetry(() =>
-      callEmbed(apiKey, { input: batch, model: MODEL, input_type: "document" }),
+      callEmbed(apiKey, {
+        input: batch,
+        model: MODEL,
+        input_type: "document",
+        output_dimension: OUTPUT_DIMENSION,
+      }),
     );
     const rows = data.data ?? [];
     if (rows.length !== batch.length) {
@@ -38,6 +48,7 @@ interface EmbedRequest {
   input: string[];
   model: string;
   input_type: "document" | "query";
+  output_dimension: number;
 }
 
 interface EmbedResponse {
