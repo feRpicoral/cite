@@ -134,3 +134,27 @@
     @apply font-sans;
   }
 }
+
+/* pdfjs-dist text layer — transparent spans overlay the canvas so the user
+   can select text. Mirrors pdfjs-dist's reference text_layer_builder.css
+   trimmed to what we need. */
+.cite-text-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 1;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+}
+.cite-text-layer :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+.cite-text-layer ::selection {
+  background: oklch(0.93 0.16 95 / 0.4);
+}

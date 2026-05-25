@@ -1,13 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
-
 import { PresenceAvatars } from "@/components/presence/presence-avatars";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { DocumentViewer } from "@/components/viewer/document-viewer";
 import { useViewer, ViewerProvider } from "@/components/viewer/viewer-state";
-import { useMessageInserts } from "@/lib/realtime/message-sync";
 import type { PresenceUser } from "@/lib/realtime/presence";
 
 import { ChatPanel, type InitialMessage } from "./chat-panel";
@@ -36,15 +32,6 @@ function Inner({
   me,
 }: ConversationLayoutProps) {
   const { target } = useViewer();
-  const router = useRouter();
-
-  // When another teammate sends a message, refresh the server-rendered tree
-  // so the new message shows up. Our own messages flow through useChat and
-  // don't trigger a refresh.
-  const onIncoming = useCallback(() => {
-    router.refresh();
-  }, [router]);
-  useMessageInserts(conversationId, onIncoming);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -68,7 +55,7 @@ function Inner({
           <>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={50} minSize={30}>
-              <DocumentViewer />
+              <DocumentViewer currentUserId={me.userId} />
             </ResizablePanel>
           </>
         )}

@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { CitationChip } from "@/components/chat/citation-chip";
@@ -10,6 +10,7 @@ import { MessageBubble } from "@/components/chat/message-bubble";
 import { StreamingStatus } from "@/components/chat/streaming-status";
 import { CommentButton } from "@/components/comments/comment-button";
 import type { DocumentLocation } from "@/lib/ingestion/location";
+import { type MessageInsertPayload, useMessageInserts } from "@/lib/realtime/message-sync";
 
 export interface InitialCitation {
   displayIndex: number;
@@ -45,7 +46,7 @@ export function ChatPanel({
     [conversationId],
   );
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const { messages, sendMessage, status, stop, setMessages } = useChat({
     transport,
     messages: initialMessages.map((m) => ({
       id: m.id,
@@ -53,6 +54,40 @@ export function ChatPanel({
       parts: [{ type: "text" as const, text: m.content }],
     })),
   });
+
+  // Live message sync: when a teammate sends a message, postgres_changes
+  // fires an INSERT we splice into useChat's state directly so the chat
+  // updates without a full page navigation. Our own messages (already in
+  // useChat from sendMessage / the stream) match by id or by role+content
+  // and get skipped instead of duplicated.
+  const onIncoming = useCallback(
+    (payload: MessageInsertPayload) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === payload.id)) return prev;
+        const incomingText = payload.content;
+        const role: "user" | "assistant" = payload.role === "ASSISTANT" ? "assistant" : "user";
+        const duplicate = prev.some((m) => {
+          if (m.role !== role) return false;
+          const text = m.parts
+            .filter((p): p is { type: "text"; text: string } => p.type === "text")
+            .map((p) => p.text)
+            .join("");
+          return text === incomingText;
+        });
+        if (duplicate) return prev;
+        return [
+          ...prev,
+          {
+            id: payload.id,
+            role,
+            parts: [{ type: "text" as const, text: incomingText }],
+          },
+        ];
+      });
+    },
+    [setMessages],
+  );
+  useMessageInserts(conversationId, onIncoming);
 
   const citationsByMessage = useMemo(() => {
     const map = new Map<string, InitialCitation[]>();

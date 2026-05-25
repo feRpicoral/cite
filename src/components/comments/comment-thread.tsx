@@ -82,9 +82,21 @@ interface CommentThreadProps {
   targetType: "MESSAGE" | "DOCUMENT_REGION";
   targetId: string;
   currentUserId: string;
+  /**
+   * If set, restrict the rendered thread to the single comment with this id
+   * (region-pin popovers use this so each pin shows its own thread, not
+   * every region comment on the document). Also hides the "add new comment"
+   * form, since new region comments come from a text selection upstream.
+   */
+  focusCommentId?: string;
 }
 
-export function CommentThread({ targetType, targetId, currentUserId }: CommentThreadProps) {
+export function CommentThread({
+  targetType,
+  targetId,
+  currentUserId,
+  focusCommentId,
+}: CommentThreadProps) {
   const [state, dispatch] = useReducer(reducer, { comments: [], loading: true, error: null });
   const [draft, setDraft] = useState("");
 
@@ -169,34 +181,38 @@ export function CommentThread({ targetType, targetId, currentUserId }: CommentTh
       {state.comments.length === 0 && !state.loading && (
         <p className="text-muted-foreground text-xs">No comments yet.</p>
       )}
-      {state.comments.map((c) => (
-        <CommentItem
-          key={c.id}
-          comment={c}
-          currentUserId={currentUserId}
-          onResolveToggle={(resolved) => void resolve(c.id, resolved)}
-          onDelete={() => void remove(c.id)}
-          onReply={(reply) => dispatch({ type: "addReply", commentId: c.id, reply })}
-        />
-      ))}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void submit();
-        }}
-        className="border-input bg-background flex items-end gap-2 rounded-lg border p-2"
-      >
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={1}
-          placeholder="Add a comment…"
-          className="placeholder:text-muted-foreground max-h-24 min-h-[24px] w-full resize-none border-0 bg-transparent px-1 py-1 text-xs outline-none"
-        />
-        <Button type="submit" size="icon-xs" disabled={draft.trim().length === 0}>
-          <Send className="h-3 w-3" />
-        </Button>
-      </form>
+      {state.comments
+        .filter((c) => (focusCommentId ? c.id === focusCommentId : true))
+        .map((c) => (
+          <CommentItem
+            key={c.id}
+            comment={c}
+            currentUserId={currentUserId}
+            onResolveToggle={(resolved) => void resolve(c.id, resolved)}
+            onDelete={() => void remove(c.id)}
+            onReply={(reply) => dispatch({ type: "addReply", commentId: c.id, reply })}
+          />
+        ))}
+      {!focusCommentId && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit();
+          }}
+          className="border-input bg-background flex items-end gap-2 rounded-lg border p-2"
+        >
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={1}
+            placeholder="Add a comment…"
+            className="placeholder:text-muted-foreground max-h-24 min-h-[24px] w-full resize-none border-0 bg-transparent px-1 py-1 text-xs outline-none"
+          />
+          <Button type="submit" size="icon-xs" disabled={draft.trim().length === 0}>
+            <Send className="h-3 w-3" />
+          </Button>
+        </form>
+      )}
     </div>
   );
 }

@@ -35,7 +35,7 @@ function reducer(_state: State, action: Action): State {
   }
 }
 
-export function DocumentViewer() {
+export function DocumentViewer({ currentUserId }: { currentUserId: string }) {
   const { target, close } = useViewer();
   const [state, dispatch] = useReducer(reducer, { signed: null, error: null });
   const { signed, error } = state;
@@ -79,10 +79,19 @@ export function DocumentViewer() {
       </header>
       {error && <p className="text-destructive p-4 text-sm">{error}</p>}
       {signed?.format === "PDF" && target.location.kind === "pdf" && (
-        <PdfViewer url={signed.url} location={target.location} />
+        <PdfViewer
+          url={signed.url}
+          documentId={target.documentId}
+          location={target.location}
+          currentUserId={currentUserId}
+        />
       )}
       {signed && signed.format !== "PDF" && target.location.kind === "html" && (
-        <HtmlViewer documentId={target.documentId} location={target.location} />
+        <HtmlViewer
+          documentId={target.documentId}
+          location={target.location}
+          currentUserId={currentUserId}
+        />
       )}
     </div>
   );
