@@ -19,6 +19,9 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", "dist", ".next", "e2e"],
+    // Integration tests need a live Postgres+pgvector instance; they run
+    // under vitest.integration.config.ts (yarn test:integration). Keep the
+    // default `yarn test` zero-dependency.
+    exclude: ["node_modules", "dist", ".next", "e2e", "src/**/*.integration.test.ts"],
   },
 });

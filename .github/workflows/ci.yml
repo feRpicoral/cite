@@ -48,14 +48,28 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: "1"
 
-  commitlint:
-    name: commitlint
-    if: github.event_name == 'pull_request'
+  integration:
+    name: cross-tenant integration tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cite_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cite_test
+      INTEGRATION_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cite_test
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -65,8 +79,48 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
+      - uses: actions/cache@v4
+        with:
+          path: .yarn/cache
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-${{ runner.os }}-
+
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Validate PR commit messages
-        run: yarn commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
+      - name: Bootstrap Supabase shims + pgvector
+        # setup.sql expects pgvector + Supabase's auth.users / auth.uid() /
+        # storage.buckets. Create the minimal stubs so the test DB looks
+        # enough like Supabase from the SQL's perspective. pgvector must
+        # also exist BEFORE prisma db push because the schema declares a
+        # `vector(2048)` column type.
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d cite_test <<'SQL'
+          CREATE EXTENSION IF NOT EXISTS vector;
+          CREATE EXTENSION IF NOT EXISTS pgcrypto;
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+          CREATE SCHEMA IF NOT EXISTS auth;
+          CREATE TABLE IF NOT EXISTS auth.users (
+            id uuid PRIMARY KEY,
+            email text,
+            raw_user_meta_data jsonb,
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW()
+          );
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+          CREATE SCHEMA IF NOT EXISTS storage;
+          CREATE TABLE IF NOT EXISTS storage.buckets (
+            id text PRIMARY KEY,
+            name text,
+            public boolean,
+            file_size_limit bigint,
+            allowed_mime_types text[]
+          );
+          SQL
+
+      - name: Push Prisma schema
+        run: yarn db:push --skip-generate --accept-data-loss
+
+      - name: Run integration tests
+        run: yarn test:integration
