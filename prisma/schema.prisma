@@ -205,9 +205,9 @@ model DocumentChunk {
   // 0-based ordinal across the whole document.
   index              Int
   text               String
-  // 1-2 sentence preamble produced by Anthropic Contextual Retrieval
-  // (Phase 1 decision). Prepended to `text` before embedding; not used
-  // when displaying the citation back to the user.
+  // 1-2 sentence preamble produced by Anthropic Contextual Retrieval.
+  // Prepended to `text` before embedding; not used when displaying the
+  // citation back to the user.
   contextualPreamble String?  @map("contextual_preamble")
   tokenCount         Int      @map("token_count")
   // Discriminated union matching DocumentLocation in src/lib/ingestion/location.ts.
@@ -228,7 +228,7 @@ model Embedding {
   id        String                      @id @default(uuid()) @db.Uuid
   orgId     String                      @map("org_id") @db.Uuid
   chunkId   String                      @unique @map("chunk_id") @db.Uuid
-  // Voyage 3 large = 2048 dims (Phase 1 decision). Migrate if the provider changes.
+  // Voyage 3 large = 2048 dims. Migrate this column if the provider changes.
   embedding Unsupported("vector(2048)")
   createdAt DateTime                    @default(now()) @map("created_at")
 
@@ -272,7 +272,7 @@ model Message {
   role           MessageRole
   content        String
   // For ASSISTANT messages: classify/sufficiency/sub-queries/rounds JSON.
-  // Stored so the audit dashboard (Phase 8) can replay the agent's reasoning.
+  // Stored so the audit dashboard can replay the agent's reasoning.
   agentState     Json?       @map("agent_state")
   createdAt      DateTime    @default(now()) @map("created_at")
 
@@ -351,7 +351,7 @@ model CommentReply {
 }
 
 // ─────────────────────────────────────────────
-// Citation-accuracy audit (Phase 8 — the differential metric)
+// Citation-accuracy audit (the differential metric for this product)
 // ─────────────────────────────────────────────
 
 enum CitationVerdict {

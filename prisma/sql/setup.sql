@@ -9,7 +9,7 @@
 --   psql "$DATABASE_URL" -f prisma/sql/setup.sql
 -- or paste into the Supabase SQL editor.
 --
--- Idempotent — safe to re-run as the tenant-table list grows in later phases.
+-- Idempotent — safe to re-run as the tenant-table list grows.
 
 -- ─────────────────────────────────────────────────────────────
 -- pgvector

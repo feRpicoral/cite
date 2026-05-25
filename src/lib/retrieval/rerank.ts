@@ -8,9 +8,9 @@ const ENDPOINT = "https://api.voyageai.com/v1/rerank";
 const MODEL = "rerank-2.5";
 
 /**
- * Voyage Rerank 2.5 (Phase 1 decision). Cross-encodes (query, chunk) pairs
- * and returns a [0..1] relevance score. Called after RRF to produce the
- * final top-K shown to the LLM.
+ * Voyage Rerank 2.5. Cross-encodes (query, chunk) pairs and returns a
+ * [0..1] relevance score. Called after RRF to produce the final top-K
+ * shown to the LLM.
  *
  * No-op (returns the input unchanged) when VOYAGE_API_KEY is missing — the
  * retrieval still works, just at lower quality. Tested in `rerank.test.ts`

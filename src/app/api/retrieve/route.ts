@@ -13,10 +13,9 @@ const Body = z.object({
 });
 
 /**
- * Admin-only retrieval endpoint. Used for the eval harness and the
- * citation-accuracy audit dashboard (Phase 8). Production chat goes
- * through /api/chat (Phase 5), which calls runAgent internally and
- * streams the synthesis.
+ * Admin-only retrieval probe. Used by the eval harness and the audit
+ * dashboard. Production chat goes through /api/chat, which calls
+ * runAgent internally and streams the synthesis.
  */
 export async function POST(request: Request) {
   const session = await requireAdmin();

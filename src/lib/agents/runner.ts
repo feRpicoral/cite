@@ -34,9 +34,8 @@ interface RunOptions {
 /**
  * Agent runner: classify → (maybe) decompose → retrieve (parallel per sub-
  * query) → judge sufficiency → re-retrieve once if insufficient → return
- * top-K reranked chunks.
- *
- * The state object is the source of truth for tracing in Phase 8.
+ * top-K reranked chunks. The state object is what the citation-accuracy
+ * audit later replays.
  */
 export async function runAgent(opts: RunOptions): Promise<AgentState> {
   const retrieve = opts.retrieverOverride ?? hybridRetrieve;
@@ -79,8 +78,6 @@ export async function runAgent(opts: RunOptions): Promise<AgentState> {
 
     state.sufficiency = await sufficient(opts.query, state.finalChunks);
     if (state.sufficiency.verdict === "sufficient") break;
-    // Otherwise loop: in this minimal version we re-run with the same sub-
-    // queries. A future iteration could ask the LLM to rephrase or broaden.
   }
 
   return state;

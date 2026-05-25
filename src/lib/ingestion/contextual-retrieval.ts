@@ -12,10 +12,10 @@ const MAX_DOC_CHARS = 80_000;
 export type EnrichedChunk = RawChunk & { contextualPreamble?: string };
 
 /**
- * Anthropic Contextual Retrieval (Phase 1 decision). For each chunk, asks
- * Haiku to write a 1-2 sentence preamble that orients the chunk within the
- * full document. The preamble is prepended at embed time only; it never
- * appears in the citation surface.
+ * Anthropic Contextual Retrieval. For each chunk, asks Haiku to write a
+ * 1-2 sentence preamble that orients the chunk within the full document.
+ * The preamble is prepended at embed time only; it never appears in the
+ * citation surface.
  *
  * The full document goes in a cached system prompt block, so subsequent
  * chunks for the same doc are ~free on input tokens.

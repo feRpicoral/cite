@@ -5,9 +5,9 @@ const MODEL = "voyage-3-large";
 const BATCH_SIZE = 128;
 
 /**
- * Embeds chunks via Voyage 3 large (Phase 1 decision; 2048 dims).
- * Caller is responsible for the contextual preamble shaping — see
- * `buildEmbeddingInput` in contextual-retrieval.ts.
+ * Embeds chunks via Voyage 3 large (2048 dims — must match the vector
+ * column width in `embeddings`). The contextual preamble shaping happens
+ * upstream in `buildEmbeddingInput`.
  *
  * Calls the Voyage REST API directly. The official SDK ships ESM-incompatible
  * directory imports that break the Next.js bundler.

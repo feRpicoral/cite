@@ -14,7 +14,7 @@ const POLL_INTERVAL_MS = 2_000;
 const MAX_POLL_ATTEMPTS = 300; // 10 minutes
 
 /**
- * LlamaParse-backed PDF parser (Phase 1 decision). Requires LLAMA_CLOUD_API_KEY.
+ * LlamaParse-backed PDF parser. Requires LLAMA_CLOUD_API_KEY.
  *
  * Uses direct REST calls — the official Node SDKs ship ESM-incompatible
  * directory imports that break the Next.js bundler.
