@@ -3,7 +3,6 @@
 import { Loader2, MessageSquarePlus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 
-import { CommentThread } from "@/components/comments/comment-thread";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { DocumentLocation } from "@/lib/ingestion/location";
@@ -333,6 +332,3 @@ function NewRegionCommentPopover({
     </Popover>
   );
 }
-
-// keep CommentThread import alive — the pin renders the thread when opened.
-void CommentThread;

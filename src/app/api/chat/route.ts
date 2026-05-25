@@ -1,5 +1,5 @@
 import { type Prisma } from "@prisma/client";
-import { convertToModelMessages, type UIMessage } from "ai";
+import { type UIMessage } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -13,6 +13,11 @@ import { inngest } from "@/lib/inngest/client";
 import { messageSynthesized } from "@/lib/inngest/functions/audit-message";
 
 export const maxDuration = 60;
+
+// Citations carry the source quote so the chat UI can render a hover
+// preview without a second DB roundtrip. Capped to keep the message row
+// small — chunks are typically 200-400 chars but can be longer.
+const MAX_CITATION_QUOTE_LEN = 500;
 
 const Body = z.object({
   conversationId: z.string().uuid(),
@@ -92,7 +97,7 @@ export async function POST(request: Request) {
                   messageId: saved.id,
                   chunkId: chunk.chunkId,
                   displayIndex,
-                  quote: chunk.text.slice(0, 500),
+                  quote: chunk.text.slice(0, MAX_CITATION_QUOTE_LEN),
                 };
               })
               .filter((row): row is NonNullable<typeof row> => row !== null),
@@ -121,7 +126,3 @@ function uiMessageText(m: UIMessage): string {
     .map((p) => p.text ?? "")
     .join("");
 }
-
-// Silence unused-import warning when convertToModelMessages isn't referenced
-// directly in this file.
-void convertToModelMessages;
