@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, LayoutDashboard, LogOut, MessagesSquare, Settings } from "lucide-react";
+import { FileText, LayoutDashboard, LogOut, MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -36,7 +36,6 @@ export function AppSidebar({ user, org }: AppSidebarProps) {
     { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
     { href: "/documents", label: t("documents"), icon: FileText },
     { href: "/conversations", label: t("conversations"), icon: MessagesSquare },
-    { href: "/settings", label: t("settings"), icon: Settings },
   ];
 
   const initials = (user.name ?? user.email)

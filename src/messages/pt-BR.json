@@ -49,8 +49,7 @@
     "nav": {
       "dashboard": "Painel",
       "documents": "Documentos",
-      "conversations": "Conversas",
-      "settings": "Configurações"
+      "conversations": "Conversas"
     },
     "dashboard": {
       "title": "Painel",
