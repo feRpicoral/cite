@@ -120,7 +120,7 @@ jobs:
           SQL
 
       - name: Push Prisma schema
-        run: yarn db:push --skip-generate --accept-data-loss
+        run: yarn db:push --accept-data-loss
 
       - name: Run integration tests
         run: yarn test:integration
