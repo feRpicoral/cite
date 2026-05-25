@@ -40,7 +40,9 @@ yarn db:generate
 1. Sign up at [supabase.com](https://supabase.com).
 2. Create a new project. In **Project Settings > API Keys**, copy the **publishable** key (`sb_publishable_...`) and create a **secret** key (`sb_secret_...`). These replace the legacy `anon` and `service_role` keys.
 3. Enable the **pgvector** extension under Database > Extensions.
-4. Copy the Postgres connection string from Database > Connection String.
+4. Under Database > Connection String, copy **two** URLs:
+   - **Transaction Pooler** (port 6543) into `DATABASE_URL`, with `?pgbouncer=true` appended. This is what the app uses at runtime.
+   - **Direct Connection** (port 5432) into `DIRECT_URL`. This is what Prisma migrations and `setup.sql` use; DDL won't work through the pooler.
 
 ### 3. Set environment variables
 
@@ -53,7 +55,8 @@ Fill in:
 | Var                                        | Required for                             | Where                                                  |
 | ------------------------------------------ | ---------------------------------------- | ------------------------------------------------------ |
 | `NEXT_PUBLIC_APP_URL`                      | Auth redirects + metadata                | `http://localhost:3000` in dev                         |
-| `DATABASE_URL`                             | Prisma at runtime + migrations           | Supabase connection string                             |
+| `DATABASE_URL`                             | Prisma runtime queries (pooled)          | Supabase Transaction Pooler URL + `?pgbouncer=true`    |
+| `DIRECT_URL`                               | `prisma migrate` + `db:setup` (DDL)      | Supabase Direct Connection URL                         |
 | `NEXT_PUBLIC_SUPABASE_URL`                 | Browser + server clients                 | Supabase project URL                                   |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`     | Browser + server clients                 | Supabase API, `sb_publishable_...`                     |
 | `SUPABASE_SECRET_KEY`                      | Storage uploads, admin lookups           | Supabase API, `sb_secret_...`                          |

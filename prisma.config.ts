@@ -6,15 +6,20 @@ import { defineConfig } from "prisma/config";
 // the app sees at runtime.
 loadEnvConfig(process.cwd());
 
-const databaseUrl =
+// Migrations must use the direct connection. Supabase's Transaction Pooler
+// (DATABASE_URL) runs in pgBouncer transaction mode, which strips the
+// session state DDL relies on (CREATE EXTENSION, advisory locks Prisma
+// uses to serialize migrations). Fall back to DATABASE_URL only so
+// `prisma generate` succeeds in environments where DIRECT_URL isn't set
+// (the URL is parsed but never dialed during generation).
+const migrationUrl =
+  process.env.DIRECT_URL ??
   process.env.DATABASE_URL ??
-  // Placeholder so `prisma generate` succeeds without a live DB connection
-  // (only the URL string is parsed during generation, never dialed).
   "postgresql://placeholder:placeholder@localhost:5432/placeholder";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  datasource: { url: databaseUrl },
+  datasource: { url: migrationUrl },
   migrations: {
     path: "prisma/migrations",
   },
