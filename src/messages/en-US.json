@@ -49,8 +49,7 @@
     "nav": {
       "dashboard": "Dashboard",
       "documents": "Documents",
-      "conversations": "Conversations",
-      "settings": "Settings"
+      "conversations": "Conversations"
     },
     "dashboard": {
       "title": "Dashboard",

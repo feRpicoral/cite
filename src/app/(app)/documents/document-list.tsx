@@ -1,5 +1,6 @@
 import { type DocumentStatus } from "@prisma/client";
 
+import { DocumentDropzone } from "@/components/document-dropzone";
 import { DocumentUpload } from "@/components/document-upload";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireSession } from "@/lib/auth/session";
@@ -52,12 +53,12 @@ export async function DocumentList({
         </div>
         <DocumentUpload collectionId={collectionId} />
       </header>
-      <div className="flex flex-1 flex-col">
+      <DocumentDropzone collectionId={collectionId}>
         {documents.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 p-12 text-center">
             <p className="text-muted-foreground text-sm">No documents yet.</p>
             <p className="text-muted-foreground/70 text-xs">
-              Upload a PDF, DOCX, HTML, or Markdown file to get started.
+              Drop a file here, or use the upload button. PDF, DOCX, HTML, or Markdown.
             </p>
           </div>
         ) : (
@@ -94,7 +95,7 @@ export async function DocumentList({
             })}
           </ul>
         )}
-      </div>
+      </DocumentDropzone>
     </div>
   );
 }

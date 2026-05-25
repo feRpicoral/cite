@@ -1,4 +1,5 @@
 import { FileText } from "lucide-react";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,9 @@ export default async function DashboardPage() {
           <h2 className="text-base font-medium">{t("emptyTitle")}</h2>
           <p className="text-muted-foreground max-w-sm text-sm">{t("emptyBody")}</p>
         </div>
-        <Button>{t("uploadCta")}</Button>
+        <Button asChild>
+          <Link href="/documents">{t("uploadCta")}</Link>
+        </Button>
       </div>
     </div>
   );
