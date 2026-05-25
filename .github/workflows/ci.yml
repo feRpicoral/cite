@@ -13,6 +13,10 @@ jobs:
   check:
     name: typecheck · lint · test · build
     runs-on: ubuntu-latest
+    # Successful runs finish in ~1 min. Anything past 10 means something
+    # hung (e.g. an ESLint runaway-memory loop) — kill it fast so a stuck
+    # job doesn't burn the full 6-hour Actions default.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 
@@ -51,6 +55,7 @@ jobs:
   integration:
     name: cross-tenant integration tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: pgvector/pgvector:pg17
