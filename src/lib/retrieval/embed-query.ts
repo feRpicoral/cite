@@ -15,7 +15,15 @@ export async function embedQuery(query: string): Promise<number[]> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ input: [query], model: MODEL, input_type: "query" }),
+    // output_dimension must match what was used at indexing time; see
+    // src/lib/ingestion/embed.ts. Mismatched dims would produce vectors
+    // the column rejects and meaningless cosine distances.
+    body: JSON.stringify({
+      input: [query],
+      model: MODEL,
+      input_type: "query",
+      output_dimension: 2048,
+    }),
   });
   if (!res.ok) {
     throw new Error(`Voyage embed query failed (${res.status}): ${await res.text()}`);
