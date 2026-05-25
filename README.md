@@ -38,7 +38,7 @@ yarn db:generate
 ### 2. Create a Supabase project
 
 1. Sign up at [supabase.com](https://supabase.com).
-2. Create a new project; copy the project URL and the `anon` + `service_role` keys.
+2. Create a new project; under **Project Settings → API Keys**, copy the **publishable** key (`sb_publishable_…`) and create a **secret** key (`sb_secret_…`). These replace the legacy `anon` / `service_role` keys.
 3. Enable the **pgvector** extension under Database → Extensions.
 4. Copy the Postgres connection string from Database → Connection String.
 
@@ -55,8 +55,8 @@ Fill in:
 | `NEXT_PUBLIC_APP_URL`                      | Auth redirects + metadata                | `http://localhost:3000` in dev                         |
 | `DATABASE_URL`                             | Prisma at runtime + migrations           | Supabase connection string                             |
 | `NEXT_PUBLIC_SUPABASE_URL`                 | Browser + server clients                 | Supabase project URL                                   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`            | Browser + server clients                 | Supabase API → `anon` key                              |
-| `SUPABASE_SERVICE_ROLE_KEY`                | Storage uploads, admin lookups           | Supabase API → `service_role` key                      |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`     | Browser + server clients                 | Supabase API → `sb_publishable_…`                      |
+| `SUPABASE_SECRET_KEY`                      | Storage uploads, admin lookups           | Supabase API → `sb_secret_…`                           |
 | `VOYAGE_API_KEY`                           | Ingestion (embeddings) + rerank          | [voyageai.com](https://www.voyageai.com)               |
 | `LLAMA_CLOUD_API_KEY`                      | PDF parsing                              | [cloud.llamaindex.ai](https://cloud.llamaindex.ai)     |
 | `ANTHROPIC_API_KEY`                        | Synthesis + contextual retrieval + audit | [console.anthropic.com](https://console.anthropic.com) |
