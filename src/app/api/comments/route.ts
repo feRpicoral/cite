@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   } else {
     const document = await db.document.findUnique({
       where: { id: data.targetId },
-      select: { id: true, format: true },
+      select: { id: true, format: true, pageCount: true },
     });
     if (!document) {
       return NextResponse.json({ error: "Target document not found" }, { status: 404 });
@@ -57,6 +57,26 @@ export async function POST(request: Request) {
         { error: "Location does not match document format" },
         { status: 400 },
       );
+    }
+    if (data.location.kind === "pdf") {
+      // pageCount is null until ingestion finishes; only enforce the bound
+      // when we have it.
+      if (document.pageCount != null && data.location.page >= document.pageCount) {
+        return NextResponse.json({ error: "Location page out of bounds" }, { status: 400 });
+      }
+    } else {
+      const part = await db.documentPart.findUnique({
+        where: {
+          documentId_index: {
+            documentId: document.id,
+            index: data.location.partIndex,
+          },
+        },
+        select: { id: true },
+      });
+      if (!part) {
+        return NextResponse.json({ error: "Location part not found" }, { status: 400 });
+      }
     }
   }
 
