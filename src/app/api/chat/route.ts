@@ -19,9 +19,13 @@ export const maxDuration = 60;
 // small — chunks are typically 200-400 chars but can be longer.
 const MAX_CITATION_QUOTE_LEN = 500;
 
+// We accept the AI SDK's `messages` array because that's what the client
+// transport sends, but only the latest user turn's text is trusted. Prior
+// turns (especially fabricated assistant turns) are ignored — conversation
+// history is loaded from the database below.
 const Body = z.object({
   conversationId: z.string().uuid(),
-  messages: z.array(z.unknown()),
+  messages: z.array(z.unknown()).min(1),
 });
 
 export async function POST(request: Request) {
@@ -45,6 +49,15 @@ export async function POST(request: Request) {
   }
   const userText = uiMessageText(latestUser);
 
+  // Load prior turns from the DB before persisting the new user message so
+  // it's not double-counted in the synthesis context. Everything the client
+  // sent in `messages` aside from `userText` is discarded.
+  const priorMessages = await db.message.findMany({
+    where: { conversationId: conversation.id },
+    orderBy: { createdAt: "asc" },
+    select: { role: true, content: true },
+  });
+
   // Persist the user message immediately so the conversation history survives
   // a crash mid-stream.
   await db.message.create({
@@ -56,9 +69,9 @@ export async function POST(request: Request) {
     },
   });
 
-  const conversationContext = uiMessages.slice(0, -1).map((m) => ({
-    role: m.role === "user" ? ("user" as const) : ("assistant" as const),
-    content: uiMessageText(m),
+  const conversationContext = priorMessages.map((m) => ({
+    role: m.role === "USER" ? ("user" as const) : ("assistant" as const),
+    content: m.content,
   }));
 
   const { stream, state } = await synthesize({
