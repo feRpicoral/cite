@@ -69,7 +69,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
       title={conversation.title}
       collectionName={conversation.collection.name}
       initialMessages={initial}
-      me={{ userId: session.userId, name: session.userName, email: session.email }}
+      me={{ userId: session.userId, name: session.userName }}
     />
   );
 }
