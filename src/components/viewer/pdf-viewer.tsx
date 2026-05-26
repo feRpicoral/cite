@@ -89,6 +89,19 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   const [pending, setPending] = useState<PendingSelection | null>(null);
   const [pins, setPins] = useState<RegionPin[]>([]);
 
+  // Snap to the citation's page whenever it changes. Without this, clicking
+  // a citation that points at a different page leaves the viewer on the
+  // previously-rendered page. Tracking the prior value with a ref keeps
+  // chevron navigation working — we only jump when `location.page` itself
+  // changes, not on every render.
+  const lastLocationPageRef = useRef(location.page);
+  useEffect(() => {
+    if (lastLocationPageRef.current !== location.page) {
+      lastLocationPageRef.current = location.page;
+      dispatch({ type: "setPage", page: location.page + 1 });
+    }
+  }, [location.page]);
+
   // Render the canvas + text layer for the current page. Re-runs whenever
   // url, page, or the citation location changes. The viewport object is
   // pushed into state on success so render and event handlers can use it
@@ -142,20 +155,25 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
         }
 
         const overlay = overlayRef.current;
-        if (overlay && page === location.page + 1) {
+        if (overlay) {
+          // Always clear: the prior render may have drawn a highlight from
+          // a citation on a different page, and we don't want it lingering
+          // when the user chevron-navigates away from the cited page.
           overlay.replaceChildren();
           overlay.style.width = `${pageViewport.width}px`;
           overlay.style.height = `${pageViewport.height}px`;
-          const rect = bboxToViewportRect(location.bbox, pageViewport);
-          const hl = document.createElement("div");
-          hl.className =
-            "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
-          hl.style.left = `${rect.left}px`;
-          hl.style.top = `${rect.top}px`;
-          hl.style.width = `${rect.width}px`;
-          hl.style.height = `${rect.height}px`;
-          overlay.appendChild(hl);
-          hl.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (page === location.page + 1) {
+            const rect = bboxToViewportRect(location.bbox, pageViewport);
+            const hl = document.createElement("div");
+            hl.className =
+              "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
+            hl.style.left = `${rect.left}px`;
+            hl.style.top = `${rect.top}px`;
+            hl.style.width = `${rect.width}px`;
+            hl.style.height = `${rect.height}px`;
+            overlay.appendChild(hl);
+            hl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
         }
 
         dispatch({
