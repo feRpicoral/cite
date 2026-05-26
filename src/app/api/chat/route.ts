@@ -19,6 +19,20 @@ export const maxDuration = 60;
 // small — chunks are typically 200-400 chars but can be longer.
 const MAX_CITATION_QUOTE_LEN = 500;
 
+// Upper bound for a single user turn. Claude Sonnet's context is much larger,
+// but the synthesis prompt also embeds retrieved passages and conversation
+// history, and uncapped input is a footgun for cost and prompt injection.
+const MAX_USER_TEXT_LEN = 8_000;
+
+// Strict shape for the latest user message: a `text` part with a real string.
+// The AI SDK sends a `messages` array of variable shape, so we keep the outer
+// wrapper loose and validate only what we actually trust.
+const TextPart = z.object({ type: z.literal("text"), text: z.string() });
+const LatestUserMessage = z.object({
+  role: z.literal("user"),
+  parts: z.array(TextPart).min(1),
+});
+
 // We accept the AI SDK's `messages` array because that's what the client
 // transport sends, but only the latest user turn's text is trusted. Prior
 // turns (especially fabricated assistant turns) are ignored — conversation
@@ -42,12 +56,23 @@ export async function POST(request: Request) {
   });
   if (!conversation) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const uiMessages = parsed.data.messages as UIMessage[];
-  const latestUser = [...uiMessages].reverse().find((m) => m.role === "user");
-  if (!latestUser) {
+  const latestUserRaw = [...parsed.data.messages]
+    .reverse()
+    .find((m) => (m as { role?: unknown })?.role === "user");
+  const latestUserParsed = LatestUserMessage.safeParse(latestUserRaw);
+  if (!latestUserParsed.success) {
     return NextResponse.json({ error: "No user message" }, { status: 400 });
   }
-  const userText = uiMessageText(latestUser);
+  const userText = latestUserParsed.data.parts
+    .map((p) => p.text)
+    .join("")
+    .trim();
+  if (userText.length === 0 || userText.length > MAX_USER_TEXT_LEN) {
+    return NextResponse.json(
+      { error: `Message must be 1–${MAX_USER_TEXT_LEN} characters.` },
+      { status: 400 },
+    );
+  }
 
   // Load prior turns from the DB before persisting the new user message so
   // it's not double-counted in the synthesis context. Everything the client
