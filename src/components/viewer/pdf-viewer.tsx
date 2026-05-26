@@ -89,18 +89,19 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   const [pending, setPending] = useState<PendingSelection | null>(null);
   const [pins, setPins] = useState<RegionPin[]>([]);
 
-  // Snap to the citation's page whenever it changes. Without this, clicking
-  // a citation that points at a different page leaves the viewer on the
-  // previously-rendered page. Tracking the prior value with a ref keeps
-  // chevron navigation working — we only jump when `location.page` itself
-  // changes, not on every render.
-  const lastLocationPageRef = useRef(location.page);
+  // Snap to the citation's page whenever the citation changes. We key off a
+  // signature of the full location (page + bbox), not just the page number,
+  // so clicking another citation on the *same* page after the user has
+  // chevron-navigated away still snaps the viewer back. Tracking the prior
+  // signature with a ref keeps chevron navigation working in between.
+  const locationKey = `${location.page}:${location.bbox.join(",")}`;
+  const lastLocationKeyRef = useRef(locationKey);
   useEffect(() => {
-    if (lastLocationPageRef.current !== location.page) {
-      lastLocationPageRef.current = location.page;
+    if (lastLocationKeyRef.current !== locationKey) {
+      lastLocationKeyRef.current = locationKey;
       dispatch({ type: "setPage", page: location.page + 1 });
     }
-  }, [location.page]);
+  }, [locationKey, location.page]);
 
   // Render the canvas + text layer for the current page. Re-runs whenever
   // url, page, or the citation location changes. The viewport object is
