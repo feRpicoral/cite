@@ -2,14 +2,14 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { CitationChip } from "@/components/chat/citation-chip";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { StreamingStatus } from "@/components/chat/streaming-status";
 import { CommentButton } from "@/components/comments/comment-button";
-import type { DocumentLocation } from "@/lib/ingestion/location";
+import { type DocumentLocation, DocumentLocationSchema } from "@/lib/ingestion/location";
 import { type MessageInsertPayload, useMessageInserts } from "@/lib/realtime/message-sync";
 
 export interface InitialCitation {
@@ -55,18 +55,34 @@ export function ChatPanel({
     })),
   });
 
-  // Live message sync: when a teammate sends a message, postgres_changes
-  // fires an INSERT we splice into useChat's state directly so the chat
-  // updates without a full page navigation. Our own messages (already in
-  // useChat from sendMessage / the stream) match by id or by role+content
-  // and get skipped instead of duplicated.
+  // Citation hydration: initial messages from the server come with their
+  // citations attached. Fresh streamed assistant messages render `[n]`
+  // chips in the text but the citation rows are only written by the chat
+  // route's onFinish, so we refetch them once the persisted UUID is known.
+  const [citationsByMessage, setCitationsByMessage] = useState<Map<string, InitialCitation[]>>(
+    () => {
+      const map = new Map<string, InitialCitation[]>();
+      for (const m of initialMessages) map.set(m.id, m.citations);
+      return map;
+    },
+  );
+  // Track messages we've already attempted to fetch citations for so the
+  // effect doesn't loop on an empty-citation response.
+  const fetchedCitationsRef = useRef<Set<string>>(new Set(initialMessages.map((m) => m.id)));
+
+  // Live message sync: when a teammate sends a message, or when our own
+  // streamed assistant message persists, postgres_changes fires an INSERT
+  // we splice into useChat's state. The stream-generated id differs from
+  // the persisted UUID, so when we match a duplicate by role+content we
+  // also rewrite its id so subsequent citation hydration and comments
+  // can address it.
   const onIncoming = useCallback(
     (payload: MessageInsertPayload) => {
       setMessages((prev) => {
         if (prev.some((m) => m.id === payload.id)) return prev;
         const incomingText = payload.content;
         const role: "user" | "assistant" = payload.role === "ASSISTANT" ? "assistant" : "user";
-        const duplicate = prev.some((m) => {
+        const duplicateIndex = prev.findIndex((m) => {
           if (m.role !== role) return false;
           const text = m.parts
             .filter((p): p is { type: "text"; text: string } => p.type === "text")
@@ -74,7 +90,11 @@ export function ChatPanel({
             .join("");
           return text === incomingText;
         });
-        if (duplicate) return prev;
+        if (duplicateIndex !== -1) {
+          const next = prev.slice();
+          next[duplicateIndex] = { ...next[duplicateIndex]!, id: payload.id };
+          return next;
+        }
         return [
           ...prev,
           {
@@ -89,16 +109,55 @@ export function ChatPanel({
   );
   useMessageInserts(conversationId, onIncoming);
 
-  const citationsByMessage = useMemo(() => {
-    const map = new Map<string, InitialCitation[]>();
-    for (const m of initialMessages) map.set(m.id, m.citations);
-    return map;
-  }, [initialMessages]);
-
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, status]);
+
+  // Hydrate citations for any persisted assistant message we haven't fetched
+  // yet. Triggers right after onIncoming rewrites a streamed id to the
+  // persisted UUID, so the chips in the just-finished response become
+  // clickable without a refresh.
+  useEffect(() => {
+    let cancelled = false;
+    const targets = messages.filter(
+      (m) =>
+        m.role === "assistant" &&
+        /^[0-9a-f-]{36}$/.test(m.id) &&
+        !fetchedCitationsRef.current.has(m.id),
+    );
+    if (targets.length === 0) return;
+    for (const m of targets) fetchedCitationsRef.current.add(m.id);
+
+    void (async () => {
+      const results = await Promise.all(
+        targets.map(async (m) => {
+          try {
+            const res = await fetch(`/api/messages/${m.id}/citations`);
+            if (!res.ok) return null;
+            const data = (await res.json()) as { citations: RawCitation[] };
+            return [m.id, parseCitations(data.citations)] as const;
+          } catch {
+            return null;
+          }
+        }),
+      );
+      if (cancelled) return;
+      const next = new Map(citationsByMessage);
+      let changed = false;
+      for (const entry of results) {
+        if (!entry) continue;
+        const [id, citations] = entry;
+        next.set(id, citations);
+        changed = true;
+      }
+      if (changed) setCitationsByMessage(next);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [messages, citationsByMessage]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -190,4 +249,24 @@ function RenderedAssistantText({
     out.push(<span key={`t-${cursor}`}>{text.slice(cursor)}</span>);
   }
   return <div className="leading-relaxed whitespace-pre-wrap">{out}</div>;
+}
+
+interface RawCitation {
+  displayIndex: number;
+  quote: string;
+  chunkId: string;
+  documentId: string;
+  documentName: string;
+  location: unknown;
+}
+
+function parseCitations(raw: RawCitation[]): InitialCitation[] {
+  return raw.map((c) => ({
+    displayIndex: c.displayIndex,
+    quote: c.quote,
+    chunkId: c.chunkId,
+    documentId: c.documentId,
+    documentName: c.documentName,
+    location: DocumentLocationSchema.parse(c.location),
+  }));
 }
