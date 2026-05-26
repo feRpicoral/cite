@@ -28,6 +28,38 @@ export async function POST(request: Request) {
 
   const db = getDb(session.orgId);
   const data = parsed.data;
+
+  // `targetId` is polymorphic (no DB FK), so validate it points at a row in
+  // the caller's org. The auto-scoped lookups return null for wrong-org or
+  // unknown ids, preventing orphan/fake comments and cross-org targeting.
+  if (data.targetType === "MESSAGE") {
+    const message = await db.message.findUnique({
+      where: { id: data.targetId },
+      select: { id: true },
+    });
+    if (!message) {
+      return NextResponse.json({ error: "Target message not found" }, { status: 404 });
+    }
+  } else {
+    const document = await db.document.findUnique({
+      where: { id: data.targetId },
+      select: { id: true, format: true },
+    });
+    if (!document) {
+      return NextResponse.json({ error: "Target document not found" }, { status: 404 });
+    }
+    // PDFs use spatial locations (`kind: "pdf"`); DOCX/HTML/MD use the
+    // structural HTML locator. Reject mismatches so the viewer doesn't
+    // get a region it can't render.
+    const expectedKind = document.format === "PDF" ? "pdf" : "html";
+    if (data.location.kind !== expectedKind) {
+      return NextResponse.json(
+        { error: "Location does not match document format" },
+        { status: 400 },
+      );
+    }
+  }
+
   const comment = await db.comment.create({
     data: {
       orgId: session.orgId,

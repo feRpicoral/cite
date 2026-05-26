@@ -31,6 +31,16 @@ export async function DELETE(_request: Request, context: Context) {
   const session = await requireSession();
   const { id } = await context.params;
   const db = getDb(session.orgId);
+  const comment = await db.comment.findUnique({
+    where: { id },
+    select: { authorUserId: true },
+  });
+  if (!comment) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // Match the UI: the kebab menu hides Delete for non-authors. Without this
+  // check anyone in the org with the id could call DELETE directly.
+  if (comment.authorUserId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   await db.comment.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
