@@ -2,6 +2,7 @@
   "name": "cite",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "packageManager": "yarn@4.14.1",
   "scripts": {
     "dev": "next dev --turbo",
