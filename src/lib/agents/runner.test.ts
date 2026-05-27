@@ -104,8 +104,8 @@ describe("runAgent", () => {
     });
 
     const ids = state.finalChunks.map((c) => c.chunkId);
-    expect(new Set(ids).size).toBe(ids.length);
     const shared = state.finalChunks.find((c) => c.chunkId === "shared");
+    expect(new Set(ids).size).toBe(ids.length);
     expect(shared?.score).toBe(0.9);
   });
 });

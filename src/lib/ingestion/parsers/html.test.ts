@@ -7,6 +7,7 @@ describe("HtmlParser", () => {
 
   it("emits segments for paragraphs and list items", async () => {
     const html = `<h1>Title</h1><p>Body one.</p><ul><li>Item A</li><li>Item B</li></ul>`;
+
     const doc = await parser.parse(Buffer.from(html), {
       filename: "doc.html",
       mimeType: "text/html",
@@ -22,6 +23,7 @@ describe("HtmlParser", () => {
 
   it("strips disallowed tags via sanitization", async () => {
     const html = `<p>Safe content.</p><script>alert(1)</script>`;
+
     const doc = await parser.parse(Buffer.from(html), {
       filename: "doc.html",
       mimeType: "text/html",
@@ -34,12 +36,12 @@ describe("HtmlParser", () => {
 
   it("collapses whitespace in extracted text", async () => {
     const html = `<p>  Multiple    spaces\n  and newlines  </p>`;
+
     const doc = await parser.parse(Buffer.from(html), {
       filename: "doc.html",
       mimeType: "text/html",
     });
 
-    const seg = doc.parts[0]?.segments[0];
-    expect(seg?.text).toBe("Multiple spaces and newlines");
+    expect(doc.parts[0]?.segments[0]?.text).toBe("Multiple spaces and newlines");
   });
 });
