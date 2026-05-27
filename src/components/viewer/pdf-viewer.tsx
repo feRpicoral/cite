@@ -89,6 +89,20 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   const [pending, setPending] = useState<PendingSelection | null>(null);
   const [pins, setPins] = useState<RegionPin[]>([]);
 
+  // Snap to the citation's page whenever the citation changes. We key off a
+  // signature of the full location (page + bbox), not just the page number,
+  // so clicking another citation on the *same* page after the user has
+  // chevron-navigated away still snaps the viewer back. Tracking the prior
+  // signature with a ref keeps chevron navigation working in between.
+  const locationKey = `${location.page}:${location.bbox.join(",")}`;
+  const lastLocationKeyRef = useRef(locationKey);
+  useEffect(() => {
+    if (lastLocationKeyRef.current !== locationKey) {
+      lastLocationKeyRef.current = locationKey;
+      dispatch({ type: "setPage", page: location.page + 1 });
+    }
+  }, [locationKey, location.page]);
+
   // Render the canvas + text layer for the current page. Re-runs whenever
   // url, page, or the citation location changes. The viewport object is
   // pushed into state on success so render and event handlers can use it
@@ -142,20 +156,25 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
         }
 
         const overlay = overlayRef.current;
-        if (overlay && page === location.page + 1) {
+        if (overlay) {
+          // Always clear: the prior render may have drawn a highlight from
+          // a citation on a different page, and we don't want it lingering
+          // when the user chevron-navigates away from the cited page.
           overlay.replaceChildren();
           overlay.style.width = `${pageViewport.width}px`;
           overlay.style.height = `${pageViewport.height}px`;
-          const rect = bboxToViewportRect(location.bbox, pageViewport);
-          const hl = document.createElement("div");
-          hl.className =
-            "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
-          hl.style.left = `${rect.left}px`;
-          hl.style.top = `${rect.top}px`;
-          hl.style.width = `${rect.width}px`;
-          hl.style.height = `${rect.height}px`;
-          overlay.appendChild(hl);
-          hl.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (page === location.page + 1) {
+            const rect = bboxToViewportRect(location.bbox, pageViewport);
+            const hl = document.createElement("div");
+            hl.className =
+              "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
+            hl.style.left = `${rect.left}px`;
+            hl.style.top = `${rect.top}px`;
+            hl.style.width = `${rect.width}px`;
+            hl.style.height = `${rect.height}px`;
+            overlay.appendChild(hl);
+            hl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
         }
 
         dispatch({
