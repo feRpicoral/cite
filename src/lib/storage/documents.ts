@@ -12,10 +12,6 @@ export function buildStoragePath(orgId: OrgId, filename: string): string {
   return `${orgId}/${nanoid()}-${safe}`;
 }
 
-/**
- * Uploads a file buffer to the private documents bucket via the service-role
- * client. Used by the upload route after Multipart parsing.
- */
 export async function uploadDocumentBuffer(
   storagePath: string,
   buffer: Buffer,
@@ -28,9 +24,6 @@ export async function uploadDocumentBuffer(
   if (error) throw error;
 }
 
-/**
- * Downloads a previously-uploaded document. Used by the ingestion worker.
- */
 export async function downloadDocumentBuffer(storagePath: string): Promise<Buffer> {
   const supabase = getServiceSupabase();
   const { data, error } = await supabase.storage.from(DOCUMENTS_BUCKET).download(storagePath);
@@ -38,10 +31,6 @@ export async function downloadDocumentBuffer(storagePath: string): Promise<Buffe
   return Buffer.from(await data.arrayBuffer());
 }
 
-/**
- * Time-limited signed URL for the user to download / view a document
- * (used by the viewer when rendering PDFs / HTML).
- */
 export async function signedDocumentUrl(
   storagePath: string,
   expiresIn: number = 60 * 60,

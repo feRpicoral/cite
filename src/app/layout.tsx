@@ -19,9 +19,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // `<html lang>` only — actual translations live inside each segment's
-  // NextIntlClientProvider. Resolver here uses cookie / Accept-Language
-  // only (DB tier is applied downstream by the (app) layout).
   const locale = await resolveLocale();
 
   return (

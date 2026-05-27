@@ -43,7 +43,6 @@ describe("MarkdownParser", () => {
     expect(texts).toContain("A");
     expect(texts).toContain("First para.");
     expect(texts).toContain("Second para.");
-    // Each segment is an html location with a non-empty selector
     for (const seg of section.segments) {
       expect(seg.location.kind).toBe("html");
       if (seg.location.kind === "html") {

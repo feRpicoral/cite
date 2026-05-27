@@ -1,8 +1,3 @@
-/**
- * Client-side helper that POSTs a single file to the upload endpoint.
- * Shared by the header button and the drop zone so both code paths show
- * the same toast and error handling.
- */
 export async function uploadDocument(file: File, collectionId: string): Promise<void> {
   const fd = new FormData();
   fd.set("collectionId", collectionId);

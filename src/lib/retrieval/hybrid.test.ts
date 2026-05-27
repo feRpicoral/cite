@@ -31,7 +31,6 @@ describe("rrfFuse", () => {
 
     const fused = rrfFuse(lists, 10);
 
-    // 'b' and 'a' appear in both; 'b' is rank-1 in list 2 and rank-2 in list 1 → highest sum.
     expect(fused[0]?.chunkId).toBe("b");
     expect(fused[1]?.chunkId).toBe("a");
   });
@@ -41,8 +40,6 @@ describe("rrfFuse", () => {
 
     const fused = rrfFuse(lists, 10);
 
-    // 'a' is rank-1 in list 1; 'b' is rank-1 in list 2; both should score equally
-    // and lead before c/d.
     expect(
       fused
         .slice(0, 2)

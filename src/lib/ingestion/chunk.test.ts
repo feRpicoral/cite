@@ -39,7 +39,6 @@ describe("chunkDocument", () => {
   });
 
   it("splits when a single part exceeds the max token budget", () => {
-    // ~1800-token long string (well past MAX_TOKENS=1500) made of repeated paragraphs.
     const long = "Lorem ipsum dolor sit amet. ".repeat(80);
     const segs = Array.from({ length: 10 }, (_, i) =>
       htmlSeg(long, `div > p:nth-of-type(${i + 1})`),
