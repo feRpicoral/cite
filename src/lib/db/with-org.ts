@@ -2,8 +2,11 @@ import { getPrisma } from "./client";
 import type { OrgId } from "./types";
 
 // Models that carry `orgId` and must be auto-scoped at the app layer. Update
-// this set when new tenant tables are added to schema.prisma.
-const MULTI_TENANT_MODELS = new Set<string>([
+// this set when new tenant tables are added to schema.prisma. The unit test
+// in with-org.test.ts asserts every Prisma model with an `org_id` column is
+// either listed here or explicitly exempted in MULTI_TENANT_EXEMPT.
+export const MULTI_TENANT_MODELS = new Set<string>([
+  "Membership",
   "Invite",
   "Collection",
   "Document",
@@ -18,6 +21,11 @@ const MULTI_TENANT_MODELS = new Set<string>([
   "CitationAudit",
   "MessageMetrics",
 ]);
+
+// Tenant tables that are intentionally NOT auto-scoped, with the reason
+// captured inline. Keep this empty unless there's a concrete justification —
+// every entry is a deliberate hole in the tenant-isolation layer.
+export const MULTI_TENANT_EXEMPT = new Map<string, string>();
 
 const READ_OR_MUTATE_OPS = new Set([
   "findFirst",
