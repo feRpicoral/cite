@@ -5,10 +5,14 @@ import { useEffect, useState } from "react";
 
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
+// Presence is broadcast on a guessable channel (`presence:conversation:<id>`)
+// and the Supabase Realtime config does not currently enforce per-channel
+// membership beyond authenticated. Keep the payload to the minimum the UI
+// renders — userId for keying/selfness, name for the tooltip — so a leak
+// here doesn't expose email addresses.
 export interface PresenceUser {
   userId: string;
   name: string | null;
-  email: string;
 }
 
 /**

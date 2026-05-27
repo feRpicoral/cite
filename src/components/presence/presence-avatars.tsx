@@ -32,7 +32,7 @@ export function PresenceAvatars({ channel, me }: PresenceAvatarsProps) {
             </Avatar>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p className="text-xs">{u.name ?? u.email}</p>
+            <p className="text-xs">{u.name ?? "Member"}</p>
           </TooltipContent>
         </Tooltip>
       ))}
@@ -46,9 +46,11 @@ export function PresenceAvatars({ channel, me }: PresenceAvatarsProps) {
 }
 
 function initialsFor(u: PresenceUser): string {
-  const source = u.name ?? u.email;
+  // Fall back to the first two hex chars of the userId when the user has no
+  // display name set — same shape the comment-thread avatars use.
+  const source = u.name ?? u.userId;
   return source
-    .split(/[\s.@]+/)
+    .split(/[\s.@-]+/)
     .map((p) => p[0]?.toUpperCase() ?? "")
     .slice(0, 2)
     .join("");
