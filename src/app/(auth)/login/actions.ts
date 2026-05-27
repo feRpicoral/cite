@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { safeNextPath } from "@/lib/auth/safe-redirect";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const LoginSchema = z.object({
@@ -30,5 +31,5 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   });
   if (error) return { error: error.message };
 
-  redirect(parsed.data.next ?? "/dashboard");
+  redirect(safeNextPath(parsed.data.next, "/dashboard"));
 }
