@@ -41,7 +41,6 @@ export function CreateCollectionForm() {
         <form
           action={async (fd) => {
             await formAction(fd);
-            // formAction sets `state.error` on failure. Only close on success.
             setOpen(false);
           }}
           className="space-y-4"

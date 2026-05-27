@@ -46,8 +46,6 @@ export function PresenceAvatars({ channel, me }: PresenceAvatarsProps) {
 }
 
 function initialsFor(u: PresenceUser): string {
-  // Fall back to the first two hex chars of the userId when the user has no
-  // display name set — same shape the comment-thread avatars use.
   const source = u.name ?? u.userId;
   return source
     .split(/[\s.@-]+/)

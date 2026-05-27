@@ -14,7 +14,7 @@ export const SONNET_MODEL = "claude-sonnet-4-6";
 
 /**
  * Issues a single structured tool-use call and parses the result against
- * a Zod schema. Modeled on the Sonar pattern (lib/agents/anthropic.ts).
+ * a Zod schema.
  *
  * The system prompt is sent with `cache_control: ephemeral` so re-runs
  * within the prompt cache window skip re-tokenizing it.

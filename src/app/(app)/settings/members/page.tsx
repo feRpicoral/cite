@@ -16,7 +16,6 @@ export default async function MembersPage() {
     orderBy: { createdAt: "asc" },
   });
 
-  // Surface only invites that are usable (not accepted, not expired).
   const invites = await db.invite.findMany({
     where: { acceptedAt: null, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: "desc" },

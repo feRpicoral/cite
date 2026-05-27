@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 
 import { MULTI_TENANT_EXEMPT, MULTI_TENANT_MODELS } from "./with-org";
 
-// vitest runs from the repo root.
 const SCHEMA_PATH = resolve(process.cwd(), "prisma/schema.prisma");
 
 function modelsWithOrgId(): string[] {

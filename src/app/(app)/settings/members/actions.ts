@@ -24,9 +24,7 @@ const CreateInviteSchema = z.object({
 
 /**
  * Generates a shareable invite link. Cite doesn't run an email sender, so
- * the admin copies the returned URL and shares it through whatever channel
- * they prefer. Re-using an existing pending invite for the same email is
- * handled by the (orgId, email) unique constraint via upsert.
+ * the admin copies the returned URL and shares it manually.
  */
 export async function createInviteAction(
   input: z.infer<typeof CreateInviteSchema>,
@@ -209,7 +207,6 @@ export async function acceptInviteAction(
   const parsed = AcceptInviteSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid invite." };
 
-  // Auth is required but role doesn't matter; anyone signed in can accept.
   const supabase = await createServerSupabase();
   const {
     data: { user },
@@ -244,7 +241,6 @@ export async function acceptInviteAction(
     }
   });
 
-  // Switch the user's active org so they land in the right place after redirect.
   const admin = getServiceSupabase();
   await admin.auth.admin.updateUserById(user.id, {
     app_metadata: { ...user.app_metadata, active_org_id: invite.orgId },
