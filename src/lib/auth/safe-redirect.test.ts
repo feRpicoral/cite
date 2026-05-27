@@ -6,32 +6,50 @@ describe("safeNextPath", () => {
   const fallback = "/dashboard";
 
   it("accepts a single-slash relative path", () => {
-    expect(safeNextPath("/conversations/abc", fallback)).toBe("/conversations/abc");
+    const result = safeNextPath("/conversations/abc", fallback);
+
+    expect(result).toBe("/conversations/abc");
   });
 
   it("rejects absolute URLs", () => {
-    expect(safeNextPath("https://evil.example/", fallback)).toBe(fallback);
-    expect(safeNextPath("http://attacker", fallback)).toBe(fallback);
+    const httpsResult = safeNextPath("https://evil.example/", fallback);
+    const httpResult = safeNextPath("http://attacker", fallback);
+
+    expect(httpsResult).toBe(fallback);
+    expect(httpResult).toBe(fallback);
   });
 
   it("rejects protocol-relative URLs", () => {
-    expect(safeNextPath("//evil.example/path", fallback)).toBe(fallback);
+    const result = safeNextPath("//evil.example/path", fallback);
+
+    expect(result).toBe(fallback);
   });
 
   it("rejects backslash-prefixed paths that browsers normalize to //", () => {
-    expect(safeNextPath("/\\evil.example", fallback)).toBe(fallback);
-    expect(safeNextPath("\\evil.example", fallback)).toBe(fallback);
+    const slashBackslash = safeNextPath("/\\evil.example", fallback);
+    const bareBackslash = safeNextPath("\\evil.example", fallback);
+
+    expect(slashBackslash).toBe(fallback);
+    expect(bareBackslash).toBe(fallback);
   });
 
   it("rejects bare schemes and JS urls", () => {
-    expect(safeNextPath("javascript:alert(1)", fallback)).toBe(fallback);
-    expect(safeNextPath("data:text/html,foo", fallback)).toBe(fallback);
+    const jsResult = safeNextPath("javascript:alert(1)", fallback);
+    const dataResult = safeNextPath("data:text/html,foo", fallback);
+
+    expect(jsResult).toBe(fallback);
+    expect(dataResult).toBe(fallback);
   });
 
   it("rejects empty, null, and absurdly long values", () => {
-    expect(safeNextPath(null, fallback)).toBe(fallback);
-    expect(safeNextPath(undefined, fallback)).toBe(fallback);
-    expect(safeNextPath("", fallback)).toBe(fallback);
-    expect(safeNextPath("/" + "a".repeat(3_000), fallback)).toBe(fallback);
+    const nullResult = safeNextPath(null, fallback);
+    const undefinedResult = safeNextPath(undefined, fallback);
+    const emptyResult = safeNextPath("", fallback);
+    const longResult = safeNextPath("/" + "a".repeat(3_000), fallback);
+
+    expect(nullResult).toBe(fallback);
+    expect(undefinedResult).toBe(fallback);
+    expect(emptyResult).toBe(fallback);
+    expect(longResult).toBe(fallback);
   });
 });

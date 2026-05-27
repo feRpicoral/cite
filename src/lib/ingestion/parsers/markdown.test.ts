@@ -6,13 +6,18 @@ describe("MarkdownParser", () => {
   const parser = new MarkdownParser();
 
   it("detects .md files and text/markdown mime", () => {
-    expect(parser.canParse("text/markdown", "doc.md")).toBe(true);
-    expect(parser.canParse("text/plain", "doc.markdown")).toBe(true);
-    expect(parser.canParse("application/pdf", "doc.pdf")).toBe(false);
+    const markdownMime = parser.canParse("text/markdown", "doc.md");
+    const plainMime = parser.canParse("text/plain", "doc.markdown");
+    const pdfMime = parser.canParse("application/pdf", "doc.pdf");
+
+    expect(markdownMime).toBe(true);
+    expect(plainMime).toBe(true);
+    expect(pdfMime).toBe(false);
   });
 
   it("splits a document into sections at h1/h2/h3", async () => {
     const md = `# Intro\n\nIntro body.\n\n## Details\n\nDetail one.\n\nDetail two.\n\n## Pricing\n\nFree tier available.`;
+
     const doc = await parser.parse(Buffer.from(md), {
       filename: "doc.md",
       mimeType: "text/markdown",
@@ -27,6 +32,7 @@ describe("MarkdownParser", () => {
 
   it("emits one segment per block element with stable selectors", async () => {
     const md = `## A\n\nFirst para.\n\nSecond para.`;
+
     const doc = await parser.parse(Buffer.from(md), {
       filename: "doc.md",
       mimeType: "text/markdown",
@@ -37,7 +43,6 @@ describe("MarkdownParser", () => {
     expect(texts).toContain("A");
     expect(texts).toContain("First para.");
     expect(texts).toContain("Second para.");
-
     // Each segment is an html location with a non-empty selector
     for (const seg of section.segments) {
       expect(seg.location.kind).toBe("html");
@@ -49,6 +54,7 @@ describe("MarkdownParser", () => {
 
   it("handles a single-section document with no headings", async () => {
     const md = `Just one paragraph.\n\nAnd another.`;
+
     const doc = await parser.parse(Buffer.from(md), {
       filename: "doc.md",
       mimeType: "text/markdown",

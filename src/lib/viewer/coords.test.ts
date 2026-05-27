@@ -18,7 +18,10 @@ function fakeViewport(scale = 1): PageViewport {
 
 describe("bboxToViewportRect", () => {
   it("yields a positive-width / positive-height rect", () => {
-    const r = bboxToViewportRect([100, 700, 300, 750], fakeViewport(1));
+    const viewport = fakeViewport(1);
+
+    const r = bboxToViewportRect([100, 700, 300, 750], viewport);
+
     expect(r.width).toBeGreaterThan(0);
     expect(r.height).toBeGreaterThan(0);
     expect(r.left).toBe(100);
@@ -28,7 +31,10 @@ describe("bboxToViewportRect", () => {
   });
 
   it("scales with viewport.scale", () => {
-    const r = bboxToViewportRect([100, 700, 300, 750], fakeViewport(2));
+    const viewport = fakeViewport(2);
+
+    const r = bboxToViewportRect([100, 700, 300, 750], viewport);
+
     expect(r.left).toBe(200);
     expect(r.width).toBe(400);
     expect(r.height).toBe(100);

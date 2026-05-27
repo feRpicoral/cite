@@ -34,16 +34,15 @@ describe("vectorSearch tenant isolation", () => {
 
   it("never returns chunks belonging to other orgs", async () => {
     const seed = await seedTwoOrgs(prisma);
-
     // Embeddings are intentionally identical across the two orgs — only the
     // org_id filter should keep them separate.
     const queryVector = new Array(2048).fill(0.5) as number[];
+
     const resultsForA = await vectorSearch(seed.orgA, seed.collectionA, queryVector, 20);
     const resultsForB = await vectorSearch(seed.orgB, seed.collectionB, queryVector, 20);
 
     expect(resultsForA.length).toBeGreaterThan(0);
     expect(resultsForB.length).toBeGreaterThan(0);
-
     for (const chunk of resultsForA) {
       expect(seed.chunkIdsForA).toContain(chunk.chunkId);
       expect(seed.chunkIdsForB).not.toContain(chunk.chunkId);
@@ -56,10 +55,11 @@ describe("vectorSearch tenant isolation", () => {
 
   it("scopes by collection too — orgA cannot peek into another orgA collection's chunks via the wrong id", async () => {
     const seed = await seedTwoOrgs(prisma);
+    const queryVector = new Array(2048).fill(0.5) as number[];
 
     // Use orgA's id but orgB's collection id — must return nothing.
-    const queryVector = new Array(2048).fill(0.5) as number[];
     const results = await vectorSearch(seed.orgA, seed.collectionB, queryVector, 20);
+
     expect(results).toEqual([]);
   });
 });
