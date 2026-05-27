@@ -22,13 +22,18 @@ describe("rerank", () => {
 
   it("is a no-op slice when VOYAGE_API_KEY is missing", async () => {
     const input = [chunk("a", 3), chunk("b", 2), chunk("c", 1)];
+
     const out = await rerank("query", input, 2);
+
     expect(out).toHaveLength(2);
     expect(out.map((c) => c.chunkId)).toEqual(["a", "b"]);
+
     if (prev) process.env.VOYAGE_API_KEY = prev;
   });
 
   it("returns empty for empty input", async () => {
-    expect(await rerank("q", [], 10)).toEqual([]);
+    const out = await rerank("q", [], 10);
+
+    expect(out).toEqual([]);
   });
 });

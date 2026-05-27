@@ -4,14 +4,20 @@ import { cn } from "@/lib/utils";
 
 describe("cn", () => {
   it("joins class names", () => {
-    expect(cn("a", "b")).toBe("a b");
+    const result = cn("a", "b");
+
+    expect(result).toBe("a b");
   });
 
   it("merges conflicting tailwind utilities, last wins", () => {
-    expect(cn("p-2", "p-4")).toBe("p-4");
+    const result = cn("p-2", "p-4");
+
+    expect(result).toBe("p-4");
   });
 
   it("skips falsy values", () => {
-    expect(cn("a", false, undefined, null, "", "b")).toBe("a b");
+    const result = cn("a", false, undefined, null, "", "b");
+
+    expect(result).toBe("a b");
   });
 });

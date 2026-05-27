@@ -17,7 +17,11 @@ function makeDoc(parts: NormalizedPart[]): NormalizedDocument {
 
 describe("chunkDocument", () => {
   it("returns no chunks for an empty document", () => {
-    expect(chunkDocument(makeDoc([]))).toEqual([]);
+    const doc = makeDoc([]);
+
+    const chunks = chunkDocument(doc);
+
+    expect(chunks).toEqual([]);
   });
 
   it("packs small segments into one chunk when under the target", () => {
@@ -27,7 +31,9 @@ describe("chunkDocument", () => {
       metadata: { kind: "html", heading: null },
       segments: [htmlSeg("Hello world.", "div > p:nth-of-type(1)")],
     };
+
     const chunks = chunkDocument(makeDoc([part]));
+
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.text).toBe("Hello world.");
   });
@@ -43,7 +49,9 @@ describe("chunkDocument", () => {
       metadata: { kind: "html", heading: null },
       segments: segs,
     };
+
     const chunks = chunkDocument(makeDoc([part]));
+
     expect(chunks.length).toBeGreaterThan(1);
     for (const c of chunks) {
       expect(c.tokenCount).toBeLessThanOrEqual(1500);
@@ -63,7 +71,9 @@ describe("chunkDocument", () => {
       metadata: { kind: "html", heading: null },
       segments: [htmlSeg("b", "div > p:nth-of-type(1)")],
     };
+
     const chunks = chunkDocument(makeDoc([p1, p2]));
+
     expect(chunks.map((c) => c.index)).toEqual([0, 1]);
     expect(chunks[0]?.partIndex).toBe(0);
     expect(chunks[1]?.partIndex).toBe(1);
@@ -80,7 +90,9 @@ describe("chunkDocument", () => {
       metadata: { kind: "html", heading: null },
       segments: segs,
     };
+
     const chunks = chunkDocument(makeDoc([part]));
+
     expect(chunks).toHaveLength(1);
     const loc = chunks[0]!.location;
     expect(loc.kind).toBe("html");
@@ -96,7 +108,9 @@ describe("unionLocation", () => {
       { kind: "pdf", page: 3, charStart: 10, charEnd: 25, bbox: [10, 20, 50, 40] },
       { kind: "pdf", page: 3, charStart: 30, charEnd: 60, bbox: [5, 15, 60, 45] },
     ];
+
     const u = unionLocation(locs);
+
     expect(u).toEqual({
       kind: "pdf",
       page: 3,
@@ -123,7 +137,9 @@ describe("unionLocation", () => {
         charEnd: 20,
       },
     ];
+
     const u = unionLocation(locs);
+
     if (u.kind !== "html") throw new Error("expected html");
     expect(u.selector).toBe("div > section:nth-of-type(1)");
   });
@@ -131,10 +147,14 @@ describe("unionLocation", () => {
 
 describe("countTokens", () => {
   it("returns a positive count for non-empty text", () => {
-    expect(countTokens("hello world")).toBeGreaterThan(0);
+    const count = countTokens("hello world");
+
+    expect(count).toBeGreaterThan(0);
   });
 
   it("returns 0 for empty text", () => {
-    expect(countTokens("")).toBe(0);
+    const count = countTokens("");
+
+    expect(count).toBe(0);
   });
 });

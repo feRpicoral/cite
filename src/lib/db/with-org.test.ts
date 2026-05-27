@@ -28,17 +28,20 @@ function modelsWithOrgId(): string[] {
 describe("multi-tenant model coverage", () => {
   it("every model with org_id is either scoped or explicitly exempted", () => {
     const tenantModels = modelsWithOrgId();
-    expect(tenantModels.length).toBeGreaterThan(0);
 
     const missing = tenantModels.filter(
       (m) => !MULTI_TENANT_MODELS.has(m) && !MULTI_TENANT_EXEMPT.has(m),
     );
+
+    expect(tenantModels.length).toBeGreaterThan(0);
     expect(missing, `Models with org_id but not auto-scoped: ${missing.join(", ")}`).toEqual([]);
   });
 
   it("does not list non-tenant models in MULTI_TENANT_MODELS", () => {
     const tenantModels = new Set(modelsWithOrgId());
+
     const stray = [...MULTI_TENANT_MODELS].filter((m) => !tenantModels.has(m));
+
     expect(stray, `MULTI_TENANT_MODELS entries with no org_id column: ${stray.join(", ")}`).toEqual(
       [],
     );
@@ -46,6 +49,7 @@ describe("multi-tenant model coverage", () => {
 
   it("exemptions and scoping are mutually exclusive", () => {
     const overlap = [...MULTI_TENANT_EXEMPT.keys()].filter((m) => MULTI_TENANT_MODELS.has(m));
+
     expect(overlap).toEqual([]);
   });
 });
