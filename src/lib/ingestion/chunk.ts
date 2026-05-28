@@ -127,8 +127,10 @@ function takeOverlap(prev: TextSegment[]): TextSegment[] {
 
 /**
  * Folds a list of segment locations into a single citation region:
- *   - PDF: assumes all segments are on the same page; takes char span union
- *     and bbox bounding box.
+ *   - PDF: assumes all segments are on the same page. Keeps the per-segment
+ *     bboxes intact (so the viewer can highlight each paragraph individually
+ *     instead of one page-spanning union box) and stores their union for
+ *     coarse anchoring (scroll-into-view, region comments).
  *   - HTML: takes the shortest common ancestor selector; char span is the
  *     min..max of the contained segments. When segments live under different
  *     parents the selector falls back to the first segment's selector — the
@@ -139,20 +141,22 @@ export function unionLocation(locs: DocumentLocation[]): DocumentLocation {
   if (!first) throw new Error("unionLocation called with empty array");
   if (first.kind === "pdf") {
     const pdfs = locs as Extract<DocumentLocation, { kind: "pdf" }>[];
+    const bboxes = pdfs.flatMap((p) => p.bboxes ?? [p.bbox]);
     return {
       kind: "pdf",
       page: pdfs[0]!.page,
       charStart: Math.min(...pdfs.map((p) => p.charStart)),
       charEnd: Math.max(...pdfs.map((p) => p.charEnd)),
-      bbox: pdfs.reduce<[number, number, number, number]>(
-        (acc, p) => [
-          Math.min(acc[0], p.bbox[0]),
-          Math.min(acc[1], p.bbox[1]),
-          Math.max(acc[2], p.bbox[2]),
-          Math.max(acc[3], p.bbox[3]),
+      bbox: bboxes.reduce<[number, number, number, number]>(
+        (acc, b) => [
+          Math.min(acc[0], b[0]),
+          Math.min(acc[1], b[1]),
+          Math.max(acc[2], b[2]),
+          Math.max(acc[3], b[3]),
         ],
         [Infinity, Infinity, -Infinity, -Infinity],
       ),
+      bboxes,
     };
   }
   const htmls = locs as Extract<DocumentLocation, { kind: "html" }>[];
