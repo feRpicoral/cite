@@ -90,11 +90,12 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   const [pins, setPins] = useState<RegionPin[]>([]);
 
   // Snap to the citation's page whenever the citation changes. We key off a
-  // signature of the full location (page + bbox), not just the page number,
-  // so clicking another citation on the *same* page after the user has
-  // chevron-navigated away still snaps the viewer back. Tracking the prior
-  // signature with a ref keeps chevron navigation working in between.
-  const locationKey = `${location.page}:${location.bbox.join(",")}`;
+  // signature of the full location (page + every highlighted bbox), not just
+  // the page number, so clicking another citation on the *same* page after
+  // the user has chevron-navigated away still snaps the viewer back.
+  // Tracking the prior signature with a ref keeps chevron navigation working
+  // in between.
+  const locationKey = `${location.page}:${(location.bboxes ?? [location.bbox]).flat().join(",")}`;
   const lastLocationKeyRef = useRef(locationKey);
   useEffect(() => {
     if (lastLocationKeyRef.current !== locationKey) {
@@ -164,16 +165,22 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
           overlay.style.width = `${pageViewport.width}px`;
           overlay.style.height = `${pageViewport.height}px`;
           if (page === location.page + 1) {
-            const rect = bboxToViewportRect(location.bbox, pageViewport);
-            const hl = document.createElement("div");
-            hl.className =
-              "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
-            hl.style.left = `${rect.left}px`;
-            hl.style.top = `${rect.top}px`;
-            hl.style.width = `${rect.width}px`;
-            hl.style.height = `${rect.height}px`;
-            overlay.appendChild(hl);
-            hl.scrollIntoView({ behavior: "smooth", block: "center" });
+            const bboxes = location.bboxes ?? [location.bbox];
+            let firstEl: HTMLElement | null = null;
+            for (const bbox of bboxes) {
+              const rect = bboxToViewportRect(bbox, pageViewport);
+              if (rect.width === 0 && rect.height === 0) continue;
+              const hl = document.createElement("div");
+              hl.className =
+                "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
+              hl.style.left = `${rect.left}px`;
+              hl.style.top = `${rect.top}px`;
+              hl.style.width = `${rect.width}px`;
+              hl.style.height = `${rect.height}px`;
+              overlay.appendChild(hl);
+              firstEl ??= hl;
+            }
+            firstEl?.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }
 
@@ -196,7 +203,7 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [url, page, location.bbox, location.page]);
+  }, [url, page, locationKey, location.bboxes, location.bbox, location.page]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
@@ -270,6 +277,7 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
             charStart: 0,
             charEnd: 0,
             bbox: pending.bbox,
+            bboxes: [pending.bbox],
           } satisfies DocumentLocation,
         }),
       });

@@ -103,10 +103,24 @@ describe("chunkDocument", () => {
 });
 
 describe("unionLocation", () => {
-  it("merges PDF locations into a bounding bbox", () => {
+  it("merges PDF locations: union bbox plus the per-segment bboxes", () => {
     const locs: DocumentLocation[] = [
-      { kind: "pdf", page: 3, charStart: 10, charEnd: 25, bbox: [10, 20, 50, 40] },
-      { kind: "pdf", page: 3, charStart: 30, charEnd: 60, bbox: [5, 15, 60, 45] },
+      {
+        kind: "pdf",
+        page: 3,
+        charStart: 10,
+        charEnd: 25,
+        bbox: [10, 20, 50, 40],
+        bboxes: [[10, 20, 50, 40]],
+      },
+      {
+        kind: "pdf",
+        page: 3,
+        charStart: 30,
+        charEnd: 60,
+        bbox: [5, 15, 60, 45],
+        bboxes: [[5, 15, 60, 45]],
+      },
     ];
 
     const u = unionLocation(locs);
@@ -117,7 +131,22 @@ describe("unionLocation", () => {
       charStart: 10,
       charEnd: 60,
       bbox: [5, 15, 60, 45],
+      bboxes: [
+        [10, 20, 50, 40],
+        [5, 15, 60, 45],
+      ],
     });
+  });
+
+  it("backfills bboxes from bbox when the input lacks per-segment regions", () => {
+    const locs: DocumentLocation[] = [
+      { kind: "pdf", page: 0, charStart: 0, charEnd: 5, bbox: [0, 0, 10, 10] },
+    ];
+
+    const u = unionLocation(locs);
+
+    if (u.kind !== "pdf") throw new Error("expected pdf");
+    expect(u.bboxes).toEqual([[0, 0, 10, 10]]);
   });
 
   it("merges HTML locations to common ancestor selector", () => {
