@@ -13,7 +13,7 @@ export const auditMessageFn = inngest.createFunction(
   {
     id: "audit-message",
     name: "Run citation-accuracy audit on a synthesized message",
-    concurrency: { limit: 10 },
+    concurrency: { limit: 5 },
     triggers: [messageSynthesized],
   },
   async ({ event, step }) => {
