@@ -58,6 +58,7 @@ export class PdfParser implements DocumentParser {
           charStart,
           charEnd,
           bbox,
+          bboxes: [bbox],
         };
         segments.push({ text, location });
         bodyParts.push(text);

@@ -61,16 +61,20 @@ export async function processDocument(orgId: OrgId, documentId: DocumentId): Pro
   const inputs = enriched.map(buildEmbeddingInput);
   const embeddings = await embedTexts(inputs);
 
-  // Persist chunks + embeddings in one transaction per chunk so a partial
-  // failure leaves a coherent state (no chunks without embeddings).
-  await prisma.$transaction(async (tx) => {
-    await tx.documentChunk.deleteMany({ where: { documentId } });
-    for (let i = 0; i < enriched.length; i++) {
-      const chunk = enriched[i]!;
-      const vector = embeddings[i]!;
-      const partId = partIdByIndex.get(chunk.partIndex);
-      if (!partId) throw new Error(`No part for index ${chunk.partIndex}`);
+  // Wipe prior chunks/embeddings up front (Embedding cascades on chunk
+  // delete), so the per-chunk transaction below has nothing to compete with.
+  await prisma.documentChunk.deleteMany({ where: { documentId } });
 
+  for (let i = 0; i < enriched.length; i++) {
+    const chunk = enriched[i]!;
+    const vector = embeddings[i]!;
+    const partId = partIdByIndex.get(chunk.partIndex);
+    if (!partId) throw new Error(`No part for index ${chunk.partIndex}`);
+
+    // One transaction per chunk so a partial failure leaves a coherent state
+    // (no chunks without embeddings). Doing all chunks in a single
+    // interactive transaction trips Prisma's 5s timeout on multi-page PDFs.
+    await prisma.$transaction(async (tx) => {
       const createdChunk = await tx.documentChunk.create({
         data: {
           orgId,
@@ -94,8 +98,8 @@ export async function processDocument(orgId: OrgId, documentId: DocumentId): Pro
         createdChunk.id,
         `[${vector.join(",")}]`,
       );
-    }
-  });
+    });
+  }
 
   await prisma.document.update({
     where: { id: documentId },

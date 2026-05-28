@@ -15,7 +15,15 @@ export type DocumentLocation =
       page: number;
       charStart: number;
       charEnd: number;
+      /** Bounding union of every region this location covers. */
       bbox: [number, number, number, number];
+      /**
+       * Per-source-segment bboxes. The viewer renders one highlight per entry
+       * so a multi-paragraph chunk doesn't wrap the whole page in a single
+       * union box. Optional for back-compat with chunks indexed before this
+       * field existed; the viewer falls back to `[bbox]` when absent.
+       */
+      bboxes?: [number, number, number, number][];
     }
   | {
       kind: "html";
@@ -34,6 +42,7 @@ const PdfLocation = z.object({
   charStart: z.number().int().nonnegative(),
   charEnd: z.number().int().nonnegative(),
   bbox: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+  bboxes: z.array(z.tuple([z.number(), z.number(), z.number(), z.number()])).optional(),
 });
 
 const HtmlLocation = z.object({
