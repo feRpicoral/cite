@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 import { parseLocation } from "@/lib/ingestion/location";
 
@@ -16,7 +16,8 @@ interface Context {
  * once the message lands.
  */
 export async function GET(_request: Request, context: Context) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
 
   const db = getDb(session.orgId);

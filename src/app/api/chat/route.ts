@@ -3,7 +3,7 @@ import { type UIMessage } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { extractCitationMarkers } from "@/lib/chat/parse-citations";
 import { synthesize } from "@/lib/chat/synthesize";
 import { getPrisma } from "@/lib/db/client";
@@ -47,7 +47,8 @@ const Body = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message }, { status: 400 });

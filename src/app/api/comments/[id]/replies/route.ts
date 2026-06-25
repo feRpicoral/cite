@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
 const Body = z.object({
@@ -13,7 +13,8 @@ interface Context {
 }
 
 export async function POST(request: Request, context: Context) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 import { signedDocumentUrl } from "@/lib/storage/documents";
 
@@ -17,7 +17,8 @@ const IdParam = z.string().uuid();
  * is guessed.
  */
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
   if (!IdParam.safeParse(id).success) {
     return NextResponse.json({ error: "Invalid document id" }, { status: 400 });
