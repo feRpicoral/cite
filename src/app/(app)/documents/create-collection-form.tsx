@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, Plus } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,15 @@ export function CreateCollectionForm() {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(createCollectionAction, initialState);
 
+  // Close only after a submission settles without a validation error. The
+  // action result lands in `state` asynchronously, so keying off the
+  // pending->idle transition lets us read the final error before deciding.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) setOpen(false);
+    wasPending.current = pending;
+  }, [pending, state]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -38,13 +47,7 @@ export function CreateCollectionForm() {
             Group related documents: a contract set, a runbook, a knowledge base.
           </DialogDescription>
         </DialogHeader>
-        <form
-          action={async (fd) => {
-            await formAction(fd);
-            setOpen(false);
-          }}
-          className="space-y-4"
-        >
+        <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="Onboarding contracts" required />
