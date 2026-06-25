@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Loader2, MessageSquare, MessageSquarePlus } from "lucide-react";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
 import { CommentThread } from "@/components/comments/comment-thread";
@@ -78,6 +79,9 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   const textLayerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
+  const docRef = useRef<PDFDocumentProxy | null>(null);
+  const [docReady, setDocReady] = useState(false);
+
   const [state, dispatch] = useReducer(reducer, {
     page: location.page + 1,
     totalPages: null,
@@ -103,11 +107,56 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
     }
   }, [locationKey, location.page]);
 
-  // Render the canvas + text layer for the current page. Re-runs whenever
-  // url, page, or the citation location changes. The viewport object is
-  // pushed into state on success so render and event handlers can use it
-  // without touching a ref.
+  // Load the document once per url. The PDFDocumentProxy is cached in a ref
+  // and reused across page turns; re-fetching and re-parsing on every page
+  // change would re-download the whole file and leak the proxy. destroy()
+  // frees the worker-side document and its buffers on url change / unmount.
   useEffect(() => {
+    let cancelled = false;
+    let doc: PDFDocumentProxy | null = null;
+    // Force the render effect to re-run for the new url even when a doc was
+    // already ready; toggling back to true after load is what re-triggers it.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDocReady(false);
+
+    void (async () => {
+      dispatch({ type: "loadingStart" });
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = WORKER_SRC;
+        doc = await pdfjs.getDocument({ url }).promise;
+        if (cancelled) {
+          void doc.destroy();
+          return;
+        }
+        docRef.current = doc;
+        setDocReady(true);
+      } catch (err) {
+        if (!cancelled) {
+          dispatch({
+            type: "error",
+            message: err instanceof Error ? err.message : "Failed to load PDF",
+          });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      docRef.current = null;
+      void doc?.destroy();
+    };
+  }, [url]);
+
+  // Render the canvas + text layer for the current page using the cached
+  // document. Re-runs whenever the loaded doc, page, or citation location
+  // changes. The viewport object is pushed into state on success so render
+  // and event handlers can use it without touching a ref.
+  useEffect(() => {
+    if (!docReady) return;
+    const doc = docRef.current;
+    if (!doc) return;
+
     let cancelled = false;
     let renderTask: { cancel: () => void; promise: Promise<void> } | null = null;
 
@@ -115,9 +164,6 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
       dispatch({ type: "loadingStart" });
       try {
         const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = WORKER_SRC;
-        const doc = await pdfjs.getDocument({ url }).promise;
-        if (cancelled) return;
 
         const targetPage = Math.min(Math.max(1, page), doc.numPages);
         const pdfPage = await doc.getPage(targetPage);
@@ -196,7 +242,7 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [url, page, location.bbox, location.page]);
+  }, [docReady, page, location.bbox, location.page]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
