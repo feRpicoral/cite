@@ -8,6 +8,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/session";
 import { getPrisma } from "@/lib/db/client";
 import { getDb } from "@/lib/db/with-org";
+import { appUrl } from "@/lib/env";
 import { getServiceSupabase } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Result } from "@/lib/types/result";
@@ -34,6 +35,10 @@ export async function createInviteAction(
   if (!parsed.success) return { ok: false, error: "Invalid email." };
 
   const email = parsed.data.email?.toLowerCase() ?? null;
+  if (parsed.data.role === "ADMIN" && !email) {
+    return { ok: false, error: "Admin invites must be pinned to an email address." };
+  }
+
   const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
   const token = tokenGen();
 
@@ -77,10 +82,7 @@ export async function createInviteAction(
         },
       });
 
-  const url = new URL(
-    `/accept-invite?token=${invite.token}`,
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-  ).toString();
+  const url = new URL(`/accept-invite?token=${invite.token}`, appUrl()).toString();
 
   revalidatePath("/settings/members");
   return { ok: true, url };
@@ -126,7 +128,9 @@ export async function changeRoleAction(input: z.infer<typeof ChangeRoleSchema>):
         if (!membership) throw new MemberNotFoundError();
         if (membership.userId === session.userId) throw new CannotChangeSelfError();
         if (parsed.data.role === "MEMBER" && membership.role === "ADMIN") {
-          const adminCount = await tx.membership.count({ where: { role: "ADMIN" } });
+          const adminCount = await tx.membership.count({
+            where: { orgId: session.orgId, role: "ADMIN" },
+          });
           if (adminCount <= 1) throw new LastAdminError();
         }
         await tx.membership.update({
@@ -168,7 +172,9 @@ export async function removeMemberAction(input: z.infer<typeof RemoveSchema>): P
         if (!membership) throw new MemberNotFoundError();
         if (membership.userId === session.userId) throw new CannotChangeSelfError();
         if (membership.role === "ADMIN") {
-          const adminCount = await tx.membership.count({ where: { role: "ADMIN" } });
+          const adminCount = await tx.membership.count({
+            where: { orgId: session.orgId, role: "ADMIN" },
+          });
           if (adminCount <= 1) throw new LastAdminError();
         }
         await tx.membership.delete({ where: { id: parsed.data.membershipId } });
@@ -223,23 +229,39 @@ export async function acceptInviteAction(
     return { ok: false, error: "This invite is for a different email address." };
   }
 
-  await prisma.$transaction(async (tx) => {
-    // Existing member: no-op (idempotent replay).
-    const existing = await tx.membership.findUnique({
-      where: { orgId_userId: { orgId: invite.orgId, userId: user.id } },
+  try {
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.membership.findUnique({
+        where: { orgId_userId: { orgId: invite.orgId, userId: user.id } },
+      });
+
+      // A stamped token is single-use. The only accepted replay is the same
+      // user who already joined — anything else is a reused link.
+      if (invite.acceptedAt && !existing) throw new InviteAlreadyAcceptedError();
+
+      if (!existing) {
+        await tx.membership.create({
+          data: { orgId: invite.orgId, userId: user.id, role: invite.role },
+        });
+      }
+      if (!invite.acceptedAt) {
+        await tx.invite.update({
+          where: { id: invite.id },
+          data: { acceptedAt: new Date() },
+        });
+      }
     });
-    if (!existing) {
-      await tx.membership.create({
-        data: { orgId: invite.orgId, userId: user.id, role: invite.role },
-      });
+  } catch (err) {
+    if (err instanceof InviteAlreadyAcceptedError) {
+      return { ok: false, error: "This invite has already been used." };
     }
-    if (!invite.acceptedAt) {
-      await tx.invite.update({
-        where: { id: invite.id },
-        data: { acceptedAt: new Date() },
-      });
+    // Concurrent accept by the same user: the membership unique constraint
+    // fires for the loser. They are now a member, so treat it as success.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return { ok: true, orgId: invite.orgId };
     }
-  });
+    throw err;
+  }
 
   const admin = getServiceSupabase();
   await admin.auth.admin.updateUserById(user.id, {
@@ -265,5 +287,11 @@ class LastAdminError extends Error {
   constructor() {
     super("last_admin");
     this.name = "LastAdminError";
+  }
+}
+class InviteAlreadyAcceptedError extends Error {
+  constructor() {
+    super("invite_already_accepted");
+    this.name = "InviteAlreadyAcceptedError";
   }
 }
