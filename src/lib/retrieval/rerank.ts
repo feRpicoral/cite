@@ -42,8 +42,11 @@ export async function rerank(
   }
   const data = (await res.json()) as { data?: { index: number; relevance_score: number }[] };
   const rows = data.data ?? [];
-  return rows.map((r) => ({
-    ...chunks[r.index]!,
-    score: r.relevance_score,
-  }));
+  return rows
+    .map((r) => {
+      const c = chunks[r.index];
+      if (!c) return null;
+      return { ...c, score: r.relevance_score };
+    })
+    .filter((c): c is RetrievedChunk => c !== null);
 }

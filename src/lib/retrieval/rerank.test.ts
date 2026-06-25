@@ -1,7 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { rerank } from "./rerank";
 import type { RetrievedChunk } from "./types";
+
+function voyageResponse(rows: { index: number; relevance_score: number }[]): Response {
+  return new Response(JSON.stringify({ data: rows }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 function chunk(id: string, score: number): RetrievedChunk {
   return {
@@ -35,5 +42,30 @@ describe("rerank", () => {
     const out = await rerank("q", [], 10);
 
     expect(out).toEqual([]);
+  });
+
+  describe("with VOYAGE_API_KEY present", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+      if (prev) process.env.VOYAGE_API_KEY = prev;
+      else delete process.env.VOYAGE_API_KEY;
+    });
+
+    it("drops rows whose Voyage index has no backing chunk", async () => {
+      process.env.VOYAGE_API_KEY = "test-key";
+      const input = [chunk("a", 0), chunk("b", 0)];
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        voyageResponse([
+          { index: 1, relevance_score: 0.9 },
+          { index: 5, relevance_score: 0.8 },
+          { index: 0, relevance_score: 0.7 },
+        ]),
+      );
+
+      const out = await rerank("query", input, 10);
+
+      expect(out.map((c) => c.chunkId)).toEqual(["b", "a"]);
+      expect(out.map((c) => c.score)).toEqual([0.9, 0.7]);
+    });
   });
 });
