@@ -1,9 +1,12 @@
 "use server";
 
 import { type ThemePreference } from "@prisma/client";
+import { z } from "zod";
 
 import { getPrisma } from "@/lib/db/client";
 import { createServerSupabase } from "@/lib/supabase/server";
+
+const ThemePreferenceSchema = z.enum(["LIGHT", "DARK", "SYSTEM"]);
 
 /**
  * Persists the user's theme choice to the DB so it follows them across
@@ -13,6 +16,9 @@ import { createServerSupabase } from "@/lib/supabase/server";
  * would clobber the user's choice with the stale DB value.
  */
 export async function setUserThemeAction(preference: ThemePreference): Promise<void> {
+  const parsed = ThemePreferenceSchema.safeParse(preference);
+  if (!parsed.success) return;
+
   const supabase = await createServerSupabase();
   const {
     data: { user },
@@ -21,6 +27,6 @@ export async function setUserThemeAction(preference: ThemePreference): Promise<v
 
   await getPrisma().user.update({
     where: { id: user.id },
-    data: { themePreference: preference },
+    data: { themePreference: parsed.data },
   });
 }

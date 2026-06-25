@@ -1,11 +1,27 @@
 import "server-only";
 
 import type { MembershipRole } from "@prisma/client";
+import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
+import { cache } from "react";
 
 import { getPrisma } from "@/lib/db/client";
 import { asOrgId, asUserId, type OrgId, type UserId } from "@/lib/db/types";
 import { createServerSupabase } from "@/lib/supabase/server";
+
+/**
+ * Per-request memoized Supabase user read. Both the root layout (locale
+ * resolution) and the (app) layout authenticate on every request; `cache`
+ * collapses the duplicate `getUser()` round-trips into one per request.
+ */
+export const getAuthUser = cache(async (): Promise<User | null> => {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});
 
 export interface Session {
   userId: UserId;
@@ -24,10 +40,7 @@ interface AuthState {
 }
 
 async function getAuthState(): Promise<AuthState> {
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return { userId: null, email: null, activeOrgId: null };
 
   const activeOrgIdRaw =
@@ -76,21 +89,15 @@ export async function requireAdmin(): Promise<Session> {
   return session;
 }
 
-export async function requireSessionOrOnboard(): Promise<Session> {
-  const { userId, email, activeOrgId } = await getAuthState();
-  if (!userId) redirect("/login");
-
-  if (!activeOrgId) {
-    const anyMembership = await getPrisma().membership.findFirst({
-      where: { userId },
-      include: { organization: { select: { id: true } } },
-    });
-    if (!anyMembership) redirect("/create-org");
-    redirect(`/auth/select-org?defaultOrgId=${anyMembership.organization.id}`);
-  }
-
+export async function requireSessionApi(): Promise<Session | NextResponse> {
   const session = await getSession();
-  if (!session) redirect("/login");
-  if (!email) redirect("/login");
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   return session;
+}
+
+export async function requireAdminApi(): Promise<Session | NextResponse> {
+  const result = await requireSessionApi();
+  if (result instanceof NextResponse) return result;
+  if (result.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return result;
 }
