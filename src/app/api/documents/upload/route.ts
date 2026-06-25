@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
+import { matchesDeclaredType } from "@/lib/ingestion/magic-bytes";
 import { documentUploaded, inngest } from "@/lib/inngest/client";
 import { buildStoragePath, uploadDocumentBuffer } from "@/lib/storage/documents";
 
@@ -59,8 +60,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Collection not found" }, { status: 404 });
   }
 
-  const storagePath = buildStoragePath(session.orgId, file.name);
   const buffer = Buffer.from(await file.arrayBuffer());
+  if (!matchesDeclaredType(file.type, buffer)) {
+    return NextResponse.json(
+      { error: `Content does not match declared type: ${file.type}` },
+      { status: 415 },
+    );
+  }
+
+  const storagePath = buildStoragePath(session.orgId, file.name);
   await uploadDocumentBuffer(storagePath, buffer, file.type);
 
   const document = await db.document.create({
