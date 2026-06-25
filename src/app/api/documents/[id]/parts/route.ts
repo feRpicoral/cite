@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
 interface RouteContext {
@@ -13,7 +13,8 @@ interface RouteContext {
  * citation locator can scope its selector lookup to the right part.
  */
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
 
   const db = getDb(session.orgId);

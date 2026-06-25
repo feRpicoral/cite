@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const requireSession = vi.fn();
+const requireSessionApi = vi.fn();
 const getDb = vi.fn();
 const signedDocumentUrl = vi.fn();
 
-vi.mock("@/lib/auth/session", () => ({ requireSession: () => requireSession() }));
+vi.mock("@/lib/auth/session", () => ({ requireSessionApi: () => requireSessionApi() }));
 vi.mock("@/lib/db/with-org", () => ({ getDb: (orgId: string) => getDb(orgId) }));
 vi.mock("@/lib/storage/documents", () => ({
   signedDocumentUrl: (path: string, ttl: number) => signedDocumentUrl(path, ttl),
@@ -20,7 +20,7 @@ function context(id: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  requireSession.mockResolvedValue({ orgId: "org-1" });
+  requireSessionApi.mockResolvedValue({ orgId: "org-1" });
 });
 
 describe("GET /api/documents/[id]/url", () => {

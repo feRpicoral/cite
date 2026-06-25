@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const requireSession = vi.fn();
+const requireSessionApi = vi.fn();
 const getDb = vi.fn();
 
-vi.mock("@/lib/auth/session", () => ({ requireSession: () => requireSession() }));
+vi.mock("@/lib/auth/session", () => ({ requireSessionApi: () => requireSessionApi() }));
 vi.mock("@/lib/db/with-org", () => ({ getDb: (orgId: string) => getDb(orgId) }));
 
 import { DELETE, PATCH } from "./route";
@@ -29,7 +29,7 @@ beforeEach(() => {
 
 describe("PATCH /api/comments/[id]", () => {
   it("rejects a non-uuid id with 400 before touching the db", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
 
     const res = await PATCH(patchRequest(true), context("not-a-uuid"));
 
@@ -38,7 +38,7 @@ describe("PATCH /api/comments/[id]", () => {
   });
 
   it("returns 404 when the comment is absent", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
     const findUnique = vi.fn().mockResolvedValue(null);
     const update = vi.fn();
     getDb.mockReturnValue({ comment: { findUnique, update } });
@@ -50,7 +50,7 @@ describe("PATCH /api/comments/[id]", () => {
   });
 
   it("forbids a non-author non-admin member", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "MEMBER" });
     const findUnique = vi.fn().mockResolvedValue({ authorUserId: AUTHOR });
     const update = vi.fn();
     getDb.mockReturnValue({ comment: { findUnique, update } });
@@ -62,7 +62,7 @@ describe("PATCH /api/comments/[id]", () => {
   });
 
   it("allows an admin to resolve another member's comment", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "ADMIN" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "ADMIN" });
     const findUnique = vi.fn().mockResolvedValue({ authorUserId: AUTHOR });
     const update = vi.fn().mockResolvedValue({});
     getDb.mockReturnValue({ comment: { findUnique, update } });
@@ -74,7 +74,7 @@ describe("PATCH /api/comments/[id]", () => {
   });
 
   it("allows the author to resolve their own comment", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
     const findUnique = vi.fn().mockResolvedValue({ authorUserId: AUTHOR });
     const update = vi.fn().mockResolvedValue({});
     getDb.mockReturnValue({ comment: { findUnique, update } });
@@ -88,7 +88,7 @@ describe("PATCH /api/comments/[id]", () => {
 
 describe("DELETE /api/comments/[id]", () => {
   it("rejects a non-uuid id with 400", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: AUTHOR, role: "MEMBER" });
 
     const res = await DELETE(new Request("http://test", { method: "DELETE" }), context("bad"));
 
@@ -97,7 +97,7 @@ describe("DELETE /api/comments/[id]", () => {
   });
 
   it("forbids a non-author from deleting", async () => {
-    requireSession.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "MEMBER" });
+    requireSessionApi.mockResolvedValue({ orgId: "org-1", userId: OTHER, role: "MEMBER" });
     const findUnique = vi.fn().mockResolvedValue({ authorUserId: AUTHOR });
     const del = vi.fn();
     getDb.mockReturnValue({ comment: { findUnique, delete: del } });

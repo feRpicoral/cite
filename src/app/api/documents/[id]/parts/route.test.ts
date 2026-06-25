@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const requireSession = vi.fn();
+const requireSessionApi = vi.fn();
 const getDb = vi.fn();
 
-vi.mock("@/lib/auth/session", () => ({ requireSession: () => requireSession() }));
+vi.mock("@/lib/auth/session", () => ({ requireSessionApi: () => requireSessionApi() }));
 vi.mock("@/lib/db/with-org", () => ({ getDb: (orgId: string) => getDb(orgId) }));
 
 import { GET } from "./route";
@@ -16,7 +16,7 @@ function context(id: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  requireSession.mockResolvedValue({ orgId: "org-1" });
+  requireSessionApi.mockResolvedValue({ orgId: "org-1" });
 });
 
 describe("GET /api/documents/[id]/parts", () => {

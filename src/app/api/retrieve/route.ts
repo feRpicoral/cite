@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { runAgent } from "@/lib/agents/runner";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireAdminApi } from "@/lib/auth/session";
 import { asCollectionId } from "@/lib/db/types";
 import { getDb } from "@/lib/db/with-org";
 
@@ -18,7 +18,8 @@ const Body = z.object({
  * runAgent internally and streams the synthesis.
  */
 export async function POST(request: Request) {
-  const session = await requireAdmin();
+  const session = await requireAdminApi();
+  if (session instanceof NextResponse) return session;
   const json = await request.json().catch(() => null);
   const parsed = Body.safeParse(json);
   if (!parsed.success) {

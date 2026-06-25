@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
 interface Context {
@@ -15,7 +15,8 @@ const Patch = z.object({
 const IdParam = z.string().uuid();
 
 export async function PATCH(request: Request, context: Context) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
   if (!IdParam.safeParse(id).success) {
     return NextResponse.json({ error: "Invalid comment id" }, { status: 400 });
@@ -41,7 +42,8 @@ export async function PATCH(request: Request, context: Context) {
 }
 
 export async function DELETE(_request: Request, context: Context) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id } = await context.params;
   if (!IdParam.safeParse(id).success) {
     return NextResponse.json({ error: "Invalid comment id" }, { status: 400 });

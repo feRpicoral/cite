@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
 interface RouteContext {
@@ -14,7 +14,8 @@ interface RouteContext {
  * for highlighting.
  */
 export async function GET(_request: Request, context: RouteContext) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
   const { id, partIndex: partIndexRaw } = await context.params;
   const partIndex = Number.parseInt(partIndexRaw, 10);
   if (!Number.isFinite(partIndex) || partIndex < 0) {

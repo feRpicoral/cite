@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { requireSession } from "@/lib/auth/session";
+import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 import { matchesDeclaredType } from "@/lib/ingestion/magic-bytes";
 import { documentUploaded, inngest } from "@/lib/inngest/client";
@@ -25,7 +25,8 @@ const Body = z.object({
 });
 
 export async function POST(request: Request) {
-  const session = await requireSession();
+  const session = await requireSessionApi();
+  if (session instanceof NextResponse) return session;
 
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_SIZE_BYTES) {
