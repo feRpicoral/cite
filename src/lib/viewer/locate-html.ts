@@ -20,7 +20,12 @@ export function locateHtmlRange(
   const partRoot = root.querySelector(`[data-part-index="${partIndex}"]`);
   if (!(partRoot instanceof HTMLElement)) return null;
 
-  const node = partRoot.querySelector(selector);
+  let node: Element | null;
+  try {
+    node = partRoot.querySelector(selector);
+  } catch {
+    return null;
+  }
   if (!(node instanceof HTMLElement)) return null;
 
   const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);

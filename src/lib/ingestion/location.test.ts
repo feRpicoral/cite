@@ -23,7 +23,7 @@ describe("parseLocation", () => {
     const input = {
       kind: "html",
       partIndex: 0,
-      selector: "div > p:nth-of-type(1)",
+      selector: ":scope > p:nth-of-type(1)",
       charStart: 0,
       charEnd: 50,
     };
@@ -40,5 +40,15 @@ describe("parseLocation", () => {
 
     expect(parseUnknownKind).toThrow();
     expect(parseNegativePage).toThrow();
+  });
+
+  it("rejects an html selector outside the structural grammar", () => {
+    const baseInput = { kind: "html" as const, partIndex: 0, charStart: 0, charEnd: 5 };
+
+    const parseHostile = () => parseLocation({ ...baseInput, selector: "p:invalid((" });
+    const parseArbitrary = () => parseLocation({ ...baseInput, selector: "img[onerror]" });
+
+    expect(parseHostile).toThrow();
+    expect(parseArbitrary).toThrow();
   });
 });

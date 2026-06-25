@@ -54,6 +54,15 @@ describe("locateHtmlRange", () => {
 
     expect(range).toBeNull();
   });
+
+  it("returns null instead of throwing on a syntactically invalid selector", () => {
+    const root = buildRoot(["<p>Only one.</p>"]);
+
+    const locate = () => locateHtmlRange(root, 0, "p:invalid((", 0, 4);
+
+    expect(locate).not.toThrow();
+    expect(locate()).toBeNull();
+  });
 });
 
 describe("rangeToHtmlLocation round-trip", () => {
