@@ -9,7 +9,13 @@ import type { DocumentParser, NormalizedDocument, ParseOptions } from "./types";
 export class MarkdownParser implements DocumentParser {
   canParse(mime: string, filename: string): boolean {
     const f = filename.toLowerCase();
-    return mime === "text/markdown" || f.endsWith(".md") || f.endsWith(".markdown");
+    return (
+      mime === "text/markdown" ||
+      mime === "text/plain" ||
+      f.endsWith(".md") ||
+      f.endsWith(".markdown") ||
+      f.endsWith(".txt")
+    );
   }
 
   async parse(buffer: Buffer, _opts: ParseOptions): Promise<NormalizedDocument> {
