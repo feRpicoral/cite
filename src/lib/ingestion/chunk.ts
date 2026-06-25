@@ -66,7 +66,8 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
   const out: Omit<RawChunk, "index">[] = [];
   let pending: PendingChunk | null = null;
 
-  for (const seg of part.segments) {
+  const segments = part.segments.flatMap(splitOversizedSegment);
+  for (const seg of segments) {
     const segTokens = countTokens(seg.text);
 
     if (!pending) {
@@ -79,10 +80,12 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
     if (pending.tokenCount + segTokens > MAX_TOKENS) {
       out.push(finalize(pending));
       const overlap = takeOverlap(pending.pieces);
+      const overlapTokens = overlap.reduce((n, s) => n + countTokens(s.text), 0);
+      const keepOverlap = overlap.length > 0 && overlapTokens + segTokens <= MAX_TOKENS;
       pending = {
         partIndex: part.index,
-        pieces: overlap.length > 0 ? [...overlap, seg] : [seg],
-        tokenCount: overlap.reduce((n, s) => n + countTokens(s.text), 0) + segTokens,
+        pieces: keepOverlap ? [...overlap, seg] : [seg],
+        tokenCount: keepOverlap ? overlapTokens + segTokens : segTokens,
       };
       continue;
     }
@@ -100,6 +103,32 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
 
   if (pending) out.push(finalize(pending));
   return out;
+}
+
+/**
+ * A single block can exceed MAX_TOKENS (e.g. a very long paragraph). The packer
+ * never subdivides one segment, so split it here into ≤MAX_TOKENS windows on
+ * whitespace boundaries, each keeping the original location so every emitted
+ * chunk still points at the same block.
+ */
+function splitOversizedSegment(seg: TextSegment): TextSegment[] {
+  if (countTokens(seg.text) <= MAX_TOKENS) return [seg];
+
+  const words = seg.text.split(/(\s+)/);
+  const out: TextSegment[] = [];
+  let buf = "";
+  for (const piece of words) {
+    const next = buf + piece;
+    if (buf && countTokens(next) > MAX_TOKENS) {
+      out.push({ text: buf.trim(), location: seg.location });
+      buf = piece.trimStart();
+    } else {
+      buf = next;
+    }
+  }
+  const tail = buf.trim();
+  if (tail) out.push({ text: tail, location: seg.location });
+  return out.length > 0 ? out : [seg];
 }
 
 function finalize(c: PendingChunk): Omit<RawChunk, "index"> {
@@ -129,10 +158,10 @@ function takeOverlap(prev: TextSegment[]): TextSegment[] {
  * Folds a list of segment locations into a single citation region:
  *   - PDF: assumes all segments are on the same page; takes char span union
  *     and bbox bounding box.
- *   - HTML: takes the shortest common ancestor selector; char span is the
- *     min..max of the contained segments. When segments live under different
- *     parents the selector falls back to the first segment's selector — the
- *     viewer will degrade gracefully (highlight the first block).
+ *   - HTML: when every segment shares one selector, char span is the min..max
+ *     of the contained segments. When selectors differ, offsets can't be merged
+ *     (they're block-relative), so it falls back to the first segment's full
+ *     location — the viewer degrades gracefully by highlighting the first block.
  */
 export function unionLocation(locs: DocumentLocation[]): DocumentLocation {
   const first = locs[0];
@@ -156,27 +185,19 @@ export function unionLocation(locs: DocumentLocation[]): DocumentLocation {
     };
   }
   const htmls = locs as Extract<DocumentLocation, { kind: "html" }>[];
+  const firstHtml = htmls[0]!;
+  // Offsets are relative to a single block element, so unioning them is only
+  // valid when every segment shares the exact same selector. Otherwise the
+  // min/max offsets would index into the wrong element; degrade gracefully by
+  // highlighting just the first block.
+  if (!htmls.every((h) => h.selector === firstHtml.selector)) {
+    return firstHtml;
+  }
   return {
     kind: "html",
-    // All chunked segments are guaranteed to come from the same part by the
-    // chunker (chunkPart processes one part at a time).
-    partIndex: htmls[0]!.partIndex,
-    selector: commonSelectorPrefix(htmls.map((h) => h.selector)),
+    partIndex: firstHtml.partIndex,
+    selector: firstHtml.selector,
     charStart: Math.min(...htmls.map((h) => h.charStart)),
     charEnd: Math.max(...htmls.map((h) => h.charEnd)),
   };
-}
-
-function commonSelectorPrefix(selectors: string[]): string {
-  if (selectors.length === 0) return "div";
-  if (selectors.length === 1) return selectors[0]!;
-  const segs = selectors.map((s) => s.split(" > "));
-  const min = Math.min(...segs.map((s) => s.length));
-  const prefix: string[] = [];
-  for (let i = 0; i < min; i++) {
-    const target = segs[0]![i];
-    if (segs.every((s) => s[i] === target)) prefix.push(target!);
-    else break;
-  }
-  return prefix.length > 0 ? prefix.join(" > ") : (selectors[0] ?? "div");
 }

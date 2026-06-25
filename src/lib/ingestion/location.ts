@@ -36,10 +36,17 @@ const PdfLocation = z.object({
   bbox: z.tuple([z.number(), z.number(), z.number(), z.number()]),
 });
 
+// The viewer feeds `selector` straight into querySelector, so an arbitrary
+// stored string could throw a SyntaxError and break the viewer for everyone
+// opening the document. Constrain it to the structural grammar the parser
+// emits (`:scope > tag:nth-of-type(n) > ...`) so a crafted comment location
+// can't smuggle in a hostile selector.
+const STRUCTURAL_SELECTOR = /^:scope(?: > [a-z][a-z0-9]*:nth-of-type\(\d+\))+$/;
+
 const HtmlLocation = z.object({
   kind: z.literal("html"),
   partIndex: z.number().int().nonnegative(),
-  selector: z.string().min(1),
+  selector: z.string().min(1).regex(STRUCTURAL_SELECTOR),
   charStart: z.number().int().nonnegative(),
   charEnd: z.number().int().nonnegative(),
 });

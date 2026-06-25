@@ -182,7 +182,7 @@ async function seedDocumentWithChunks(
       JSON.stringify({
         kind: "html",
         partIndex: 0,
-        selector: `div > p:nth-of-type(${i + 1})`,
+        selector: `:scope > p:nth-of-type(${i + 1})`,
         charStart: 0,
         charEnd: 20,
       }),
