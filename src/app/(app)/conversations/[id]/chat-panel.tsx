@@ -11,6 +11,7 @@ import { StreamingStatus } from "@/components/chat/streaming-status";
 import { CommentButton } from "@/components/comments/comment-button";
 import { type DocumentLocation, DocumentLocationSchema } from "@/lib/ingestion/location";
 import { type MessageInsertPayload, useMessageInserts } from "@/lib/realtime/message-sync";
+import { findReconcilableMessageIndex } from "@/lib/realtime/reconcile";
 
 export interface InitialCitation {
   displayIndex: number;
@@ -73,26 +74,19 @@ export function ChatPanel({
   // Live message sync: when a teammate sends a message, or when our own
   // streamed assistant message persists, postgres_changes fires an INSERT
   // we splice into useChat's state. The stream-generated id differs from
-  // the persisted UUID, so when we match a duplicate by role+content we
-  // also rewrite its id so subsequent citation hydration and comments
-  // can address it.
+  // the persisted UUID, so we rewrite the id of a still-optimistic local
+  // message that matches by role+content; an already-persisted bubble keeps
+  // its UUID. See findReconcilableMessageIndex for the matching rules.
   const onIncoming = useCallback(
     (payload: MessageInsertPayload) => {
       setMessages((prev) => {
         if (prev.some((m) => m.id === payload.id)) return prev;
         const incomingText = payload.content;
         const role: "user" | "assistant" = payload.role === "ASSISTANT" ? "assistant" : "user";
-        const duplicateIndex = prev.findIndex((m) => {
-          if (m.role !== role) return false;
-          const text = m.parts
-            .filter((p): p is { type: "text"; text: string } => p.type === "text")
-            .map((p) => p.text)
-            .join("");
-          return text === incomingText;
-        });
-        if (duplicateIndex !== -1) {
+        const matchIndex = findReconcilableMessageIndex(prev, { role, content: incomingText });
+        if (matchIndex !== -1) {
           const next = prev.slice();
-          next[duplicateIndex] = { ...next[duplicateIndex]!, id: payload.id };
+          next[matchIndex] = { ...next[matchIndex]!, id: payload.id };
           return next;
         }
         return [
