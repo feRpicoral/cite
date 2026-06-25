@@ -5,13 +5,15 @@ import { MarkdownParser } from "./markdown";
 describe("MarkdownParser", () => {
   const parser = new MarkdownParser();
 
-  it("detects .md files and text/markdown mime", () => {
+  it("detects markdown, plain-text, and .txt inputs but not pdf", () => {
     const markdownMime = parser.canParse("text/markdown", "doc.md");
-    const plainMime = parser.canParse("text/plain", "doc.markdown");
+    const plainMime = parser.canParse("text/plain", "notes.unknown");
+    const txtFile = parser.canParse("application/octet-stream", "notes.txt");
     const pdfMime = parser.canParse("application/pdf", "doc.pdf");
 
     expect(markdownMime).toBe(true);
     expect(plainMime).toBe(true);
+    expect(txtFile).toBe(true);
     expect(pdfMime).toBe(false);
   });
 

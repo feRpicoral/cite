@@ -24,6 +24,13 @@ export async function uploadDocumentBuffer(
   if (error) throw error;
 }
 
+export async function removeDocumentBuffer(storagePath: string): Promise<void> {
+  const supabase = getServiceSupabase();
+  const { error } = await supabase.storage.from(DOCUMENTS_BUCKET).remove([storagePath]);
+  // A missing object is fine: the caller's goal is "blob is gone", which holds.
+  if (error && !/not found/i.test(error.message)) throw error;
+}
+
 export async function downloadDocumentBuffer(storagePath: string): Promise<Buffer> {
   const supabase = getServiceSupabase();
   const { data, error } = await supabase.storage.from(DOCUMENTS_BUCKET).download(storagePath);

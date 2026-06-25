@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
+import { removeDocumentBuffer } from "@/lib/storage/documents";
 
 const CreateCollectionSchema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -44,6 +45,18 @@ export async function deleteDocumentAction(formData: FormData): Promise<void> {
   const parsed = DeleteDocumentSchema.parse({ id: formData.get("id") });
   const session = await requireSession();
   const db = getDb(session.orgId);
+  const document = await db.document.findUnique({
+    where: { id: parsed.id },
+    select: { storagePath: true },
+  });
+  if (document) {
+    try {
+      await removeDocumentBuffer(document.storagePath);
+    } catch {
+      // Storage failures must not block the row delete; an orphaned blob is
+      // recoverable, a row that won't delete is not.
+    }
+  }
   await db.document.delete({ where: { id: parsed.id } });
   revalidatePath("/documents");
 }
