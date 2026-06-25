@@ -56,15 +56,12 @@ async function readUserLocaleFromSession(): Promise<Locale | null> {
   // Lazy imports keep this resolver usable in the marketing tree and in
   // `getRequestConfig`, which next-intl evaluates very early — pulling in
   // the full DB / Supabase stack at module-eval time would bloat cold starts.
-  const { createServerSupabase } = await import("@/lib/supabase/server");
+  const { getAuthUser } = await import("@/lib/auth/session");
   const { getPrisma } = await import("@/lib/db/client");
   const { fromPrismaLocale } = await import("@/i18n/config");
 
   try {
-    const supabase = await createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (!user) return null;
 
     const row = await getPrisma().user.findUnique({
