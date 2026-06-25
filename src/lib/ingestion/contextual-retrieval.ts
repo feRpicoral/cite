@@ -8,6 +8,7 @@ import type { NormalizedDocument } from "./parsers/types";
 const SYSTEM_PROMPT = `You write one or two short sentences that situate a chunk of a document inside the whole document, for use as a retrieval preamble. Write only the sentences; no preface, no commentary, no quotes.`;
 
 const MAX_DOC_CHARS = 80_000;
+const ENRICHMENT_CONCURRENCY = 6;
 
 export type EnrichedChunk = RawChunk & { contextualPreamble?: string };
 
@@ -36,8 +37,17 @@ export async function enrichChunksWithContext(
     .join("\n\n")
     .slice(0, MAX_DOC_CHARS);
 
-  const enriched: EnrichedChunk[] = [];
-  for (const chunk of chunks) {
+  return mapWithConcurrency(chunks, ENRICHMENT_CONCURRENCY, (chunk) =>
+    enrichChunk(client, fullText, chunk),
+  );
+}
+
+async function enrichChunk(
+  client: Anthropic,
+  fullText: string,
+  chunk: RawChunk,
+): Promise<EnrichedChunk> {
+  try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 200,
@@ -63,9 +73,33 @@ export async function enrichChunksWithContext(
       .join(" ")
       .trim();
 
-    enriched.push(preamble ? { ...chunk, contextualPreamble: preamble } : chunk);
+    return preamble ? { ...chunk, contextualPreamble: preamble } : chunk;
+  } catch (err) {
+    // Enrichment is optional; a failed call degrades to the un-enriched chunk
+    // rather than aborting the whole ingestion.
+    console.error("contextual enrichment failed for chunk", chunk.index, err);
+    return chunk;
   }
-  return enriched;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+
+  async function worker(): Promise<void> {
+    while (next < items.length) {
+      const current = next++;
+      results[current] = await fn(items[current]!);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
 }
 
 export function buildEmbeddingInput(chunk: EnrichedChunk): string {
