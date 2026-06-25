@@ -55,7 +55,7 @@ export function parseHtmlToNormalized(html: string): NormalizedDocument {
     const body = unified()
       .use(rehypeStringify)
       .stringify({ type: "root", children: section.nodes });
-    const segments = extractSegments(section.nodes, "div", index);
+    const segments = extractSegments(section.nodes, ":scope", index);
     return {
       index,
       body,

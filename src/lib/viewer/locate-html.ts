@@ -181,9 +181,9 @@ function structuralSelector(root: HTMLElement, target: HTMLElement): string | nu
     path.unshift(`${tag}:nth-of-type(${index})`);
     cur = parent === root ? null : parent;
   }
-  // The parser uses "div" as the implicit body root. Mirror that so the
-  // emitted selector matches what the parser would have produced.
-  return path.length > 0 ? `div > ${path.join(" > ")}` : null;
+  // Selectors resolve against the part's `[data-part-index]` element via
+  // `:scope`, matching what the parser emits and what `locateHtmlRange` queries.
+  return path.length > 0 ? `:scope > ${path.join(" > ")}` : null;
 }
 
 function textOffsetsWithin(
