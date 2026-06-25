@@ -2,6 +2,7 @@ import "server-only";
 
 import { type CollectionId, type OrgId } from "@/lib/db/types";
 import { hybridRetrieve } from "@/lib/retrieval";
+import { rrfFuse } from "@/lib/retrieval/hybrid";
 
 import { classifyQuery } from "./nodes/classify";
 import { decomposeQuery } from "./nodes/decompose";
@@ -64,17 +65,22 @@ export async function runAgent(opts: RunOptions): Promise<AgentState> {
   }
 
   for (let round = 0; round < maxRounds; round++) {
+    const roundTopK = topK * (round + 1);
     const results = await Promise.all(
       state.subQueries.map(async (sq) => ({
         query: sq,
-        chunks: await retrieve(opts.orgId, opts.collectionId, sq, topK),
+        chunks: await retrieve(opts.orgId, opts.collectionId, sq, roundTopK),
       })),
     );
     state.rounds.push(...results);
-    state.finalChunks = dedupeAndTrim(
-      results.flatMap((r) => r.chunks),
+
+    const previousIds = chunkIdKey(state.finalChunks);
+    state.finalChunks = rrfFuse(
+      results.map((r) => r.chunks),
       topK,
     );
+
+    if (round > 0 && chunkIdKey(state.finalChunks) === previousIds) break;
 
     state.sufficiency = await sufficient(opts.query, state.finalChunks);
     if (state.sufficiency.verdict === "sufficient") break;
@@ -83,16 +89,9 @@ export async function runAgent(opts: RunOptions): Promise<AgentState> {
   return state;
 }
 
-function dedupeAndTrim<T extends { chunkId: string; score: number }>(
-  chunks: T[],
-  topK: number,
-): T[] {
-  const seen = new Map<string, T>();
-  for (const c of chunks) {
-    const prev = seen.get(c.chunkId);
-    if (!prev || c.score > prev.score) seen.set(c.chunkId, c);
-  }
-  return Array.from(seen.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topK);
+function chunkIdKey(chunks: { chunkId: string }[]): string {
+  return chunks
+    .map((c) => c.chunkId)
+    .sort()
+    .join(",");
 }

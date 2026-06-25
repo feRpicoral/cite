@@ -86,7 +86,7 @@ describe("runAgent", () => {
     expect(state.rounds).toHaveLength(2);
   });
 
-  it("dedupes chunks across sub-queries by id, keeping the higher score", async () => {
+  it("dedupes chunks across sub-queries by id, ranking a shared hit highest", async () => {
     const retrieverOverride = vi
       .fn()
       .mockResolvedValueOnce([chunk("shared", 0.7), chunk("a", 0.6)])
@@ -104,8 +104,75 @@ describe("runAgent", () => {
     });
 
     const ids = state.finalChunks.map((c) => c.chunkId);
-    const shared = state.finalChunks.find((c) => c.chunkId === "shared");
     expect(new Set(ids).size).toBe(ids.length);
-    expect(shared?.score).toBe(0.9);
+    expect(ids[0]).toBe("shared");
+  });
+
+  it("fuses sub-query lists by rank so a weak list still places its top hit", async () => {
+    const retrieverOverride = vi
+      .fn()
+      .mockResolvedValueOnce([chunk("p1", 0.99), chunk("p2", 0.98), chunk("p3", 0.97)])
+      .mockResolvedValueOnce([chunk("q1", 0.2)]);
+    const classify = vi.fn().mockResolvedValue({ shape: "decompose", reasoning: "" });
+    const decompose = vi.fn().mockResolvedValue({ subQueries: ["a", "b"] });
+    const sufficiency = vi.fn().mockResolvedValue({ verdict: "sufficient", reasoning: "" });
+
+    const state = await runAgent({
+      orgId,
+      collectionId,
+      query: "compare A and B",
+      topK: 3,
+      retrieverOverride,
+      llmOverride: { classify, decompose, sufficiency },
+    });
+
+    const ids = state.finalChunks.map((c) => c.chunkId);
+    expect(ids).toContain("q1");
+    expect(ids).not.toContain("p3");
+  });
+
+  it("breaks early when a re-retrieval round surfaces no new chunks", async () => {
+    const retrieverOverride = vi.fn().mockResolvedValue([chunk("a", 0.5)]);
+    const classify = vi.fn().mockResolvedValue({ shape: "simple", reasoning: "" });
+    const sufficiency = vi.fn().mockResolvedValue({ verdict: "insufficient", reasoning: "" });
+
+    const state = await runAgent({
+      orgId,
+      collectionId,
+      query: "obscure",
+      maxRounds: 3,
+      retrieverOverride,
+      llmOverride: { classify, sufficiency },
+    });
+
+    expect(retrieverOverride).toHaveBeenCalledTimes(2);
+    expect(sufficiency).toHaveBeenCalledTimes(1);
+    expect(state.rounds).toHaveLength(2);
+  });
+
+  it("widens topK on later rounds so a second round can surface new chunks", async () => {
+    const retrieverOverride = vi
+      .fn()
+      .mockResolvedValueOnce([chunk("a", 0.5)])
+      .mockResolvedValueOnce([chunk("a", 0.5), chunk("b", 0.4)]);
+    const classify = vi.fn().mockResolvedValue({ shape: "simple", reasoning: "" });
+    const sufficiency = vi
+      .fn()
+      .mockResolvedValueOnce({ verdict: "insufficient", reasoning: "" })
+      .mockResolvedValueOnce({ verdict: "sufficient", reasoning: "" });
+
+    const state = await runAgent({
+      orgId,
+      collectionId,
+      query: "obscure",
+      topK: 5,
+      maxRounds: 2,
+      retrieverOverride,
+      llmOverride: { classify, sufficiency },
+    });
+
+    expect(retrieverOverride.mock.calls[0]?.[3]).toBe(5);
+    expect(retrieverOverride.mock.calls[1]?.[3]).toBe(10);
+    expect(state.finalChunks.map((c) => c.chunkId).sort()).toEqual(["a", "b"]);
   });
 });

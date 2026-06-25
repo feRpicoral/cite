@@ -2,7 +2,7 @@ import "server-only";
 
 import { getPrisma } from "@/lib/db/client";
 import { type CollectionId, type OrgId } from "@/lib/db/types";
-import { parseLocation } from "@/lib/ingestion/location";
+import { DocumentLocationSchema } from "@/lib/ingestion/location";
 
 import type { RetrievedChunk } from "./types";
 
@@ -49,14 +49,23 @@ export async function vectorSearch(
     limit,
   );
 
-  return rows.map((r) => ({
-    chunkId: r.chunkId,
-    documentId: r.documentId,
-    documentName: r.documentName,
-    text: r.text,
-    location: parseLocation(r.location),
-    score: Number(r.score),
-  }));
+  return rows.flatMap((r) => {
+    const location = DocumentLocationSchema.safeParse(r.location);
+    if (!location.success) {
+      console.warn(`vector-search: skipping chunk with malformed location: ${r.chunkId}`);
+      return [];
+    }
+    return [
+      {
+        chunkId: r.chunkId,
+        documentId: r.documentId,
+        documentName: r.documentName,
+        text: r.text,
+        location: location.data,
+        score: Number(r.score),
+      },
+    ];
+  });
 }
 
 interface RawRow {
