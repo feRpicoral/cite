@@ -112,22 +112,17 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
  * chunk still points at the same block.
  */
 function splitOversizedSegment(seg: TextSegment): TextSegment[] {
-  if (countTokens(seg.text) <= MAX_TOKENS) return [seg];
+  // Tokenize once and slice into ≤MAX_TOKENS windows. Re-tokenizing a growing
+  // buffer per word is O(n^2) and stalls on very long blocks.
+  const tokenizer = enc();
+  const ids = tokenizer.encode(seg.text);
+  if (ids.length <= MAX_TOKENS) return [seg];
 
-  const words = seg.text.split(/(\s+)/);
   const out: TextSegment[] = [];
-  let buf = "";
-  for (const piece of words) {
-    const next = buf + piece;
-    if (buf && countTokens(next) > MAX_TOKENS) {
-      out.push({ text: buf.trim(), location: seg.location });
-      buf = piece.trimStart();
-    } else {
-      buf = next;
-    }
+  for (let i = 0; i < ids.length; i += MAX_TOKENS) {
+    const text = tokenizer.decode(ids.slice(i, i + MAX_TOKENS)).trim();
+    if (text) out.push({ text, location: seg.location });
   }
-  const tail = buf.trim();
-  if (tail) out.push({ text: tail, location: seg.location });
   return out.length > 0 ? out : [seg];
 }
 
