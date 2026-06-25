@@ -137,21 +137,19 @@ export function ChatPanel({
         }),
       );
       if (cancelled) return;
-      const next = new Map(citationsByMessage);
-      let changed = false;
-      for (const entry of results) {
-        if (!entry) continue;
-        const [id, citations] = entry;
-        next.set(id, citations);
-        changed = true;
-      }
-      if (changed) setCitationsByMessage(next);
+      const fetched = results.filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+      if (fetched.length === 0) return;
+      setCitationsByMessage((prev) => {
+        const next = new Map(prev);
+        for (const [id, citations] of fetched) next.set(id, citations);
+        return next;
+      });
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [messages, citationsByMessage]);
+  }, [messages]);
 
   return (
     <div className="flex flex-1 flex-col">
