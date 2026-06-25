@@ -3,6 +3,8 @@ import { CheckCircle2, Circle, MinusCircle } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
+import { aggregateOf } from "./aggregate";
+
 export default async function AuditPage() {
   const session = await requireAdmin();
   const db = getDb(session.orgId);
@@ -44,7 +46,7 @@ export default async function AuditPage() {
     }))
     .filter((r) => r.message != null);
 
-  const aggregate = aggregateOf(audits);
+  const aggregate = aggregateOf(rows.flatMap((r) => r.audits));
 
   return (
     <div className="flex flex-1 flex-col">
@@ -138,23 +140,6 @@ export default async function AuditPage() {
       </div>
     </div>
   );
-}
-
-function aggregateOf(audits: { verdict: "SUPPORTED" | "PARTIAL" | "UNSUPPORTED" }[]) {
-  const total = audits.length;
-  const supported = audits.filter((a) => a.verdict === "SUPPORTED").length;
-  const partial = audits.filter((a) => a.verdict === "PARTIAL").length;
-  const unsupported = audits.filter((a) => a.verdict === "UNSUPPORTED").length;
-  const pct = (n: number) => (total === 0 ? 0 : Math.round((n / total) * 100));
-  return {
-    total,
-    supported,
-    partial,
-    unsupported,
-    supportedPct: pct(supported),
-    partialPct: pct(partial),
-    unsupportedPct: pct(unsupported),
-  };
 }
 
 function Stat({

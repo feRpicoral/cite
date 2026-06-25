@@ -3,17 +3,36 @@ import "server-only";
 import { getPrisma } from "@/lib/db/client";
 import { type OrgId } from "@/lib/db/types";
 
-import { extractClaimsForMarkers, judgeCitation } from "./judge";
+import { extractClaimsForMarkers, judgeCitation, type JudgeResult } from "./judge";
+
+export interface AuditTarget {
+  displayIndex: number;
+  claims: string[];
+  passage: string;
+  documentName: string;
+}
+
+export interface CitationJudgment {
+  displayIndex: number;
+  result: JudgeResult;
+}
+
+const VERDICT_SEVERITY: Record<JudgeResult["verdict"], number> = {
+  SUPPORTED: 0,
+  PARTIAL: 1,
+  UNSUPPORTED: 2,
+};
+
+function isWorse(candidate: JudgeResult, current: JudgeResult): boolean {
+  return VERDICT_SEVERITY[candidate.verdict] > VERDICT_SEVERITY[current.verdict];
+}
 
 /**
- * Runs the LLM-judge audit for every citation on a single assistant message.
- * Idempotent — re-running upserts the existing CitationAudit rows.
- *
- * Cheap to call (Haiku) and bounded by the number of citations on the
- * message; for a typical 5-citation answer the total wall-clock is
- * ~3-5 seconds.
+ * Loads a message's citations and groups every citation-bearing claim under its
+ * marker. Returns one target per citation marker with all claims that reference
+ * it, or an empty list when the message is missing, foreign, or uncited.
  */
-export async function runMessageAudit(orgId: OrgId, messageId: string): Promise<void> {
+export async function loadAuditTargets(orgId: OrgId, messageId: string): Promise<AuditTarget[]> {
   const prisma = getPrisma();
   const message = await prisma.message.findUnique({
     where: { id: messageId },
@@ -29,53 +48,88 @@ export async function runMessageAudit(orgId: OrgId, messageId: string): Promise<
       },
     },
   });
-  if (!message || message.orgId !== orgId) return;
-  if (message.citations.length === 0) return;
+  if (!message || message.orgId !== orgId) return [];
+  if (message.citations.length === 0) return [];
 
   const citationByIndex = new Map(message.citations.map((c) => [c.displayIndex, c]));
-  const claims = extractClaimsForMarkers(message.content);
-
-  // Group claims by displayIndex — pick the longest claim per index as the
-  // judge input (longer = more context for the judge).
-  const longestClaim = new Map<number, string>();
-  for (const { displayIndex, claim } of claims) {
-    const prev = longestClaim.get(displayIndex);
-    if (!prev || claim.length > prev.length) longestClaim.set(displayIndex, claim);
+  const claimsByIndex = new Map<number, string[]>();
+  for (const { displayIndex, claim } of extractClaimsForMarkers(message.content)) {
+    if (!citationByIndex.has(displayIndex)) continue;
+    const list = claimsByIndex.get(displayIndex) ?? [];
+    list.push(claim);
+    claimsByIndex.set(displayIndex, list);
   }
 
-  const judgments = await Promise.all(
-    Array.from(longestClaim.entries()).map(async ([displayIndex, claim]) => {
-      const cite = citationByIndex.get(displayIndex);
-      if (!cite) return null;
-      const result = await judgeCitation({
-        claim,
-        passage: cite.quote,
-        documentName: cite.chunk.document.name,
-      });
-      return { displayIndex, result };
-    }),
+  return Array.from(claimsByIndex.entries()).map(([displayIndex, claims]) => {
+    const cite = citationByIndex.get(displayIndex)!;
+    return {
+      displayIndex,
+      claims,
+      passage: cite.quote,
+      documentName: cite.chunk.document.name,
+    };
+  });
+}
+
+/**
+ * Judges every claim that bears a marker and keeps the worst verdict
+ * (UNSUPPORTED beats PARTIAL beats SUPPORTED) so a short unsupported claim is
+ * never masked by a longer supported one on the same marker.
+ */
+export async function judgeAuditTarget(target: AuditTarget): Promise<CitationJudgment> {
+  const results = await Promise.all(
+    target.claims.map((claim) =>
+      judgeCitation({ claim, passage: target.passage, documentName: target.documentName }),
+    ),
   );
 
+  let worst = results[0]!;
+  for (const result of results.slice(1)) {
+    if (isWorse(result, worst)) worst = result;
+  }
+
+  return { displayIndex: target.displayIndex, result: worst };
+}
+
+export async function persistJudgments(
+  orgId: OrgId,
+  messageId: string,
+  judgments: CitationJudgment[],
+): Promise<void> {
+  if (judgments.length === 0) return;
+  const prisma = getPrisma();
   await prisma.$transaction(
-    judgments
-      .filter((j): j is NonNullable<typeof j> => j !== null)
-      .map((j) =>
-        prisma.citationAudit.upsert({
-          where: { messageId_displayIndex: { messageId, displayIndex: j.displayIndex } },
-          create: {
-            orgId,
-            messageId,
-            displayIndex: j.displayIndex,
-            verdict: j.result.verdict,
-            reasoning: j.result.reasoning,
-            confidence: j.result.confidence,
-          },
-          update: {
-            verdict: j.result.verdict,
-            reasoning: j.result.reasoning,
-            confidence: j.result.confidence,
-          },
-        }),
-      ),
+    judgments.map((j) =>
+      prisma.citationAudit.upsert({
+        where: { messageId_displayIndex: { messageId, displayIndex: j.displayIndex } },
+        create: {
+          orgId,
+          messageId,
+          displayIndex: j.displayIndex,
+          verdict: j.result.verdict,
+          reasoning: j.result.reasoning,
+          confidence: j.result.confidence,
+        },
+        update: {
+          verdict: j.result.verdict,
+          reasoning: j.result.reasoning,
+          confidence: j.result.confidence,
+        },
+      }),
+    ),
   );
+}
+
+/**
+ * Runs the LLM-judge audit for every citation on a single assistant message.
+ * Idempotent — re-running upserts the existing CitationAudit rows.
+ *
+ * Cheap to call (Haiku) and bounded by the number of citations on the
+ * message; for a typical 5-citation answer the total wall-clock is
+ * ~3-5 seconds.
+ */
+export async function runMessageAudit(orgId: OrgId, messageId: string): Promise<void> {
+  const targets = await loadAuditTargets(orgId, messageId);
+  const judgments = await Promise.all(targets.map((target) => judgeAuditTarget(target)));
+  await persistJudgments(orgId, messageId, judgments);
 }
