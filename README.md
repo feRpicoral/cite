@@ -41,7 +41,7 @@ yarn db:generate
 2. Create a new project. In **Project Settings > API Keys**, copy the **publishable** key (`sb_publishable_...`) and create a **secret** key (`sb_secret_...`). These replace the legacy `anon` and `service_role` keys.
 3. Enable the **pgvector** extension under Database > Extensions.
 4. Under Database > Connection String, copy **two** URLs:
-   - **Transaction Pooler** (port 6543) into `DATABASE_URL`, with `?pgbouncer=true` appended. This is what the app uses at runtime.
+   - **Transaction Pooler** (port 6543) into `DATABASE_URL`. This is what the app uses at runtime. The node-postgres driver adapter issues unnamed statements, which pgBouncer's transaction mode handles fine, so no `?pgbouncer=true` flag is needed.
    - **Direct Connection** (port 5432) into `DIRECT_URL`. This is what Prisma migrations and `setup.sql` use; DDL won't work through the pooler.
 
 ### 3. Set environment variables
@@ -55,7 +55,7 @@ Fill in:
 | Var                                        | Required for                             | Where                                                  |
 | ------------------------------------------ | ---------------------------------------- | ------------------------------------------------------ |
 | `NEXT_PUBLIC_APP_URL`                      | Auth redirects + metadata                | `http://localhost:3000` in dev                         |
-| `DATABASE_URL`                             | Prisma runtime queries (pooled)          | Supabase Transaction Pooler URL + `?pgbouncer=true`    |
+| `DATABASE_URL`                             | Prisma runtime queries (pooled)          | Supabase Transaction Pooler URL                        |
 | `DIRECT_URL`                               | `prisma migrate` + `db:setup` (DDL)      | Supabase Direct Connection URL                         |
 | `NEXT_PUBLIC_SUPABASE_URL`                 | Browser + server clients                 | Supabase project URL                                   |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`     | Browser + server clients                 | Supabase API, `sb_publishable_...`                     |
@@ -74,7 +74,7 @@ yarn db:migrate              # creates tables
 yarn db:setup                # installs pgvector + RLS + storage bucket + auth trigger
 ```
 
-`yarn db:setup` runs `prisma/sql/setup.sql` against `DATABASE_URL`. Idempotent, safe to re-run as the tenant-table list grows.
+`yarn db:setup` runs `prisma/sql/setup.sql` against `DIRECT_URL` (DDL needs the direct connection, not the pooler). Idempotent, safe to re-run as the tenant-table list grows.
 
 ### 5. Start the dev server
 
@@ -158,3 +158,10 @@ The codebase targets Vercel + Supabase out of the box. Deployment steps:
 1. Import the repo into Vercel; set the env vars from step 3 above.
 2. Add the Inngest integration in Vercel; wire `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY`.
 3. Set `NEXT_PUBLIC_APP_URL` to your Vercel URL so Supabase email links land at the right host.
+4. Before the first deploy (and again on every schema change) run the release step against the production database:
+
+   ```bash
+   DIRECT_URL=<supabase-direct-connection> yarn db:migrate:deploy && yarn db:setup
+   ```
+
+   Without this the fresh database has no tables, RLS policies, storage bucket, or realtime publication, and the app fails at runtime.

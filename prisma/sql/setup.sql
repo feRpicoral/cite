@@ -94,6 +94,9 @@ DECLARE
 BEGIN
   FOREACH t IN ARRAY tenant_tables LOOP
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    -- FORCE so the table owner (the migration/runtime role) is also bound by
+    -- RLS; plain ENABLE leaves owners able to bypass every policy.
+    EXECUTE format('ALTER TABLE public.%I FORCE ROW LEVEL SECURITY', t);
     EXECUTE format('DROP POLICY IF EXISTS tenant_isolation ON public.%I', t);
     EXECUTE format(
       'CREATE POLICY tenant_isolation ON public.%I FOR ALL USING (public.is_member_of(org_id))',
@@ -104,6 +107,7 @@ END $$;
 
 -- Organizations: visible if you're a member.
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.organizations FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS org_visibility ON public.organizations;
 CREATE POLICY org_visibility ON public.organizations
   FOR SELECT
@@ -111,6 +115,7 @@ CREATE POLICY org_visibility ON public.organizations
 
 -- Memberships: see your own + everyone in your orgs.
 ALTER TABLE public.memberships ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.memberships FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS membership_visibility ON public.memberships;
 CREATE POLICY membership_visibility ON public.memberships
   FOR SELECT
@@ -118,6 +123,7 @@ CREATE POLICY membership_visibility ON public.memberships
 
 -- Users: see yourself and other users in your orgs.
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS user_visibility ON public.users;
 CREATE POLICY user_visibility ON public.users
   FOR SELECT
@@ -128,6 +134,64 @@ CREATE POLICY user_visibility ON public.users
       WHERE public.is_member_of(m.org_id)
     )
   );
+
+-- ─────────────────────────────────────────────────────────────
+-- Realtime — messages stream + channel authorization
+--
+-- The chat UI subscribes to postgres_changes on public.messages
+-- (lib/realtime/message-sync.ts). That stream is silent unless the table is
+-- a member of the supabase_realtime publication; Supabase never adds app
+-- tables automatically. REPLICA IDENTITY FULL so UPDATE/DELETE payloads carry
+-- the old row (INSERT works without it, but keep the stream complete).
+-- ─────────────────────────────────────────────────────────────
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime')
+     AND NOT EXISTS (
+       SELECT 1 FROM pg_publication_tables
+       WHERE pubname = 'supabase_realtime'
+         AND schemaname = 'public'
+         AND tablename = 'messages'
+     )
+  THEN
+    EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.messages';
+  END IF;
+END $$;
+
+ALTER TABLE public.messages REPLICA IDENTITY FULL;
+
+-- Realtime channel authorization (best-effort; the realtime schema only
+-- exists on Supabase). Private channels run join/read through RLS on
+-- realtime.messages, where realtime.topic() is the channel name. The app
+-- uses `messages:<conversationId>` and `presence:conversation:<conversationId>`,
+-- so authorize a member whose membership covers the conversation's org.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'realtime' AND table_name = 'messages'
+  ) THEN
+    EXECUTE 'ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY';
+    EXECUTE 'DROP POLICY IF EXISTS cite_conversation_channels ON realtime.messages';
+    EXECUTE $pol$
+      CREATE POLICY cite_conversation_channels ON realtime.messages
+        FOR SELECT
+        TO authenticated
+        USING (
+          EXISTS (
+            SELECT 1
+            FROM public.conversations c
+            WHERE realtime.topic() IN (
+                'messages:' || c.id::text,
+                'presence:conversation:' || c.id::text
+              )
+              AND public.is_member_of(c.org_id)
+          )
+        )
+    $pol$;
+  END IF;
+END $$;
 
 -- ─────────────────────────────────────────────────────────────
 -- pgvector indexes — multi-tenant pattern

@@ -17,6 +17,12 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params;
 
   const db = getDb(session.orgId);
+  const doc = await db.document.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const parts = await db.documentPart.findMany({
     where: { documentId: id },
     orderBy: { index: "asc" },

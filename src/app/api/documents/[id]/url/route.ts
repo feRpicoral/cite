@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
@@ -8,6 +9,8 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+const IdParam = z.string().uuid();
+
 /**
  * Returns a short-lived signed URL the viewer can fetch the raw file from.
  * Tenant-scoped via `getDb(orgId)` so org-leaks return 404 even if the id
@@ -16,6 +19,9 @@ interface RouteContext {
 export async function GET(_request: Request, context: RouteContext) {
   const session = await requireSession();
   const { id } = await context.params;
+  if (!IdParam.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid document id" }, { status: 400 });
+  }
 
   const db = getDb(session.orgId);
   const doc = await db.document.findUnique({

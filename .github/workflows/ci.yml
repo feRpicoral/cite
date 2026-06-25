@@ -72,6 +72,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cite_test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/cite_test
       INTEGRATION_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cite_test
     steps:
       - uses: actions/checkout@v5
@@ -124,8 +125,8 @@ jobs:
           );
           SQL
 
-      - name: Push Prisma schema
-        run: yarn db:push --accept-data-loss
+      - name: Apply migrations + setup.sql
+        run: yarn db:migrate:deploy && yarn db:setup
 
       - name: Run integration tests
         run: yarn test:integration
