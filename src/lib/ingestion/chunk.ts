@@ -21,25 +21,19 @@ export function countTokens(text: string): number {
 }
 
 export interface RawChunk {
-  /** Document-wide ordinal. */
   index: number;
   /** 0-based index of the source DocumentPart (matches NormalizedPart.index). */
   partIndex: number;
   text: string;
   tokenCount: number;
-  /** Union of every segment location this chunk spans. */
   location: DocumentLocation;
 }
 
 /**
- * Layout-aware chunker. Walks parts in order; within each part, greedy-packs
- * segments into chunks of ~TARGET_TOKENS, never exceeding MAX_TOKENS. Each
- * chunk inherits the union of segment locations it covers (so the citation
- * can highlight the full span).
- *
- * Overlap is per-chunk (last OVERLAP_TOKENS of the previous chunk are
- * prepended to the next when both are in the same part). This is cheap
- * insurance against retrieval misses on boundary content.
+ * Greedy-packs each part's segments into ~TARGET_TOKENS chunks (hard cap
+ * MAX_TOKENS), carrying the union of each chunk's segment locations so a
+ * citation can highlight the full span. Consecutive chunks in a part overlap
+ * by OVERLAP_TOKENS as insurance against retrieval misses on boundary content.
  */
 export function chunkDocument(doc: NormalizedDocument): RawChunk[] {
   const out: RawChunk[] = [];
@@ -75,8 +69,6 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
       continue;
     }
 
-    // If adding this segment overflows, finalize and start a new chunk
-    // (with token-budgeted overlap from the previous one).
     if (pending.tokenCount + segTokens > MAX_TOKENS) {
       out.push(finalize(pending));
       const overlap = takeOverlap(pending.pieces);
@@ -93,8 +85,7 @@ function chunkPart(part: NormalizedPart): Omit<RawChunk, "index">[] {
     pending.pieces.push(seg);
     pending.tokenCount += segTokens;
 
-    // Eagerly finalize once we've reached the target so chunks stay reasonably
-    // sized; the MAX guard above is just a hard ceiling.
+    // Finalize at the soft TARGET; the MAX check above is the hard ceiling.
     if (pending.tokenCount >= TARGET_TOKENS) {
       out.push(finalize(pending));
       pending = null;

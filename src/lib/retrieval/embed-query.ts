@@ -11,10 +11,6 @@ export class EmbeddingValidationError extends Error {
   }
 }
 
-/**
- * Embeds a single query string for vector search. Uses input_type=query
- * (vs document for indexing) so Voyage applies the query-side projection.
- */
 export async function embedQuery(query: string): Promise<number[]> {
   const apiKey = requireEnv("VOYAGE_API_KEY");
   const res = await fetch(ENDPOINT, {

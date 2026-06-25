@@ -14,9 +14,6 @@ import type { RetrievedChunk } from "./types";
  * — Postgres's planner uses the btree(org_id) + HNSW combo defined in
  * setup.sql. RLS (`tenant_isolation`) is the second layer; never rely on
  * either alone.
- *
- * The function takes branded OrgId / CollectionId, so the compiler stops
- * you mixing tenants at the call site.
  */
 export async function vectorSearch(
   orgId: OrgId,

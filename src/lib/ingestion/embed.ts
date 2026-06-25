@@ -15,15 +15,10 @@ const MAX_BATCH_TOKENS = 100_000;
 const OUTPUT_DIMENSION = 2048;
 
 /**
- * Embeds chunks via Voyage 3 large. Output dim is pinned to match the
- * vector column width in `embeddings`. Contextual preamble shaping
- * happens upstream in `buildEmbeddingInput`.
- *
- * Calls the Voyage REST API directly. The official SDK ships ESM-incompatible
- * directory imports that break the Next.js bundler.
- *
- * Batches by both item count (<=128) and accumulated tokens (under Voyage's
- * 120k-per-request limit); retries with exponential backoff on 429 / 5xx.
+ * Calls the Voyage REST API directly: the official SDK ships ESM-incompatible
+ * directory imports that break the Next.js bundler. Batches by both item count
+ * (<=128) and accumulated tokens (under Voyage's 120k-per-request limit), with
+ * exponential backoff on 429 / 5xx.
  */
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];

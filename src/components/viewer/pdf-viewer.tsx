@@ -148,10 +148,6 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
     };
   }, [url]);
 
-  // Render the canvas + text layer for the current page using the cached
-  // document. Re-runs whenever the loaded doc, page, or citation location
-  // changes. The viewport object is pushed into state on success so render
-  // and event handlers can use it without touching a ref.
   useEffect(() => {
     if (!docReady) return;
     const doc = docRef.current;
@@ -262,8 +258,6 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
   }, [documentId]);
 
   useEffect(() => {
-    // Initial fetch on mount and whenever the document changes. The setState
-    // happens inside refreshPins's async body, not synchronously here.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshPins();
   }, [refreshPins]);

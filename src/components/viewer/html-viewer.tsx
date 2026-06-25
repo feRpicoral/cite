@@ -102,8 +102,6 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
     mark.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [parts, location.partIndex, location.selector, location.charStart, location.charEnd]);
 
-  // Fetch existing region comments so the viewer can render margin pins for
-  // them. Refetched whenever the user creates one.
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
     if (!res.ok) return;
@@ -122,8 +120,6 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
   }, [documentId]);
 
   useEffect(() => {
-    // Initial fetch on mount and whenever the document changes. The setState
-    // happens inside refreshPins's async body, not synchronously here.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshPins();
   }, [refreshPins]);
@@ -246,9 +242,6 @@ function usePinPositions(
     { commentId: string; resolved: boolean; top: number }[]
   >([]);
 
-  // DOM measurement pattern: read the rendered Range positions in a layout
-  // effect (the only safe place to touch ref.current) and write them back
-  // to state so the pins render at those coordinates.
   /* eslint-disable react-hooks/set-state-in-effect */
   useLayoutEffect(() => {
     if (!parts) {

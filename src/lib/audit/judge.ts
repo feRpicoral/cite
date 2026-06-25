@@ -22,17 +22,11 @@ Confidence is your own (0..1). Reasoning is at most two sentences.`;
 interface JudgeInput {
   /** The bearing sentence(s) — the assistant's claim with the citation marker. */
   claim: string;
-  /** The cited passage text the user can click through to verify. */
   passage: string;
-  /** Human-readable name of the source document for context. */
   documentName: string;
 }
 
-/**
- * One judge call per citation. Cheap (Haiku) and parallelizable.
- * Caller is responsible for grouping citations to messages and persisting
- * results as CitationAudit rows.
- */
+/** Caller groups citations by message and persists the verdicts as CitationAudit rows. */
 export async function judgeCitation(input: JudgeInput): Promise<JudgeResult> {
   const user = `Cited passage (from ${input.documentName}):\n"""${input.passage}"""\n\nAssistant claim:\n"""${input.claim}"""\n\nJudge the citation.`;
 
@@ -55,7 +49,6 @@ export async function judgeCitation(input: JudgeInput): Promise<JudgeResult> {
  */
 export function extractClaimsForMarkers(text: string): { displayIndex: number; claim: string }[] {
   const out: { displayIndex: number; claim: string }[] = [];
-  // Split on sentence-ending punctuation but keep the punctuation attached.
   const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [text];
   for (const sentence of sentences) {
     const re = /\[(\d+(?:\s*,\s*\d+)*)\]/g;

@@ -2,24 +2,16 @@ import type { DocumentFormat } from "@prisma/client";
 
 import type { DocumentLocation } from "@/lib/ingestion/location";
 
-/**
- * One atomic text segment produced by a parser, with everything the chunker
- * needs to assemble overlapping chunks while preserving citation regions.
- *
- * The chunker reads `segments` in order and joins them on `text`, tracking
- * char offsets so each emitted chunk knows the union of segment locations it
- * covers.
- */
+/** The text plus the citation location the chunker preserves while packing chunks. */
 export interface TextSegment {
   text: string;
   location: DocumentLocation;
 }
 
 /**
- * One coarse section of the document (a PDF page or an HTML-family section).
- * Stored in the DB as a `DocumentPart`. Carries enough metadata for the
- * viewer to render this part alone (preserved HTML body for HTML-family,
- * raw text for PDF) and to debug the parse if something goes wrong.
+ * One coarse section (a PDF page or HTML-family section), persisted as a
+ * `DocumentPart`. `body` is the sanitized HTML the viewer renders for the part
+ * (raw text for PDF).
  */
 export interface NormalizedPart {
   index: number;
@@ -32,7 +24,6 @@ export type NormalizedPartMetadata =
   | { kind: "pdf"; pageNumber: number; width: number; height: number; rotation: number }
   | { kind: "html"; heading: string | null };
 
-/** Format-agnostic output every parser produces. */
 export interface NormalizedDocument {
   format: DocumentFormat;
   pageCount?: number;
@@ -40,15 +31,13 @@ export interface NormalizedDocument {
 }
 
 export interface DocumentParser {
-  /** True if this parser can handle the given MIME type or file extension. */
   canParse(mime: string, filename: string): boolean;
-  /** Returns the normalized document. Throws on unrecoverable extraction failure. */
+  /** Throws on unrecoverable extraction failure. */
   parse(buffer: Buffer, opts: ParseOptions): Promise<NormalizedDocument>;
 }
 
 export interface ParseOptions {
-  /** Original filename, used by some parsers (e.g., file-extension fallback). */
+  /** Used by some parsers as a file-extension fallback when the MIME is ambiguous. */
   filename: string;
-  /** MIME type as reported at upload time. */
   mimeType: string;
 }
