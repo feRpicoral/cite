@@ -22,6 +22,10 @@ const PUBLIC_PREFIXES = [
 
 const LOCALE_URL_SLUGS = Object.values(localeUrlSlug);
 
+export function matchesPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -36,11 +40,11 @@ export async function proxy(request: NextRequest) {
     return redirect;
   }
 
-  if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
+  if (PUBLIC_PREFIXES.some((p) => matchesPrefix(pathname, p))) {
     if (
-      pathname.startsWith("/login") ||
-      pathname.startsWith("/signup") ||
-      pathname.startsWith("/forgot-password")
+      matchesPrefix(pathname, "/login") ||
+      matchesPrefix(pathname, "/signup") ||
+      matchesPrefix(pathname, "/forgot-password")
     ) {
       const { response, user } = await updateSession(request);
       if (user) {
