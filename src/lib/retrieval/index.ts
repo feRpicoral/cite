@@ -9,10 +9,6 @@ import { rerank } from "./rerank";
 import type { RetrievedChunk } from "./types";
 import { vectorSearch } from "./vector-search";
 
-/**
- * Run a single hybrid retrieval round: vector + keyword in parallel, fuse
- * via RRF, rerank top candidates, return final top-K.
- */
 export async function hybridRetrieve(
   orgId: OrgId,
   collectionId: CollectionId,

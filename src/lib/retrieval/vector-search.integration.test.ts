@@ -187,8 +187,6 @@ async function seedDocumentWithChunks(
         charEnd: 20,
       }),
     );
-    // Same embedding vector in both orgs so the only differentiator is
-    // org_id.
     const vector = `[${new Array(2048).fill(0.5).join(",")}]`;
     await prisma.$executeRawUnsafe(
       `INSERT INTO embeddings (id, org_id, chunk_id, embedding, created_at)

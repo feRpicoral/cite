@@ -13,11 +13,8 @@ export const HAIKU_MODEL = "claude-haiku-4-5-20251001";
 export const SONNET_MODEL = "claude-sonnet-4-6";
 
 /**
- * Issues a single structured tool-use call and parses the result against
- * a Zod schema.
- *
- * The system prompt is sent with `cache_control: ephemeral` so re-runs
- * within the prompt cache window skip re-tokenizing it.
+ * The system prompt is sent with `cache_control: ephemeral` so re-runs within
+ * the prompt cache window skip re-tokenizing it.
  */
 export async function structuredCall<S extends ZodType>(opts: {
   model: string;

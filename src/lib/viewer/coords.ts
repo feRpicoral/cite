@@ -12,9 +12,6 @@ export interface PageViewport {
   width: number;
   height: number;
   scale: number;
-  // PDF.js returns number[] here; we read it as a 4-tuple. Wrapping the type
-  // in our own interface keeps the call site decoupled from pdfjs-dist
-  // imports.
   convertToViewportRectangle(rect: number[]): number[];
 }
 

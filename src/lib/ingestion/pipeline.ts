@@ -13,13 +13,10 @@ import { pickParser } from "./parsers/registry";
 import type { NormalizedDocument } from "./parsers/types";
 
 /**
- * End-to-end ingestion: download the uploaded blob, run the right parser,
- * chunk, enrich, embed, and write everything back transactionally per stage.
- *
- * Stages emit visible status changes so the UI can show progress:
+ * Status progression visible to the UI:
  *   UPLOADING (set by API route) → EXTRACTING → CHUNKING → EMBEDDING → INDEXED
  *
- * Throws on any unrecoverable step. The Inngest worker catches and writes
+ * Throws on any unrecoverable step; the Inngest worker catches and writes
  * status=FAILED.
  */
 export async function processDocument(orgId: OrgId, documentId: DocumentId): Promise<void> {

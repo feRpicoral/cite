@@ -78,8 +78,6 @@ export function rangeToHtmlLocation(
   const partIndex = Number.parseInt(partIndexAttr, 10);
   if (!Number.isFinite(partIndex)) return null;
 
-  // Walk up from the start container to the nearest block element inside
-  // the part. That's the element whose selector we'll emit.
   const block = closestBlockAncestor(range.startContainer, partRoot);
   if (!block) return null;
 
