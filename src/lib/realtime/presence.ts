@@ -5,11 +5,10 @@ import { useEffect, useState } from "react";
 
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
-// Presence is broadcast on a guessable channel (`presence:conversation:<id>`)
-// and the Supabase Realtime config does not currently enforce per-channel
-// membership beyond authenticated. Keep the payload to the minimum the UI
-// renders — userId for keying/selfness, name for the tooltip — so a leak
-// here doesn't expose email addresses.
+// Presence runs on a private channel so Supabase Realtime authorization
+// (the realtime.messages RLS policy) gates membership; without it anyone who
+// guesses the conversation id could read who is present. The payload is still
+// kept minimal — userId for keying/selfness, name for the tooltip.
 export interface PresenceUser {
   userId: string;
   name: string | null;
@@ -28,7 +27,7 @@ export function usePresence(channelName: string, me: PresenceUser): PresenceUser
   useEffect(() => {
     const supabase = getBrowserSupabase();
     const channel: RealtimeChannel = supabase.channel(channelName, {
-      config: { presence: { key: me.userId } },
+      config: { private: true, presence: { key: me.userId } },
     });
 
     const refresh = () => {
