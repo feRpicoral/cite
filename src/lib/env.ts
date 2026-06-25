@@ -11,6 +11,10 @@ export function optionalEnv(name: string): string | undefined {
   return value && value.length > 0 ? value : undefined;
 }
 
+export function appUrl(): string {
+  return requireEnv("NEXT_PUBLIC_APP_URL");
+}
+
 export const isProduction = process.env.NODE_ENV === "production";
 export const isDevelopment = process.env.NODE_ENV === "development";
 export const isTest = process.env.NODE_ENV === "test";

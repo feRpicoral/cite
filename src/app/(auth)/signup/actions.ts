@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { appUrl } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const SignupSchema = z.object({
@@ -26,7 +27,7 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/callback`,
+      emailRedirectTo: new URL("/auth/callback", appUrl()).toString(),
     },
   });
   if (error) return { error: error.message };
