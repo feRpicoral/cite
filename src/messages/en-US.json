@@ -50,7 +50,12 @@
       "dashboard": "Dashboard",
       "documents": "Documents",
       "conversations": "Conversations",
-      "settings": "Settings"
+      "settings": "Settings",
+      "admin": "Admin",
+      "citationAccuracy": "Citation accuracy",
+      "workspace": "Workspace",
+      "switchWorkspace": "Switch workspace",
+      "signOut": "Sign out"
     },
     "dashboard": {
       "title": "Dashboard",
