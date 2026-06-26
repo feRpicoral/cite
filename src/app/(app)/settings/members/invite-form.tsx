@@ -75,6 +75,10 @@ export function InviteMemberForm() {
               placeholder={t("emailPlaceholder")}
               onChange={(e) => setEmail(e.target.value)}
               disabled={pending}
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
+              data-form-type="other"
             />
           </div>
           <div className="space-y-2">
