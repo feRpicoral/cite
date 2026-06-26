@@ -218,5 +218,35 @@
       "title": "No matching citations",
       "description": "No audited citations match the current filters. Try clearing the search or verdict filter."
     }
+  },
+  "system": {
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or may have moved.",
+      "backToDashboard": "Back to dashboard"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred and our team has been notified. Try reloading — your work is saved.",
+      "reference": "error_ref · {ref}",
+      "reload": "Reload",
+      "backToDashboard": "Back to dashboard"
+    },
+    "forbidden": {
+      "title": "You don't have access",
+      "description": "This page is restricted to workspace admins. Ask an admin if you think you should have access.",
+      "backToDashboard": "Back to dashboard"
+    },
+    "offline": {
+      "title": "You're offline",
+      "description": "Check your connection. Cite will reconnect automatically and pick up where you left off.",
+      "reconnecting": "Reconnecting…"
+    },
+    "removed": {
+      "title": "You've been removed from this workspace",
+      "description": "An admin removed your access to this workspace. You can still use any other workspaces you belong to.",
+      "continue": "Continue"
+    }
   }
 }
