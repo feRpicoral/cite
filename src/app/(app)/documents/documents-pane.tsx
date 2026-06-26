@@ -36,6 +36,7 @@ import {
 import { uploadDocument } from "@/lib/upload-document";
 
 import { deleteDocumentAction, renameDocumentAction, retryIngestionAction } from "./actions";
+import { useDocumentStatus } from "./use-document-status";
 
 export interface DocumentRow {
   id: string;
@@ -43,6 +44,7 @@ export interface DocumentRow {
   format: DocumentFormat;
   status: DocumentStatus;
   sizeBytes: number;
+  pageCount: number | null;
   errorMessage: string | null;
   createdAt: Date;
 }
@@ -62,6 +64,7 @@ export function DocumentsPane({
 }) {
   const t = useTranslations("documents");
   const router = useRouter();
+  const liveDocuments = useDocumentStatus(collectionId, documents);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -159,7 +162,7 @@ export function DocumentsPane({
           </h1>
           <p className="text-muted-foreground truncate text-xs">
             {collectionDescription ? `${collectionDescription} · ` : ""}
-            {t("documentCount", { count: documents.length })}
+            {t("documentCount", { count: liveDocuments.length })}
           </p>
         </div>
         <Button className="ml-auto" onClick={onPick} disabled={uploading}>
@@ -170,7 +173,7 @@ export function DocumentsPane({
 
       <ScrollArea className="flex-1">
         <div className="p-4 sm:p-5">
-          {documents.length === 0 ? (
+          {liveDocuments.length === 0 ? (
             <EmptyCollection onUpload={onPick} maxLabel={maxLabel} />
           ) : (
             <>
@@ -199,7 +202,7 @@ export function DocumentsPane({
               </div>
 
               <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
-                {documents.map((doc) => (
+                {liveDocuments.map((doc) => (
                   <DocumentItem key={doc.id} doc={doc} onRefresh={() => router.refresh()} />
                 ))}
               </ul>

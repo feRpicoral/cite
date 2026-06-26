@@ -53,6 +53,7 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
         format: true,
         status: true,
         sizeBytes: true,
+        pageCount: true,
         errorMessage: true,
         createdAt: true,
       },
