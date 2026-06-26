@@ -8,7 +8,13 @@ import { toast } from "sonner";
 import { acceptInviteAction } from "@/app/(app)/settings/members/actions";
 import { Button } from "@/components/ui/button";
 
-export function AcceptInviteForm({ token }: { token: string }) {
+interface AcceptInviteLabels {
+  accept: string;
+  decline: string;
+  welcome: string;
+}
+
+export function AcceptInviteForm({ token, labels }: { token: string; labels: AcceptInviteLabels }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -19,7 +25,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
         toast.error(result.error);
         return;
       }
-      toast.success("Welcome!");
+      toast.success(labels.welcome);
       // Full reload so the (app) layout re-resolves the user's active org
       // and the new session takes effect everywhere.
       window.location.assign("/dashboard");
@@ -31,13 +37,13 @@ export function AcceptInviteForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="flex justify-end gap-2">
-      <Button variant="ghost" onClick={decline} disabled={pending}>
-        Not now
+    <div className="flex gap-2 pt-1">
+      <Button onClick={accept} disabled={pending} className="flex-1">
+        {pending && <Loader2 className="size-4 animate-spin" />}
+        {labels.accept}
       </Button>
-      <Button onClick={accept} disabled={pending}>
-        {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-        Accept invitation
+      <Button variant="ghost" onClick={decline} disabled={pending}>
+        {labels.decline}
       </Button>
     </div>
   );
