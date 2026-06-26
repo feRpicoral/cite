@@ -1,12 +1,16 @@
 "use client";
 
+import { Folder } from "lucide-react";
+
 import { PresenceAvatars } from "@/components/presence/presence-avatars";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { DocumentViewer } from "@/components/viewer/document-viewer";
 import { useViewer, ViewerProvider } from "@/components/viewer/viewer-state";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { PresenceUser } from "@/lib/realtime/presence";
 
 import { ChatPanel, type InitialMessage } from "./chat-panel";
+import { ViewerSheet } from "./viewer-sheet";
 
 interface ConversationLayoutProps {
   conversationId: string;
@@ -32,34 +36,50 @@ function Inner({
   me,
 }: ConversationLayoutProps) {
   const { target } = useViewer();
+  const isMobile = useIsMobile();
+
+  const chat = (
+    <ChatPanel
+      conversationId={conversationId}
+      initialMessages={initialMessages}
+      collectionName={collectionName}
+      currentUserId={me.userId}
+    />
+  );
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b px-4 sm:px-6">
         <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold">{title}</h1>
-          <p className="text-muted-foreground text-xs">{collectionName}</p>
+          <h1 className="truncate text-sm font-semibold">{title}</h1>
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5">
+            <Folder className="size-3" strokeWidth={2.2} />
+            <span className="truncate text-[11px] font-medium">{collectionName}</span>
+          </div>
         </div>
         <PresenceAvatars channel={`presence:conversation:${conversationId}`} me={me} />
       </header>
-      <ResizablePanelGroup orientation="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={target ? 50 : 100} minSize={30}>
-          <ChatPanel
-            conversationId={conversationId}
-            initialMessages={initialMessages}
-            collectionName={collectionName}
-            currentUserId={me.userId}
-          />
-        </ResizablePanel>
-        {target && (
-          <>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={50} minSize={30}>
-              <DocumentViewer currentUserId={me.userId} />
-            </ResizablePanel>
-          </>
-        )}
-      </ResizablePanelGroup>
+
+      {isMobile ? (
+        <>
+          <div className="min-h-0 flex-1">{chat}</div>
+          <ViewerSheet currentUserId={me.userId} />
+        </>
+      ) : (
+        <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
+          <ResizablePanel defaultSize={target ? 50 : 100} minSize={30}>
+            {chat}
+          </ResizablePanel>
+          {target && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <DocumentViewer currentUserId={me.userId} />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
+      )}
     </div>
   );
 }

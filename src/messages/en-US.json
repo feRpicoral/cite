@@ -196,6 +196,75 @@
       "step3Body": "Every answer arrives with inline, clickable citations."
     }
   },
+  "conversation": {
+    "cite": "Cite",
+    "empty": {
+      "title": "Ask anything about {collection}",
+      "description": "Answers are grounded in this collection's documents, each claim linked to its exact source.",
+      "suggestion1": "What's the termination notice period across our MSAs?",
+      "suggestion2": "Summarize the limitation-of-liability caps."
+    },
+    "reasoning": {
+      "classified": "Classified {shape}",
+      "shapeSimple": "simple",
+      "shapeDecompose": "decomposed",
+      "subQueries": "{count, plural, one {# sub-query} other {# sub-queries}}",
+      "reranked": "reranked",
+      "sufficiencyMet": "sufficiency met",
+      "sufficiencyShort": "sufficiency limited",
+      "ariaExpand": "Show how this answer was built",
+      "ariaCollapse": "Hide how this answer was built"
+    },
+    "support": {
+      "supported": "{count} supported",
+      "partial": "{count} partial",
+      "unsupported": "{count} unsupported"
+    },
+    "citations": {
+      "linking": "Linking citations to sources…",
+      "pendingNote": "Citations will become clickable once they're verified against the source."
+    },
+    "streaming": {
+      "synthesizing": "Synthesizing answer…",
+      "searching": "Searching documents…",
+      "generating": "Generating response…",
+      "stop": "Stop"
+    },
+    "noAnswer": {
+      "title": "I couldn't find enough support to answer this confidently",
+      "body": "No indexed passage addressed your question well enough. I won't guess without a source."
+    },
+    "composer": {
+      "placeholder": "Ask a follow-up about {collection}…",
+      "placeholderNew": "Ask about {collection}…",
+      "hint": "Enter to send · Shift+Enter newline",
+      "counter": "{count} / {max}",
+      "tooLong": "Message is too long — trim {count, plural, one {# character} other {# characters}} to send.",
+      "send": "Send",
+      "deliveryFailed": "Not delivered · connection lost",
+      "retry": "Retry"
+    },
+    "comments": {
+      "title": "Comments",
+      "indicator": "{count, plural, one {# comment} other {# comments}}",
+      "empty": "No comments yet",
+      "emptyHint": "Start the thread to discuss this answer with your team.",
+      "resolve": "Resolve",
+      "reopen": "Reopen",
+      "reply": "Reply",
+      "delete": "Delete",
+      "replyPlaceholder": "Reply…",
+      "addPlaceholder": "Add a comment…",
+      "you": "You",
+      "addFailed": "Failed to post comment",
+      "updateFailed": "Failed to update",
+      "deleteFailed": "Failed to delete",
+      "replyFailed": "Failed to reply"
+    },
+    "viewer": {
+      "backToChat": "Chat"
+    }
+  },
   "settings": {
     "title": "Settings",
     "workspaceDescription": "Manage {orgName} and your personal preferences.",
