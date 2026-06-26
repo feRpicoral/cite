@@ -13,6 +13,7 @@ import type { TraceData, TracePhase } from "@/lib/chat/trace";
 export function buildTrace(): {
   apply: (event: AgentProgress) => void;
   beginSynthesis: () => void;
+  finishSynthesis: () => void;
   snapshot: () => TraceData;
 } {
   let classify: Extract<TracePhase, { kind: "classify" }> = {
@@ -72,6 +73,12 @@ export function buildTrace(): {
     synthesize = { kind: "synthesize", status: "active" };
   }
 
+  // Called once the synthesis text stream completes so the final phase flips
+  // from spinner to done instead of appearing stuck.
+  function finishSynthesis(): void {
+    if (synthesize) synthesize = { ...synthesize, status: "done" };
+  }
+
   function snapshot(): TraceData {
     const phases: TracePhase[] = [classify];
     if (decompose) phases.push(decompose);
@@ -81,5 +88,5 @@ export function buildTrace(): {
     return { phases };
   }
 
-  return { apply, beginSynthesis, snapshot };
+  return { apply, beginSynthesis, finishSynthesis, snapshot };
 }

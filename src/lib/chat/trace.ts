@@ -11,6 +11,11 @@ import {
 // update overwrite the previous payload in place rather than appending parts.
 export const TRACE_PART_ID = "trace";
 
+// Data part carrying the persisted assistant message UUID, emitted once the
+// answer is saved. The client uses it to finalize the bubble (clickable
+// citations, collapsed trace) without depending on realtime delivery.
+export const MESSAGE_ID_PART_ID = "messageId";
+
 export type TracePhaseStatus = "active" | "done";
 
 export type TracePhase =
