@@ -1,11 +1,14 @@
 import { type Prisma } from "@prisma/client";
-import { type UIMessage } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse, type UIMessage } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import type { AgentState } from "@/lib/agents/state";
 import { requireSessionApi } from "@/lib/auth/session";
 import { extractCitationMarkers } from "@/lib/chat/parse-citations";
 import { synthesize } from "@/lib/chat/synthesize";
+import { TRACE_PART_ID } from "@/lib/chat/trace";
+import { buildTrace } from "@/lib/chat/trace-builder";
 import { getPrisma } from "@/lib/db/client";
 import { asCollectionId, asConversationId, asMessageId } from "@/lib/db/types";
 import { getDb } from "@/lib/db/with-org";
@@ -106,30 +109,72 @@ export async function POST(request: Request) {
     content: m.content,
   }));
 
-  let synthesized: Awaited<ReturnType<typeof synthesize>>;
-  try {
-    synthesized = await synthesize({
-      orgId: session.orgId,
-      collectionId: asCollectionId(conversation.collectionId),
-      query: userText,
-      conversationContext,
-    });
-  } catch (error) {
-    await db.message
-      .delete({ where: { id: asMessageId(userMessage.id) } })
-      .catch((cleanupError) =>
-        console.error("chat: failed to roll back orphaned user message", cleanupError),
-      );
-    console.error("chat: synthesis setup failed", error);
-    return NextResponse.json({ error: "Failed to generate a response." }, { status: 500 });
-  }
-  const { stream, state } = synthesized;
+  // The agent runs inside the stream's execute callback so its node-level
+  // progress can be written as `data-trace` parts before synthesis text
+  // arrives. The resolved state is captured here for the onFinish persistence
+  // path (citations, agentState, audit) that runs after the stream completes.
+  let state: AgentState | undefined;
+  let synthesisFailed = false;
 
-  return stream.toUIMessageStreamResponse({
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => {
+      const trace = buildTrace();
+      writer.write({ type: "data-trace", id: TRACE_PART_ID, data: trace.snapshot() });
+
+      let synthesized: Awaited<ReturnType<typeof synthesize>>;
+      try {
+        synthesized = await synthesize({
+          orgId: session.orgId,
+          collectionId: asCollectionId(conversation.collectionId),
+          query: userText,
+          conversationContext,
+          abortSignal: request.signal,
+          onProgress: (event) => {
+            trace.apply(event);
+            writer.write({ type: "data-trace", id: TRACE_PART_ID, data: trace.snapshot() });
+          },
+        });
+      } catch (error) {
+        synthesisFailed = true;
+        console.error("chat: synthesis setup failed", error);
+        throw error;
+      }
+
+      state = synthesized.state;
+      trace.beginSynthesis();
+      writer.write({ type: "data-trace", id: TRACE_PART_ID, data: trace.snapshot() });
+
+      writer.merge(synthesized.stream.toUIMessageStream());
+    },
+    onError: (error) => {
+      console.error("chat: stream error", error);
+      return "Failed to generate a response.";
+    },
     onFinish: async ({ messages }) => {
+      // The agent never reached synthesis (retrieval setup threw): roll back
+      // the orphaned user message and skip persistence.
+      if (synthesisFailed || !state) {
+        await db.message
+          .delete({ where: { id: asMessageId(userMessage.id) } })
+          .catch((cleanupError) =>
+            console.error("chat: failed to roll back orphaned user message", cleanupError),
+          );
+        return;
+      }
+      const resolvedState = state;
       const assistant = messages.at(-1);
       if (!assistant) return;
       const content = uiMessageText(assistant);
+      // No text streamed (e.g. the client stopped during synthesis): drop the
+      // orphaned user turn rather than persist an empty assistant message.
+      if (content.trim().length === 0) {
+        await db.message
+          .delete({ where: { id: asMessageId(userMessage.id) } })
+          .catch((cleanupError) =>
+            console.error("chat: failed to roll back orphaned user message", cleanupError),
+          );
+        return;
+      }
       const markers = extractCitationMarkers(content);
       const prisma = getPrisma();
 
@@ -143,14 +188,14 @@ export async function POST(request: Request) {
               conversationId: conversation.id,
               role: "ASSISTANT",
               content,
-              agentState: state as unknown as Prisma.InputJsonValue,
+              agentState: resolvedState as unknown as Prisma.InputJsonValue,
             },
           });
           if (markers.length > 0) {
             await tx.messageCitation.createMany({
               data: markers
                 .map((displayIndex) => {
-                  const chunk = state.finalChunks[displayIndex - 1];
+                  const chunk = resolvedState.finalChunks[displayIndex - 1];
                   if (!chunk) return null;
                   return {
                     orgId: session.orgId,
@@ -185,6 +230,8 @@ export async function POST(request: Request) {
       }
     },
   });
+
+  return createUIMessageStreamResponse({ stream });
 }
 
 function uiMessageText(m: UIMessage): string {

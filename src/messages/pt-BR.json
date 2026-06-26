@@ -213,7 +213,23 @@
       "sufficiencyMet": "suficiência atingida",
       "sufficiencyShort": "suficiência limitada",
       "ariaExpand": "Mostrar como esta resposta foi construída",
-      "ariaCollapse": "Ocultar como esta resposta foi construída"
+      "ariaCollapse": "Ocultar como esta resposta foi construída",
+      "live": {
+        "heading": "Como esta resposta está sendo construída",
+        "classifyTitle": "Classificando a pergunta",
+        "classifyDoneSimple": "Classificada · recuperação única",
+        "classifyDoneDecompose": "Classificada · recuperação em partes",
+        "decomposeActive": "Decompondo em subconsultas",
+        "decomposeDone": "{count, plural, one {Decomposta em # subconsulta} other {Decomposta em # subconsultas}}",
+        "retrieveTitle": "Busca híbrida + reordenação",
+        "retrieveActive": "Busca vetorial + por palavra-chave",
+        "retrieveDone": "{candidates} candidatos → reordenados para os {reranked} melhores",
+        "sufficiencyTitle": "Verificando suficiência",
+        "sufficiencyMet": "Evidências suficientes para responder",
+        "sufficiencyShort": "Evidências limitadas — busca ampliada",
+        "synthesizeTitle": "Sintetizando e inserindo citações…",
+        "synthesizeSubtitle": "Fundamentando cada afirmação nas passagens recuperadas"
+      }
     },
     "support": {
       "supported": "{count} confirmadas",
