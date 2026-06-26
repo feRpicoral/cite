@@ -15,9 +15,13 @@ function auditRow(overrides: Partial<AuditRow> & Pick<AuditRow, "id" | "messageI
     quote: null,
     message: {
       id: overrides.messageId,
-      content: "",
-      createdAt: new Date("2026-01-01T00:00:00Z"),
-      conversation: { id: "c1", title: "Conversation" },
+      conversation: {
+        id: "c1",
+        title: "Conversation",
+        collectionName: "Collection",
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+        updatedAt: new Date("2026-01-01T00:00:00Z"),
+      },
     },
     ...overrides,
   };

@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 
 import { EmptyState } from "@/components/cite/empty-state";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { listAudits } from "@/lib/db/audit";
 import type { OrgId } from "@/lib/db/types";
 
@@ -44,11 +43,11 @@ export async function AuditList({ orgId, params }: { orgId: OrgId; params: Audit
         </Card>
       ) : (
         <Card className="gap-0 overflow-hidden p-0">
-          <ScrollArea className="max-h-[calc(100vh-22rem)]">
+          <div className="max-h-[calc(100vh-22rem)] overflow-y-auto">
             {groups.map((group) => (
               <AuditRow key={group.messageId} group={group} />
             ))}
-          </ScrollArea>
+          </div>
         </Card>
       )}
     </div>

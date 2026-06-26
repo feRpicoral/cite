@@ -90,9 +90,13 @@ describe("listAudits", () => {
     const messageFindMany = vi.fn().mockResolvedValue([
       {
         id: "m1",
-        content: "answer",
-        createdAt: new Date("2026-06-01"),
-        conversation: { id: "c1", title: "Conv" },
+        conversation: {
+          id: "c1",
+          title: "Conv",
+          createdAt: new Date("2026-05-20"),
+          updatedAt: new Date("2026-06-01"),
+          collection: { name: "Specs" },
+        },
         citations: [{ displayIndex: 1, quote: "the cited passage" }],
       },
     ]);
@@ -101,6 +105,7 @@ describe("listAudits", () => {
     const { audits } = await listAudits(ORG);
 
     expect(audits[0]?.message?.conversation.title).toBe("Conv");
+    expect(audits[0]?.message?.conversation.collectionName).toBe("Specs");
     expect(audits[0]?.quote).toBe("the cited passage");
     expect(audits[1]?.message).toBeNull();
     expect(audits[1]?.quote).toBeNull();

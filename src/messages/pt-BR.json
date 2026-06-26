@@ -492,7 +492,9 @@
     "row": {
       "citationLabel": "Citação {index}",
       "expand": "Mostrar detalhes por citação",
-      "collapse": "Ocultar detalhes por citação"
+      "collapse": "Ocultar detalhes por citação",
+      "created": "Criada em {date}",
+      "updated": "Atualizada em {date}"
     },
     "empty": {
       "title": "Nenhuma mensagem auditada ainda",

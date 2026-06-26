@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 
 import type { MessageGroup } from "./aggregate";
 
+const DATE = { day: "numeric", month: "short", year: "numeric" } as const;
+
 const COUNT_PILL: Record<
   CitationVerdict,
   { Icon: LucideIcon; className: string; strokeWidth: number }
@@ -33,22 +35,27 @@ export function AuditRow({ group }: { group: MessageGroup }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={open ? t("collapse") : t("expand")}
-        className="hover:bg-muted/40 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors"
+        className="hover:bg-muted/40 flex w-full min-w-0 items-center gap-3 px-4 py-3.5 text-left transition-colors"
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{group.message.conversation.title}</p>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">{group.message.content}</p>
+          <p className="text-muted-foreground/90 truncate text-[11px] font-medium">
+            {group.message.conversation.collectionName}
+          </p>
+          <p className="mt-0.5 truncate text-sm font-semibold">
+            {group.message.conversation.title}
+          </p>
+          <p className="text-muted-foreground mt-0.5 truncate font-mono text-[11px] tabular-nums">
+            {t("created", { date: format.dateTime(group.message.conversation.createdAt, DATE) })}
+            <span aria-hidden> · </span>
+            {t("updated", { date: format.dateTime(group.message.conversation.updatedAt, DATE) })}
+          </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1">
           <CountPill verdict="SUPPORTED" count={group.counts.supported} />
           <CountPill verdict="PARTIAL" count={group.counts.partial} />
           <CountPill verdict="UNSUPPORTED" count={group.counts.unsupported} />
         </div>
-
-        <span className="text-muted-foreground hidden w-16 shrink-0 text-right font-mono text-[11px] tabular-nums sm:block">
-          {format.relativeTime(group.latestAt)}
-        </span>
 
         <ChevronDown
           className={cn(
@@ -99,12 +106,12 @@ function CountPill({ verdict, count }: { verdict: CitationVerdict; count: number
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] items-center gap-1 rounded-md px-1.5 font-mono text-[11px] font-semibold tabular-nums",
+        "inline-flex h-[18px] items-center gap-0.5 rounded px-1 font-mono text-[10px] font-semibold tabular-nums",
         className,
       )}
     >
       {count}
-      <Icon className="size-2.5" strokeWidth={strokeWidth} />
+      <Icon className="size-2" strokeWidth={strokeWidth} />
     </span>
   );
 }

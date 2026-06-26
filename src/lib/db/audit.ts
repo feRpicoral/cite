@@ -29,9 +29,13 @@ export interface AuditRow {
   quote: string | null;
   message: {
     id: string;
-    content: string;
-    createdAt: Date;
-    conversation: { id: string; title: string };
+    conversation: {
+      id: string;
+      title: string;
+      collectionName: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
   } | null;
 }
 
@@ -85,9 +89,15 @@ export async function listAudits(
     where: { id: { in: messageIds } },
     select: {
       id: true,
-      content: true,
-      createdAt: true,
-      conversation: { select: { id: true, title: true } },
+      conversation: {
+        select: {
+          id: true,
+          title: true,
+          createdAt: true,
+          updatedAt: true,
+          collection: { select: { name: true } },
+        },
+      },
       citations: { select: { displayIndex: true, quote: true } },
     },
   });
@@ -114,9 +124,13 @@ export async function listAudits(
         message: msg
           ? {
               id: msg.id,
-              content: msg.content,
-              createdAt: msg.createdAt,
-              conversation: msg.conversation,
+              conversation: {
+                id: msg.conversation.id,
+                title: msg.conversation.title,
+                collectionName: msg.conversation.collection.name,
+                createdAt: msg.conversation.createdAt,
+                updatedAt: msg.conversation.updatedAt,
+              },
             }
           : null,
       };

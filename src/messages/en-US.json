@@ -492,7 +492,9 @@
     "row": {
       "citationLabel": "Citation {index}",
       "expand": "Show per-citation detail",
-      "collapse": "Hide per-citation detail"
+      "collapse": "Hide per-citation detail",
+      "created": "Created {date}",
+      "updated": "Updated {date}"
     },
     "empty": {
       "title": "No audited messages yet",
