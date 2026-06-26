@@ -64,6 +64,44 @@
       "uploadCta": "Enviar documento"
     }
   },
+  "audit": {
+    "title": "Precisão das citações",
+    "subtitle": "Veredictos do juiz LLM sobre cada citação nas mensagens recentes do assistente.",
+    "dateRange": "Últimos {days} dias",
+    "summary": {
+      "title": "Citações auditadas",
+      "meta": "{citations} citações · {messages} mensagens"
+    },
+    "stat": {
+      "supported": "Sustentada · {count}",
+      "partial": "Parcial · {count}",
+      "unsupported": "Sem suporte · {count}"
+    },
+    "controls": {
+      "searchPlaceholder": "Buscar mensagens ou documentos",
+      "searchLabel": "Buscar mensagens auditadas",
+      "verdictLabel": "Veredicto",
+      "verdictAll": "Todos os veredictos",
+      "sortLabel": "Ordenar",
+      "sortRecent": "Mais recentes",
+      "sortConfidence": "Menor confiança",
+      "resultsCount": "{count, plural, one {# resultado} other {# resultados}}",
+      "clearFilter": "Limpar filtro"
+    },
+    "row": {
+      "citationLabel": "Citação {index}",
+      "expand": "Mostrar detalhes por citação",
+      "collapse": "Ocultar detalhes por citação"
+    },
+    "empty": {
+      "title": "Nenhuma mensagem auditada ainda",
+      "description": "Cada citação é avaliada automaticamente após a geração de uma resposta. Assim que seu time começar a conversar com as fontes, os resultados de precisão aparecerão aqui."
+    },
+    "filteredEmpty": {
+      "title": "Nenhuma citação correspondente",
+      "description": "Nenhuma citação auditada corresponde aos filtros atuais. Tente limpar a busca ou o filtro de veredicto."
+    }
+  },
   "settings": {
     "title": "Configurações",
     "workspaceDescription": "Gerencie {orgName} e suas preferências pessoais.",
