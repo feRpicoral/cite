@@ -85,10 +85,9 @@ interface CommentThreadProps {
   targetId: string;
   currentUserId: string;
   /**
-   * If set, restrict the rendered thread to the single comment with this id
-   * (region-pin popovers use this so each pin shows its own thread, not
-   * every region comment on the document). Also hides the "add new comment"
-   * form, since new region comments come from a text selection upstream.
+   * Restricts the thread to this single comment so a region pin shows only its
+   * own thread, not every region comment on the document. Also hides the "add
+   * comment" form, since new region comments come from a text selection.
    */
   focusCommentId?: string;
   onCountChange?: (count: number) => void;

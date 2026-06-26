@@ -522,8 +522,6 @@ function RenderedAssistantText({
   pending: boolean;
   showCursor: boolean;
 }) {
-  // Markdown rendering (react-markdown + remark-gfm) with `[n]` markers turned
-  // into inline citation chips by the Markdown component's rehype plugin.
   return (
     <div>
       <Markdown text={text} citations={citations} pending={pending} />

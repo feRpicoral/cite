@@ -50,7 +50,7 @@ const CREATE_MANY_OPS = new Set(["createMany", "createManyAndReturn"]);
  * against a multi-tenant model. Reads/updates/deletes get `where.orgId = orgId`
  * injected; creates get `data.orgId = orgId` injected; upserts get both.
  *
- * Non-tenant models (User, Organization, Membership) pass through unmodified —
+ * Non-tenant models (User, Organization) pass through unmodified —
  * callers should use `getPrisma()` directly for those.
  */
 export function getDb(orgId: OrgId) {

@@ -16,12 +16,11 @@ const MAX_POLL_ATTEMPTS = 300; // 10 minutes
 /**
  * LlamaParse-backed PDF parser. Requires LLAMA_CLOUD_API_KEY.
  *
- * Uses direct REST calls — the official Node SDKs ship ESM-incompatible
+ * Uses direct REST calls because the official Node SDKs ship ESM-incompatible
  * directory imports that break the Next.js bundler.
  *
- * Each LlamaParse page returns `items`: paragraphs, headings, tables, lists
- * with bounding boxes. Each item becomes one TextSegment, preserving the
- * citation→region mapping the viewer needs.
+ * Each page's `items` (paragraphs, headings, tables, lists with bounding
+ * boxes) becomes one TextSegment, preserving the citation→region mapping.
  */
 export class PdfParser implements DocumentParser {
   canParse(mime: string, filename: string): boolean {

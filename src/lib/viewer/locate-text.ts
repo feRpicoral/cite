@@ -30,7 +30,6 @@ interface NormalizedText {
   positions: { node: Text; offset: number }[];
 }
 
-/** Builds the container's whitespace-collapsed text and a char-to-node map. */
 function buildNormalizedText(container: HTMLElement): NormalizedText {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   let text = "";

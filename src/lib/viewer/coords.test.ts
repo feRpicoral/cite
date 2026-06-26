@@ -7,8 +7,7 @@ function fakeViewport(scale = 1): PageViewport {
     width: 612 * scale,
     height: 792 * scale,
     scale,
-    // PDF.js's actual conversion flips y; for tests we mimic a y-flipping
-    // identity-scaled transform so the test math is checkable by hand.
+    // Mimics PDF.js's y-flip with an identity-scaled transform so the math is checkable by hand.
     convertToViewportRectangle: (rect) => {
       const [x0 = 0, y0 = 0, x1 = 0, y1 = 0] = rect;
       return [x0 * scale, (792 - y1) * scale, x1 * scale, (792 - y0) * scale];

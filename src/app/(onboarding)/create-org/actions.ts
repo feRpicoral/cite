@@ -46,7 +46,6 @@ export async function createOrgAction(
       },
     });
   } catch (err) {
-    // Unique violation on the slug — the URL is taken.
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       return { error: `The URL cite.app/${slug} is taken. Try a different name.` };
     }

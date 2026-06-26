@@ -16,10 +16,6 @@ export const LOCALE_COOKIE = "NEXT_LOCALE";
  *   2. The `NEXT_LOCALE` cookie — last device-level choice.
  *   3. The `Accept-Language` request header — first-visit signal.
  *   4. `defaultLocale` (en-US).
- *
- * The DB lookup is imported lazily so this util can be called from layouts
- * that don't authenticate (marketing tree) and from `getRequestConfig`,
- * which next-intl evaluates very early in the request.
  */
 export async function resolveLocale(): Promise<Locale> {
   const dbLocale = await readUserLocaleFromSession();

@@ -24,8 +24,7 @@ export default async function AcceptInvitePage({ searchParams }: AcceptInvitePag
 
   if (!token) return <Failure variant="notFound" />;
 
-  // Bounce signed-out visitors to login, preserving the invite link so we
-  // return here after auth.
+  // Preserve the invite link through login so we return here after auth.
   const supabase = await createServerSupabase();
   const {
     data: { user },

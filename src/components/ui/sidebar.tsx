@@ -199,7 +199,6 @@ function Sidebar({
       data-side={side}
       data-slot="sidebar"
     >
-      {/* Desktop gap track. */}
       <div
         data-slot="sidebar-gap"
         className={cn(

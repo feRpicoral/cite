@@ -4,9 +4,8 @@
  * highlights can use.
  *
  * PDF.js's `PageViewport.viewBox` is `[x0, y0, x1, y1]` in PDF user space
- * with y-up, while the canvas is y-down. The `convertToViewportRectangle`
- * helper does the math but we wrap it for readability and to stay decoupled
- * from PDF.js internals at the call site.
+ * with y-up, while the canvas is y-down; `convertToViewportRectangle` does the
+ * flip.
  */
 export interface PageViewport {
   width: number;

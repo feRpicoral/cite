@@ -7,12 +7,8 @@ import { setupIntegrationDb, truncateAllTenantTables } from "@/test/integration-
 import { vectorSearch } from "./vector-search";
 
 /**
- * Cross-tenant isolation test. Seeds two orgs with identical embeddings,
- * runs `vectorSearch` as org A, and asserts org B's chunks NEVER appear
- * in the results.
- *
- * This is the highest-stakes invariant in the product — a retrieval that
- * crosses tenant boundaries is a data breach.
+ * A retrieval that crosses tenant boundaries is a data breach; this is the
+ * highest-stakes invariant in the product.
  */
 describe("vectorSearch tenant isolation", () => {
   let prisma: PrismaClient;
@@ -57,7 +53,6 @@ describe("vectorSearch tenant isolation", () => {
     const seed = await seedTwoOrgs(prisma);
     const queryVector = new Array(2048).fill(0.5) as number[];
 
-    // Use orgA's id but orgB's collection id — must return nothing.
     const results = await vectorSearch(seed.orgA, seed.collectionB, queryVector, 20);
 
     expect(results).toEqual([]);

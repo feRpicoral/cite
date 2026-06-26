@@ -8,11 +8,10 @@
  * text descendants to pick the slice covering [charStart, charEnd].
  *
  * Offsets are indexed against the block's whitespace-collapsed text, matching
- * the parser's `extractText` normalization. Resolving them against the raw DOM
- * text instead would drift on any block whose markup carries insignificant
- * whitespace (blockquotes, `<pre>`, nested lists all render with leading and
- * inter-line newlines), pushing the highlight onto blank characters or
- * truncating it.
+ * the parser's `extractText` normalization. Resolving them against raw DOM text
+ * would drift on blocks whose markup carries insignificant whitespace
+ * (blockquotes, `<pre>`, nested lists), pushing the highlight onto blank
+ * characters or truncating it.
  *
  * Returns null when the selector doesn't resolve or the offsets fall outside
  * the element's text content (the document changed since indexing).
@@ -154,8 +153,7 @@ export function highlightRange(range: Range): HTMLElement {
   try {
     range.surroundContents(mark);
   } catch {
-    // Range spans multiple parents — extract its contents into the mark
-    // and re-insert.
+    // surroundContents throws when the range spans multiple parents.
     mark.appendChild(range.extractContents());
     range.insertNode(mark);
   }
@@ -207,11 +205,7 @@ function closestBlockAncestor(node: Node, stopAt: HTMLElement): HTMLElement | nu
   return null;
 }
 
-/**
- * Computes the structural selector the parser would emit for `target`,
- * relative to `root`. Walks ancestors from target up to (but not including)
- * root, recording `tag:nth-of-type(N)` at each step.
- */
+/** Computes the structural selector the parser would emit for `target`, relative to `root`. */
 function structuralSelector(root: HTMLElement, target: HTMLElement): string | null {
   const path: string[] = [];
   let cur: HTMLElement | null = target;
