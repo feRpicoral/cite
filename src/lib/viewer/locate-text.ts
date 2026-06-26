@@ -14,12 +14,18 @@
 const MIN_MATCH_LEN = 8;
 const PREFIX_LENGTHS = [Infinity, 320, 200, 130, 80, 48];
 
+// Markdown punctuation the stored quote carries but the plain text layer doesn't
+// (and inline emphasis/list markers). Treated as a separator on BOTH the needle
+// and the haystack so they normalize symmetrically — otherwise a quote with a
+// literal _ * | etc. would never match the text layer and fall back to the bbox.
+const SEPARATOR = /[\s#>*_`~|]/;
+
 /** Strips markdown tokens the plain text layer won't contain, then collapses. */
 function normalizeQuote(quote: string): string {
   return quote
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/[#>*_`~|]/g, " ")
+    .replace(new RegExp(SEPARATOR.source, "g"), " ")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
@@ -43,7 +49,7 @@ function buildNormalizedText(container: HTMLElement): NormalizedText {
     const value = node.nodeValue ?? "";
     for (let i = 0; i < value.length; i++) {
       const ch = value[i]!;
-      if (/\s/.test(ch)) {
+      if (SEPARATOR.test(ch)) {
         pendingSpace = text.length > 0;
         continue;
       }
