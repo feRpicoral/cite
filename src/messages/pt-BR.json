@@ -64,6 +64,94 @@
       "uploadCta": "Enviar documento"
     }
   },
+  "documents": {
+    "title": "Documentos",
+    "collections": "Coleções",
+    "newCollection": "Nova coleção",
+    "createCollection": "Criar coleção",
+    "editCollection": "Editar coleção",
+    "upload": "Enviar",
+    "browse": "procurar",
+    "documentCount": "{count, plural, =0 {Nenhum documento} one {# documento} other {# documentos}}",
+    "dropHint": "Arraste arquivos aqui ou <browse>procure</browse>",
+    "formatHint": "PDF, DOCX, HTML, MD",
+    "sizeHint": "até {size} cada",
+    "dropToUpload": "Solte para enviar para {name}",
+    "column": {
+      "name": "Nome",
+      "size": "Tamanho",
+      "added": "Adicionado",
+      "status": "Status"
+    },
+    "status": {
+      "uploading": "Enviando",
+      "extracting": "Extraindo",
+      "chunking": "Dividindo",
+      "embedding": "Indexando",
+      "indexed": "Indexado",
+      "failed": "Falhou",
+      "retry": "Tentar de novo"
+    },
+    "rowActions": {
+      "label": "Ações do documento",
+      "open": "Abrir / visualizar",
+      "rename": "Renomear",
+      "retry": "Repetir processamento",
+      "delete": "Excluir"
+    },
+    "rename": {
+      "title": "Renomear documento",
+      "label": "Nome",
+      "save": "Salvar"
+    },
+    "deleteDocument": {
+      "title": "Excluir \"{name}\"?",
+      "description": "Isso remove o documento e todas as citações que o referenciam desta coleção. Não pode ser desfeito.",
+      "confirm": "Excluir documento"
+    },
+    "deleteCollection": {
+      "title": "Excluir \"{name}\"?",
+      "description": "Isso exclui a coleção e {count, plural, one {# documento} other {# documentos}} dentro dela. Não pode ser desfeito.",
+      "confirm": "Excluir coleção"
+    },
+    "collectionActions": {
+      "label": "Ações da coleção",
+      "edit": "Editar",
+      "delete": "Excluir"
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "Acordos de Subprocessadores",
+      "description": "Descrição",
+      "descriptionOptional": "(opcional)",
+      "descriptionPlaceholder": "O que há nesta coleção?",
+      "descriptionHint": "Agrupe documentos relacionados para conversar com eles juntos.",
+      "charCount": "{count} / {max}"
+    },
+    "upload2": {
+      "success": "{name} enviado",
+      "failed": "{name}: {error}",
+      "tooLarge": "Muito grande — {size}. Os arquivos devem ter menos de {max}.",
+      "unsupported": "Formato não suportado. O Cite aceita PDF, DOCX, HTML e Markdown.",
+      "noCollection": "Nenhuma coleção selecionada. Escolha ou crie uma coleção antes de enviar."
+    },
+    "empty": {
+      "noCollectionsTitle": "Nenhuma coleção ainda",
+      "noCollectionsBody": "Coleções agrupam documentos relacionados para você conversar com eles juntos. Crie a primeira para começar a enviar fontes.",
+      "noSelectionTitle": "Selecione uma coleção",
+      "noSelectionBody": "Escolha uma coleção à esquerda para ver e gerenciar seus documentos.",
+      "emptyCollectionTitle": "Esta coleção está vazia",
+      "emptyCollectionBody": "Arraste arquivos aqui ou procure para enviar. PDF, DOCX, HTML, Markdown — até {size} cada.",
+      "uploadDocuments": "Enviar documentos"
+    },
+    "toast": {
+      "renamed": "Documento renomeado",
+      "deleted": "Documento excluído",
+      "retrying": "Repetindo processamento",
+      "collectionDeleted": "Coleção excluída",
+      "collectionUpdated": "Coleção atualizada"
+    }
+  },
   "settings": {
     "title": "Configurações",
     "workspaceDescription": "Gerencie {orgName} e suas preferências pessoais.",

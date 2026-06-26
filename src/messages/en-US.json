@@ -64,6 +64,94 @@
       "uploadCta": "Upload document"
     }
   },
+  "documents": {
+    "title": "Documents",
+    "collections": "Collections",
+    "newCollection": "New collection",
+    "createCollection": "Create collection",
+    "editCollection": "Edit collection",
+    "upload": "Upload",
+    "browse": "browse",
+    "documentCount": "{count, plural, =0 {No documents} one {# document} other {# documents}}",
+    "dropHint": "Drag files here or <browse>browse</browse>",
+    "formatHint": "PDF, DOCX, HTML, MD",
+    "sizeHint": "up to {size} each",
+    "dropToUpload": "Drop to upload to {name}",
+    "column": {
+      "name": "Name",
+      "size": "Size",
+      "added": "Added",
+      "status": "Status"
+    },
+    "status": {
+      "uploading": "Uploading",
+      "extracting": "Extracting",
+      "chunking": "Chunking",
+      "embedding": "Embedding",
+      "indexed": "Indexed",
+      "failed": "Failed",
+      "retry": "Retry"
+    },
+    "rowActions": {
+      "label": "Document actions",
+      "open": "Open / preview",
+      "rename": "Rename",
+      "retry": "Retry ingestion",
+      "delete": "Delete"
+    },
+    "rename": {
+      "title": "Rename document",
+      "label": "Name",
+      "save": "Save"
+    },
+    "deleteDocument": {
+      "title": "Delete \"{name}\"?",
+      "description": "This removes the document and any citations that reference it from this collection. This can't be undone.",
+      "confirm": "Delete document"
+    },
+    "deleteCollection": {
+      "title": "Delete \"{name}\"?",
+      "description": "This deletes the collection and all {count, plural, one {# document} other {# documents}} in it. This can't be undone.",
+      "confirm": "Delete collection"
+    },
+    "collectionActions": {
+      "label": "Collection actions",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Subprocessor Agreements",
+      "description": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "What's in this collection?",
+      "descriptionHint": "Group related documents to chat with together.",
+      "charCount": "{count} / {max}"
+    },
+    "upload2": {
+      "success": "Uploaded {name}",
+      "failed": "{name}: {error}",
+      "tooLarge": "Too large — {size}. Files must be under {max}.",
+      "unsupported": "Unsupported format. Cite accepts PDF, DOCX, HTML and Markdown.",
+      "noCollection": "No collection selected. Choose or create a collection before uploading."
+    },
+    "empty": {
+      "noCollectionsTitle": "No collections yet",
+      "noCollectionsBody": "Collections group related documents so you can chat with them together. Create your first to start uploading sources.",
+      "noSelectionTitle": "Select a collection",
+      "noSelectionBody": "Choose a collection on the left to see and manage its documents.",
+      "emptyCollectionTitle": "This collection is empty",
+      "emptyCollectionBody": "Drag files here or browse to upload. PDF, DOCX, HTML, Markdown — up to {size} each.",
+      "uploadDocuments": "Upload documents"
+    },
+    "toast": {
+      "renamed": "Document renamed",
+      "deleted": "Document deleted",
+      "retrying": "Retrying ingestion",
+      "collectionDeleted": "Collection deleted",
+      "collectionUpdated": "Collection updated"
+    }
+  },
   "settings": {
     "title": "Settings",
     "workspaceDescription": "Manage {orgName} and your personal preferences.",
