@@ -88,6 +88,27 @@ export async function createInviteAction(
   return { ok: true, url };
 }
 
+const UpdateOrgNameSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+});
+
+export async function updateOrgNameAction(
+  input: z.infer<typeof UpdateOrgNameSchema>,
+): Promise<Result> {
+  const session = await requireAdmin();
+  const parsed = UpdateOrgNameSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid organization name." };
+
+  // Organization is not a tenant-scoped model, so getDb won't inject orgId.
+  // The session's orgId is already verified via membership in getSession.
+  await getPrisma().organization.update({
+    where: { id: session.orgId },
+    data: { name: parsed.data.name },
+  });
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
 const RevokeInviteSchema = z.object({ inviteId: z.string().uuid() });
 
 export async function revokeInviteAction(
