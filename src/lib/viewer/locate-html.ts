@@ -7,6 +7,13 @@
  * first, then resolves the structural selector inside it, then walks the
  * text descendants to pick the slice covering [charStart, charEnd].
  *
+ * Offsets are indexed against the block's whitespace-collapsed text, matching
+ * the parser's `extractText` normalization. Resolving them against the raw DOM
+ * text instead would drift on any block whose markup carries insignificant
+ * whitespace (blockquotes, `<pre>`, nested lists all render with leading and
+ * inter-line newlines), pushing the highlight onto blank characters or
+ * truncating it.
+ *
  * Returns null when the selector doesn't resolve or the offsets fall outside
  * the element's text content (the document changed since indexing).
  */
@@ -28,37 +35,71 @@ export function locateHtmlRange(
   }
   if (!(node instanceof HTMLElement)) return null;
 
+  const map = buildNormalizedMap(node);
+  const start = domPositionAt(map, charStart);
+  const end = domPositionAt(map, charEnd);
+  if (!start || !end) return null;
+
+  const range = document.createRange();
+  range.setStart(start.node, start.offset);
+  range.setEnd(end.node, end.offset);
+  return range;
+}
+
+interface NormalizedPoint {
+  node: Text;
+  offset: number;
+}
+
+interface NormalizedMap {
+  length: number;
+  // `starts[i]` is the DOM position of normalized character i; `end` is the
+  // position just past the last normalized character.
+  starts: NormalizedPoint[];
+  end: NormalizedPoint | null;
+}
+
+/**
+ * Walks an element's text descendants and reproduces the parser's
+ * `text.replace(/\s+/g, " ").trim()` normalization, recording the DOM position
+ * each surviving character maps back to. This lets offsets stored against the
+ * normalized text resolve to a Range in the live (un-normalized) DOM.
+ */
+function buildNormalizedMap(node: Element): NormalizedMap {
   const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
-  let cursor = 0;
-  let startNode: Text | null = null;
-  let startOffset = 0;
-  let endNode: Text | null = null;
-  let endOffset = 0;
+  const starts: NormalizedPoint[] = [];
+  let end: NormalizedPoint | null = null;
+  let pendingSpace = false;
 
   let textNode = walker.nextNode() as Text | null;
   while (textNode) {
-    const len = textNode.data.length;
-    const nodeStart = cursor;
-    const nodeEnd = cursor + len;
-
-    if (!startNode && charStart >= nodeStart && charStart <= nodeEnd) {
-      startNode = textNode;
-      startOffset = charStart - nodeStart;
+    const data = textNode.data;
+    for (let i = 0; i < data.length; i++) {
+      const isSpace = /\s/.test(data[i]!);
+      if (isSpace) {
+        if (starts.length > 0) pendingSpace = true;
+        continue;
+      }
+      // A collapsed whitespace run becomes one space; anchor it just past the
+      // preceding character so a range ending at that space stops before the
+      // gap rather than swallowing it.
+      if (pendingSpace) {
+        if (end) starts.push(end);
+        pendingSpace = false;
+      }
+      starts.push({ node: textNode, offset: i });
+      end = { node: textNode, offset: i + 1 };
     }
-    if (charEnd >= nodeStart && charEnd <= nodeEnd) {
-      endNode = textNode;
-      endOffset = charEnd - nodeStart;
-      break;
-    }
-    cursor = nodeEnd;
     textNode = walker.nextNode() as Text | null;
   }
 
-  if (!startNode || !endNode) return null;
-  const range = document.createRange();
-  range.setStart(startNode, startOffset);
-  range.setEnd(endNode, endOffset);
-  return range;
+  return { length: starts.length, starts, end };
+}
+
+function domPositionAt(map: NormalizedMap, index: number): NormalizedPoint | null {
+  if (index < 0 || index > map.length) return null;
+  if (index < map.length) return map.starts[index]!;
+  return map.end;
 }
 
 /**
@@ -190,25 +231,32 @@ function structuralSelector(root: HTMLElement, target: HTMLElement): string | nu
   return path.length > 0 ? `:scope > ${path.join(" > ")}` : null;
 }
 
+/**
+ * Inverse of `buildNormalizedMap`: converts a Range's DOM endpoints into
+ * offsets against the block's whitespace-collapsed text, so a location stored
+ * here round-trips through `locateHtmlRange`.
+ */
 function textOffsetsWithin(
   block: HTMLElement,
   range: Range,
 ): { start: number; end: number } | null {
-  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-  let cursor = 0;
-  let start: number | null = null;
-  let end: number | null = null;
-  let node = walker.nextNode() as Text | null;
-  while (node) {
-    const len = node.data.length;
-    if (node === range.startContainer) start = cursor + range.startOffset;
-    if (node === range.endContainer) {
-      end = cursor + range.endOffset;
-      break;
-    }
-    cursor += len;
-    node = walker.nextNode() as Text | null;
-  }
+  const map = buildNormalizedMap(block);
+  const start = normalizedIndexAt(map, range.startContainer, range.startOffset);
+  const end = normalizedIndexAt(map, range.endContainer, range.endOffset);
   if (start === null || end === null) return null;
   return { start, end };
+}
+
+/**
+ * Smallest normalized index whose DOM position is at or after the given raw
+ * `(node, offset)`. A selection that begins inside collapsed whitespace snaps
+ * forward to the next surviving character, matching how offsets were stored.
+ */
+function normalizedIndexAt(map: NormalizedMap, node: Node, offset: number): number | null {
+  for (let i = 0; i < map.length; i++) {
+    const p = map.starts[i]!;
+    if (p.node === node && p.offset >= offset) return i;
+  }
+  if (map.end && map.end.node === node && map.end.offset >= offset) return map.length;
+  return null;
 }
