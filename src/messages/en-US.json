@@ -141,6 +141,41 @@
       }
     }
   },
+  "conversationsList": {
+    "title": "Conversations",
+    "newConversation": "New conversation",
+    "searchPlaceholder": "Search conversations",
+    "allCollections": "All collections",
+    "total": "{count} total",
+    "messageCount": "{count, plural, one {# message} other {# messages}}",
+    "loadMore": "Load more",
+    "clearSearch": "Clear search",
+    "noneYet": {
+      "title": "No conversations yet",
+      "description": "Start one to ask grounded questions about a collection — every answer comes back with verifiable citations."
+    },
+    "noResults": {
+      "title": "No conversations match",
+      "description": "Nothing for \"{query}\". Try a different search or clear the filter.",
+      "descriptionFiltered": "No conversations in this collection yet. Try a different filter."
+    },
+    "noCollections": {
+      "title": "Create a collection first",
+      "description": "You need at least one collection with indexed documents before you can start a conversation.",
+      "createCollection": "Create collection"
+    },
+    "dialog": {
+      "title": "New conversation",
+      "description": "Choose a collection to ground your answers in.",
+      "documentCount": "{count, plural, one {# document} other {# documents}}",
+      "indexed": "indexed",
+      "embedding": "{count} embedding",
+      "empty": "indexing",
+      "cancel": "Cancel",
+      "start": "Start conversation",
+      "error": "Couldn't create conversation"
+    }
+  },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "notFound": "Page not found.",
