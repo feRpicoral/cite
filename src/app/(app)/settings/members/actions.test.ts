@@ -18,13 +18,18 @@ const getServiceSupabase = vi.fn();
 const getUser = vi.fn();
 
 const prismaInvite = { findUnique: vi.fn() };
+const prismaOrganization = { update: vi.fn() };
 const prismaTransaction = vi.fn();
 const dbInvite = { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() };
 const dbMembership = { findFirst: vi.fn() };
 
 vi.mock("@/lib/auth/session", () => ({ requireAdmin: () => requireAdmin() }));
 vi.mock("@/lib/db/client", () => ({
-  getPrisma: () => ({ invite: prismaInvite, $transaction: prismaTransaction }),
+  getPrisma: () => ({
+    invite: prismaInvite,
+    organization: prismaOrganization,
+    $transaction: prismaTransaction,
+  }),
 }));
 vi.mock("@/lib/db/with-org", () => ({
   getDb: () => ({ invite: dbInvite, membership: dbMembership, $transaction: prismaTransaction }),
@@ -41,6 +46,7 @@ import {
   changeRoleAction,
   createInviteAction,
   removeMemberAction,
+  updateOrgNameAction,
 } from "./actions";
 
 function signedInAs(id: string, email: string) {
@@ -200,5 +206,99 @@ describe("admin-count scoping", () => {
     await removeMemberAction({ membershipId: "44444444-4444-4444-8444-444444444444" });
 
     expect(count).toHaveBeenCalledWith({ where: { orgId: session.orgId, role: "ADMIN" } });
+  });
+});
+
+describe("last-admin guard", () => {
+  const otherAdmin = {
+    id: "m1",
+    userId: asUserId("33333333-3333-3333-3333-333333333333"),
+    role: "ADMIN" as const,
+  };
+
+  it("blocks demoting the final admin", async () => {
+    const update = vi.fn();
+    prismaTransaction.mockImplementation(async (cb) => {
+      const tx = {
+        membership: {
+          findUnique: vi.fn().mockResolvedValue(otherAdmin),
+          count: vi.fn().mockResolvedValue(1),
+          update,
+        },
+      };
+      return cb(tx);
+    });
+
+    const result = await changeRoleAction({
+      membershipId: "44444444-4444-4444-8444-444444444444",
+      role: "MEMBER",
+    });
+
+    expect(result).toEqual({ ok: false, error: "Can't demote the last admin." });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("blocks removing the final admin", async () => {
+    const del = vi.fn();
+    prismaTransaction.mockImplementation(async (cb) => {
+      const tx = {
+        membership: {
+          findUnique: vi.fn().mockResolvedValue(otherAdmin),
+          count: vi.fn().mockResolvedValue(1),
+          delete: del,
+        },
+      };
+      return cb(tx);
+    });
+
+    const result = await removeMemberAction({
+      membershipId: "44444444-4444-4444-8444-444444444444",
+    });
+
+    expect(result).toEqual({ ok: false, error: "Can't remove the last admin." });
+    expect(del).not.toHaveBeenCalled();
+  });
+
+  it("allows demoting an admin when another admin remains", async () => {
+    const update = vi.fn().mockResolvedValue({});
+    prismaTransaction.mockImplementation(async (cb) => {
+      const tx = {
+        membership: {
+          findUnique: vi.fn().mockResolvedValue(otherAdmin),
+          count: vi.fn().mockResolvedValue(2),
+          update,
+        },
+      };
+      return cb(tx);
+    });
+
+    const result = await changeRoleAction({
+      membershipId: "44444444-4444-4444-8444-444444444444",
+      role: "MEMBER",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(update).toHaveBeenCalledOnce();
+  });
+});
+
+describe("updateOrgNameAction", () => {
+  it("rejects a blank name", async () => {
+    const result = await updateOrgNameAction({ name: "  " });
+
+    expect(result).toEqual({ ok: false, error: "Invalid organization name." });
+    expect(prismaOrganization.update).not.toHaveBeenCalled();
+  });
+
+  it("updates the session's org scoped to its id", async () => {
+    prismaOrganization.update.mockResolvedValue({});
+
+    const result = await updateOrgNameAction({ name: "Acme Inc" });
+
+    expect(result).toEqual({ ok: true });
+    expect(prismaOrganization.update).toHaveBeenCalledWith({
+      where: { id: session.orgId },
+      data: { name: "Acme Inc" },
+    });
   });
 });
