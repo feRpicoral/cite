@@ -48,7 +48,10 @@ function Inner({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    // Pin to the viewport height so the chat and document panes each get their
+    // own bounded scroll region; without a fixed height the panes' overflow
+    // never clamps and the whole page scrolls (and PDF zoom grows the page).
+    <div className="flex h-dvh flex-col">
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b px-4 sm:px-6">
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold">{title}</h1>
