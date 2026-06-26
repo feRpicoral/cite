@@ -1,5 +1,6 @@
 "use client";
 
+import type { CitationVerdict, DocumentFormat } from "@prisma/client";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 import type { DocumentLocation } from "@/lib/ingestion/location";
@@ -8,6 +9,11 @@ export interface ViewerTarget {
   documentId: string;
   documentName: string;
   location: DocumentLocation;
+  format?: DocumentFormat;
+  displayIndex?: number;
+  quote?: string;
+  verdict?: CitationVerdict | null;
+  confidence?: number | null;
 }
 
 interface ViewerContextValue {
