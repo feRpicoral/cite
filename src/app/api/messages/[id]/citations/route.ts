@@ -44,14 +44,26 @@ export async function GET(_request: Request, context: Context) {
   });
   if (!message) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const audits = await db.citationAudit.findMany({
+    where: { messageId: id },
+    select: { displayIndex: true, verdict: true, confidence: true, reasoning: true },
+  });
+  const auditByIndex = new Map(audits.map((a) => [a.displayIndex, a]));
+
   return NextResponse.json({
-    citations: message.citations.map((c) => ({
-      displayIndex: c.displayIndex,
-      quote: c.quote,
-      chunkId: c.chunk.id,
-      documentId: c.chunk.documentId,
-      documentName: c.chunk.document.name,
-      location: parseLocation(c.chunk.location),
-    })),
+    citations: message.citations.map((c) => {
+      const audit = auditByIndex.get(c.displayIndex);
+      return {
+        displayIndex: c.displayIndex,
+        quote: c.quote,
+        chunkId: c.chunk.id,
+        documentId: c.chunk.documentId,
+        documentName: c.chunk.document.name,
+        location: parseLocation(c.chunk.location),
+        verdict: audit?.verdict ?? null,
+        confidence: audit?.confidence ?? null,
+        reasoning: audit?.reasoning ?? null,
+      };
+    }),
   });
 }
