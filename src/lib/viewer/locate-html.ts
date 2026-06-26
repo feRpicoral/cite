@@ -107,7 +107,8 @@ export function rangeToHtmlLocation(
  */
 export function highlightRange(range: Range): HTMLElement {
   const mark = document.createElement("mark");
-  mark.className = "bg-highlight/60 text-highlight-foreground rounded px-0.5";
+  mark.className =
+    "bg-highlight/45 text-highlight-foreground ring-highlight-border rounded-sm px-0.5 ring-1";
   mark.dataset.citation = "true";
   try {
     range.surroundContents(mark);

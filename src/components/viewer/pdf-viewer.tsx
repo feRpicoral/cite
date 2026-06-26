@@ -1,12 +1,14 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Loader2, MessageSquare, MessageSquarePlus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
-import { CommentThread } from "@/components/comments/comment-thread";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { NewRegionCommentPopover } from "@/components/viewer/new-region-comment-popover";
+import { RegionCommentPin } from "@/components/viewer/region-comment-pin";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { DocumentLocation } from "@/lib/ingestion/location";
 import { cn } from "@/lib/utils";
 import { bboxToViewportRect } from "@/lib/viewer/coords";
@@ -16,9 +18,14 @@ interface PdfViewerProps {
   documentId: string;
   location: Extract<DocumentLocation, { kind: "pdf" }>;
   currentUserId: string;
+  displayIndex?: number;
 }
 
-const SCALE = 1.4;
+const BASE_SCALE = 1.4;
+const ZOOM_STEP = 25;
+const ZOOM_MIN = 50;
+const ZOOM_MAX = 300;
+const ZOOM_DEFAULT = 100;
 
 // pdf.worker.min.mjs is copied into public/ by scripts/copy-pdf-worker.mjs
 // on postinstall, so the browser fetches it from our own origin.
@@ -74,7 +81,15 @@ interface RegionPin {
   resolved: boolean;
 }
 
-export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewerProps) {
+export function PdfViewer({
+  url,
+  documentId,
+  location,
+  currentUserId,
+  displayIndex,
+}: PdfViewerProps) {
+  const t = useTranslations("documentViewer");
+  const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -90,6 +105,7 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
     error: null,
   });
   const { page, totalPages, viewport, loading, error } = state;
+  const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [pending, setPending] = useState<PendingSelection | null>(null);
   const [pins, setPins] = useState<RegionPin[]>([]);
 
@@ -165,7 +181,8 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
         const pdfPage = await doc.getPage(targetPage);
         if (cancelled) return;
 
-        const pageViewport = pdfPage.getViewport({ scale: SCALE });
+        const scale = BASE_SCALE * (zoom / 100);
+        const pageViewport = pdfPage.getViewport({ scale });
 
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -209,11 +226,18 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
             const rect = bboxToViewportRect(location.bbox, pageViewport);
             const hl = document.createElement("div");
             hl.className =
-              "bg-highlight/40 border-highlight/70 pointer-events-none absolute rounded-sm border transition-opacity";
+              "bg-highlight/40 ring-highlight-border pointer-events-none absolute rounded-sm shadow-[-3px_0_0_0_var(--highlight-border)] ring-1 transition-opacity";
             hl.style.left = `${rect.left}px`;
             hl.style.top = `${rect.top}px`;
             hl.style.width = `${rect.width}px`;
             hl.style.height = `${rect.height}px`;
+            if (displayIndex != null) {
+              const badge = document.createElement("span");
+              badge.className =
+                "bg-highlight-border absolute -top-2 -left-2 flex h-[17px] items-center rounded-[5px] px-1.5 font-mono text-[10px] font-semibold text-white";
+              badge.textContent = String(displayIndex);
+              hl.appendChild(badge);
+            }
             overlay.appendChild(hl);
             hl.scrollIntoView({ behavior: "smooth", block: "center" });
           }
@@ -238,7 +262,7 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [docReady, page, location.bbox, location.page]);
+  }, [docReady, page, zoom, location.bbox, location.page, displayIndex]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
@@ -320,72 +344,129 @@ export function PdfViewer({ url, documentId, location, currentUserId }: PdfViewe
     [pending, documentId, page, refreshPins],
   );
 
+  const goPrev = () => dispatch({ type: "setPage", page: Math.max(1, page - 1) });
+  const goNext = () =>
+    dispatch({ type: "setPage", page: totalPages ? Math.min(totalPages, page + 1) : page + 1 });
   const pinPositions = pinsForCurrentPage(pins, page, viewport);
+  const pageCount = t("pageCount", { page, total: totalPages ?? "—" });
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b px-4 py-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => dispatch({ type: "setPage", page: Math.max(1, page - 1) })}
-          disabled={page <= 1}
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-muted-foreground text-xs">
-          Page {page}
-          {totalPages != null ? ` of ${totalPages}` : ""}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() =>
-            dispatch({
-              type: "setPage",
-              page: totalPages ? Math.min(totalPages, page + 1) : page + 1,
-            })
-          }
-          disabled={totalPages != null && page >= totalPages}
-          aria-label="Next page"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="bg-muted/30 relative flex-1 overflow-auto p-4">
+    <div className="flex min-h-0 flex-1 flex-col">
+      {!isMobile && (
+        <div className="bg-muted/20 flex h-[38px] shrink-0 items-center gap-1.5 border-b px-3">
+          <ToolbarButton onClick={goPrev} disabled={page <= 1} aria-label={t("previousPage")}>
+            <ChevronLeft className="size-3.5" />
+          </ToolbarButton>
+          <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
+            {pageCount}
+          </span>
+          <ToolbarButton
+            onClick={goNext}
+            disabled={totalPages != null && page >= totalPages}
+            aria-label={t("nextPage")}
+          >
+            <ChevronRight className="size-3.5" />
+          </ToolbarButton>
+          <div className="ml-auto flex items-center gap-1.5">
+            <ToolbarButton
+              onClick={() => setZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+              disabled={zoom <= ZOOM_MIN}
+              aria-label={t("zoomOut")}
+            >
+              <Minus className="size-3.5" />
+            </ToolbarButton>
+            <span className="text-muted-foreground w-9 text-center font-mono text-[11px] tabular-nums">
+              {zoom}%
+            </span>
+            <ToolbarButton
+              onClick={() => setZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+              disabled={zoom >= ZOOM_MAX}
+              aria-label={t("zoomIn")}
+            >
+              <Plus className="size-3.5" />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => setZoom(ZOOM_DEFAULT)}
+              className="w-auto px-2 text-[10.5px]"
+            >
+              {t("fit")}
+            </ToolbarButton>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-muted/40 relative flex-1 overflow-auto p-4">
         <div className="relative mx-auto inline-block" onMouseUp={onMouseUp}>
-          <canvas ref={canvasRef} className="rounded shadow" />
+          <canvas ref={canvasRef} className="rounded-sm shadow" />
           <div ref={textLayerRef} className="cite-text-layer" />
           <div ref={overlayRef} className="pointer-events-none absolute inset-0" />
           {pinPositions.map((p) => (
-            <PdfRegionPin
+            <RegionCommentPin
               key={p.commentId}
               documentId={documentId}
               commentId={p.commentId}
               currentUserId={currentUserId}
               resolved={p.resolved}
-              rect={p.rect}
+              side="left"
+              style={{ left: p.rect.left + 6, top: p.rect.top - 12 }}
               onChange={() => void refreshPins()}
             />
           ))}
           {pending && (
             <NewRegionCommentPopover
-              anchor={pending.anchor}
+              anchor={{ left: pending.anchor.left, top: pending.anchor.top }}
               onSubmit={createRegionComment}
               onCancel={() => setPending(null)}
             />
           )}
         </div>
         {loading && (
-          <div className="text-muted-foreground flex items-center justify-center gap-2 py-4 text-xs">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Loading…
+          <div className="text-muted-foreground flex items-center justify-center gap-2 py-4 text-[11px] font-medium">
+            <span className="text-primary animate-cite-spin size-3 rounded-full border-2 border-current border-t-transparent" />
+            {totalPages != null ? t("rendering", { page, total: totalPages }) : t("loading")}
           </div>
         )}
         {error && <p className="text-destructive p-4 text-sm">{error}</p>}
       </div>
+
+      {isMobile && (
+        <div className="flex h-[46px] shrink-0 items-center justify-center gap-3 border-t">
+          <button
+            type="button"
+            onClick={goPrev}
+            disabled={page <= 1}
+            aria-label={t("previousPage")}
+            className="text-muted-foreground disabled:opacity-40"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <span className="text-muted-foreground font-mono text-xs tabular-nums">
+            {t("pageLabel", { page, total: totalPages ?? "—" })}
+          </span>
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={totalPages != null && page >= totalPages}
+            aria-label={t("nextPage")}
+            className="text-muted-foreground disabled:opacity-40"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function ToolbarButton({ className, ...props }: React.ComponentProps<typeof Button>) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon-xs"
+      className={cn("bg-card size-6 shadow-none", className)}
+      {...props}
+    />
   );
 }
 
@@ -409,96 +490,4 @@ function pinsForCurrentPage(
         },
       };
     });
-}
-
-function PdfRegionPin({
-  documentId,
-  commentId,
-  currentUserId,
-  resolved,
-  rect,
-  onChange,
-}: {
-  documentId: string;
-  commentId: string;
-  currentUserId: string;
-  resolved: boolean;
-  rect: { left: number; top: number };
-  onChange: () => void;
-}) {
-  return (
-    <Popover onOpenChange={(open) => !open && onChange()}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="View comment"
-          style={{ left: rect.left + 4, top: rect.top - 12 }}
-          className={cn(
-            "absolute flex h-5 w-5 items-center justify-center rounded-full border shadow-sm transition-colors",
-            resolved
-              ? "bg-muted text-muted-foreground border-muted-foreground/20"
-              : "bg-card border-border hover:bg-muted",
-          )}
-        >
-          <MessageSquare className="h-2.5 w-2.5" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="right" align="start" className="w-80 p-3">
-        <CommentThread
-          targetType="DOCUMENT_REGION"
-          targetId={documentId}
-          currentUserId={currentUserId}
-          focusCommentId={commentId}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function NewRegionCommentPopover({
-  anchor,
-  onSubmit,
-  onCancel,
-}: {
-  anchor: { left: number; top: number };
-  onSubmit: (body: string) => void;
-  onCancel: () => void;
-}) {
-  const [draft, setDraft] = useState("");
-  return (
-    <Popover open onOpenChange={(o) => !o && onCancel()}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="New region comment"
-          className="bg-primary text-primary-foreground absolute z-10 rounded-full p-1 shadow"
-          style={{ left: anchor.left, top: anchor.top }}
-        >
-          <MessageSquarePlus className="h-3 w-3" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-72 space-y-2 p-3">
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={3}
-          placeholder="Comment on this passage…"
-          autoFocus
-          className="border-input bg-background placeholder:text-muted-foreground w-full resize-none rounded border px-2 py-1 text-xs outline-none"
-        />
-        <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="xs" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            size="xs"
-            disabled={draft.trim().length === 0}
-            onClick={() => onSubmit(draft.trim())}
-          >
-            Comment
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
 }
