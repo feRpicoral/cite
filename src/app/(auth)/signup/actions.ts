@@ -32,5 +32,5 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
   });
   if (error) return { error: error.message };
 
-  redirect("/auth/check-email");
+  redirect(`/auth/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }

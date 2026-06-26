@@ -8,7 +8,7 @@ import { resolveLocale } from "@/lib/i18n/resolve-locale";
 
 import { BrandMark } from "../(auth)/brand-mark";
 
-export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
+export async function InviteShell({ children }: { children: React.ReactNode }) {
   const locale = await resolveLocale();
   const messages = await getMessages({ locale });
 
