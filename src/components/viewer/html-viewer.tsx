@@ -55,6 +55,7 @@ interface PendingSelection {
 
 export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }: HtmlViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [state, dispatch] = useReducer(reducer, { parts: null, loading: true, error: null });
   const { parts, loading, error } = state;
   const [pending, setPending] = useState<PendingSelection | null>(null);
@@ -143,11 +144,17 @@ export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }:
       setPending(null);
       return;
     }
+    const scrollEl = scrollRef.current;
     const rect = range.getBoundingClientRect();
-    const rootRect = root.getBoundingClientRect();
+    const originRect = (scrollEl ?? root).getBoundingClientRect();
+    const scrollTop = scrollEl?.scrollTop ?? 0;
+    const scrollLeft = scrollEl?.scrollLeft ?? 0;
     setPending({
       location: { kind: "html", ...loc },
-      anchor: { top: rect.bottom - rootRect.top, left: rect.left - rootRect.left },
+      anchor: {
+        top: rect.bottom - originRect.top + scrollTop,
+        left: rect.left - originRect.left + scrollLeft,
+      },
     });
   }, []);
 
@@ -171,7 +178,7 @@ export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }:
     [pending, documentId, refreshPins],
   );
 
-  const pinPositions = usePinPositions(containerRef, parts, pins);
+  const pinPositions = usePinPositions(containerRef, scrollRef, parts, pins);
 
   if (loading) return <ViewerLoading />;
   if (error) {
@@ -187,7 +194,7 @@ export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }:
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="relative flex-1 overflow-auto p-8" onMouseUp={onMouseUp}>
+      <div ref={scrollRef} className="relative flex-1 overflow-auto p-8" onMouseUp={onMouseUp}>
         {parts && (
           <article
             ref={containerRef}
@@ -240,6 +247,7 @@ interface RegionPin {
  */
 function usePinPositions(
   containerRef: React.RefObject<HTMLDivElement | null>,
+  scrollRef: React.RefObject<HTMLDivElement | null>,
   parts: PartShape[] | null,
   pins: RegionPin[],
 ): { commentId: string; resolved: boolean; top: number }[] {
@@ -253,12 +261,16 @@ function usePinPositions(
       setPositions([]);
       return;
     }
+    // Ranges are located within the article, but pins are positioned inside the
+    // scrolling container, so coordinates must be relative to that container
+    // (the article doesn't scroll — its scrollTop is always 0).
     const root = containerRef.current;
-    if (!root) {
+    const scrollEl = scrollRef.current;
+    if (!root || !scrollEl) {
       setPositions([]);
       return;
     }
-    const rootRect = root.getBoundingClientRect();
+    const originRect = scrollEl.getBoundingClientRect();
     const out: { commentId: string; resolved: boolean; top: number }[] = [];
     for (const pin of pins) {
       const range = locateHtmlRange(
@@ -273,11 +285,11 @@ function usePinPositions(
       out.push({
         commentId: pin.commentId,
         resolved: pin.resolved,
-        top: rect.top - rootRect.top + root.scrollTop,
+        top: rect.top - originRect.top + scrollEl.scrollTop,
       });
     }
     setPositions(out);
-  }, [parts, pins, containerRef]);
+  }, [parts, pins, containerRef, scrollRef]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return positions;
