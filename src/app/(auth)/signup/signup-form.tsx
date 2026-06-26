@@ -27,6 +27,10 @@ export function SignupForm() {
     <form action={formAction} className="space-y-4">
       {state.error && <FormAlert title={state.error} />}
       <div className="space-y-2">
+        <Label htmlFor="name">{t("nameLabel")}</Label>
+        <Input id="name" name="name" type="text" autoComplete="name" required />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="email">{t("emailLabel")}</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
