@@ -63,6 +63,15 @@ interface ChatPanelProps {
 const PERSISTED_ID = /^[0-9a-f-]{36}$/;
 const CITATION_MARKER = /\[(\d+(?:\s*,\s*\d+)*)\]/;
 
+// Auto-scroll only when the reader is already within this many px of the
+// bottom, so scrolling up to read mid-stream isn't yanked back down.
+const AUTOSCROLL_THRESHOLD_PX = 120;
+// Citation verdicts are written by the async audit job after the answer
+// persists, so the first hydration sees them null. Re-poll a bounded number
+// of times to fill the support footer and chip previews without a reload.
+const VERDICT_POLL_INTERVAL_MS = 4_000;
+const MAX_VERDICT_POLLS = 10;
+
 export function ChatPanel({
   conversationId,
   initialMessages,
@@ -143,9 +152,33 @@ export function ChatPanel({
   useMessageInserts(conversationId, onIncoming);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    const viewport = bottomRef.current?.closest<HTMLElement>('[data-slot="scroll-area-viewport"]');
+    if (!viewport) return;
+    const onScroll = () => {
+      const distance = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      stickToBottomRef.current = distance < AUTOSCROLL_THRESHOLD_PX;
+    };
+    viewport.addEventListener("scroll", onScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (stickToBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    }
   }, [messages, status]);
+
+  // Sending always re-anchors to the bottom, even if the reader had scrolled up.
+  const send = useCallback(
+    (text: string) => {
+      stickToBottomRef.current = true;
+      void sendMessage({ text });
+    },
+    [sendMessage],
+  );
 
   // Hydrate citations for any persisted assistant message we haven't fetched
   // yet. Triggers right after onIncoming rewrites a streamed id to the
@@ -188,6 +221,56 @@ export function ChatPanel({
     };
   }, [messages]);
 
+  // Verdict back-fill: the citation audit runs asynchronously after the answer
+  // persists, so a freshly-hydrated message has citations with null verdicts.
+  // Re-poll (bounded) until every citation carries a verdict, so the support
+  // footer and chip previews fill in without a manual reload.
+  const verdictPollsRef = useRef<Map<string, number>>(new Map());
+  useEffect(() => {
+    const pending = messages.filter((m) => {
+      if (m.role !== "assistant" || !PERSISTED_ID.test(m.id)) return false;
+      const citations = citationsByMessage.get(m.id);
+      if (!citations || citations.length === 0) return false;
+      if (!citations.some((c) => c.verdict == null)) return false;
+      return (verdictPollsRef.current.get(m.id) ?? 0) < MAX_VERDICT_POLLS;
+    });
+    if (pending.length === 0) return;
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        const results = await Promise.all(
+          pending.map(async (m) => {
+            verdictPollsRef.current.set(m.id, (verdictPollsRef.current.get(m.id) ?? 0) + 1);
+            try {
+              const res = await fetch(`/api/messages/${m.id}/citations`);
+              if (!res.ok) return null;
+              const data = (await res.json()) as { citations: RawCitation[] };
+              return [m.id, parseCitations(data.citations)] as const;
+            } catch {
+              return null;
+            }
+          }),
+        );
+        if (cancelled) return;
+        const fetched = results.filter(
+          (entry): entry is NonNullable<typeof entry> => entry !== null,
+        );
+        if (fetched.length === 0) return;
+        setCitationsByMessage((prev) => {
+          const next = new Map(prev);
+          for (const [id, citations] of fetched) next.set(id, citations);
+          return next;
+        });
+      })();
+    }, VERDICT_POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [messages, citationsByMessage]);
+
   // Reconcile a streamed assistant message's transient id to the persisted
   // UUID the chat route emits as a `data-messageId` part once the answer is
   // saved. This finalizes the bubble (citation hydration, collapsed trace,
@@ -213,6 +296,7 @@ export function ChatPanel({
   const busy = status === "streaming" || status === "submitted";
 
   const retry = () => {
+    stickToBottomRef.current = true;
     clearError();
     void regenerate();
   };
@@ -222,10 +306,7 @@ export function ChatPanel({
       <ScrollArea className="min-h-0 flex-1">
         <div className="mx-auto flex max-w-2xl flex-col gap-5 px-5 py-6 sm:px-6">
           {messages.length === 0 ? (
-            <AskAnything
-              collectionName={collectionName}
-              onPickSuggestion={(text) => sendMessage({ text })}
-            />
+            <AskAnything collectionName={collectionName} onPickSuggestion={send} />
           ) : (
             messages.map((m) => {
               const text = m.parts
@@ -290,7 +371,7 @@ export function ChatPanel({
       <div className="bg-background/95 supports-[backdrop-filter]:bg-background/80 border-t px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
         <div className="mx-auto max-w-2xl">
           <ChatComposer
-            onSend={(content) => sendMessage({ text: content })}
+            onSend={send}
             busy={busy}
             onStop={stop}
             placeholder={t(
