@@ -1,10 +1,10 @@
 "use client";
 
-import { Loader2, MessageSquarePlus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { NewRegionCommentPopover } from "@/components/viewer/new-region-comment-popover";
+import { RegionCommentPin } from "@/components/viewer/region-comment-pin";
+import { ViewerLoading, ViewerUnsupported } from "@/components/viewer/viewer-states";
 import type { DocumentLocation } from "@/lib/ingestion/location";
 import {
   clearHighlights,
@@ -13,12 +13,11 @@ import {
   rangeToHtmlLocation,
 } from "@/lib/viewer/locate-html";
 
-import { RegionCommentPin } from "./region-comment-pin";
-
 interface HtmlViewerProps {
   documentId: string;
   location: Extract<DocumentLocation, { kind: "html" }>;
   currentUserId: string;
+  downloadUrl: string;
 }
 
 interface PartShape {
@@ -54,7 +53,7 @@ interface PendingSelection {
   anchor: { top: number; left: number };
 }
 
-export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerProps) {
+export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }: HtmlViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [state, dispatch] = useReducer(reducer, { parts: null, loading: true, error: null });
   const { parts, loading, error } = state;
@@ -174,16 +173,21 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
 
   const pinPositions = usePinPositions(containerRef, parts, pins);
 
+  if (loading) return <ViewerLoading />;
+  if (error) {
+    return (
+      <div className="bg-muted/30 flex flex-1 items-center justify-center p-7">
+        <p className="text-destructive text-sm">{error}</p>
+      </div>
+    );
+  }
+  if (parts && parts.length === 0) {
+    return <ViewerUnsupported downloadUrl={downloadUrl} />;
+  }
+
   return (
-    <div className="relative flex flex-1 flex-col">
-      <div className="bg-muted/30 relative flex-1 overflow-auto p-6" onMouseUp={onMouseUp}>
-        {loading && (
-          <div className="text-muted-foreground flex items-center justify-center gap-2 py-4 text-xs">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Loading…
-          </div>
-        )}
-        {error && <p className="text-destructive p-4 text-sm">{error}</p>}
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <div className="relative flex-1 overflow-auto p-8" onMouseUp={onMouseUp}>
         {parts && (
           <article
             ref={containerRef}
@@ -204,14 +208,15 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
             documentId={documentId}
             commentId={p.commentId}
             resolved={p.resolved}
-            top={p.top}
             currentUserId={currentUserId}
+            side="left"
+            style={{ top: p.top, right: 8 }}
             onChange={() => void refreshPins()}
           />
         ))}
         {pending && (
           <NewRegionCommentPopover
-            anchor={pending.anchor}
+            anchor={{ top: pending.anchor.top, left: pending.anchor.left }}
             onSubmit={createRegionComment}
             onCancel={() => setPending(null)}
           />
@@ -276,52 +281,4 @@ function usePinPositions(
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return positions;
-}
-
-function NewRegionCommentPopover({
-  anchor,
-  onSubmit,
-  onCancel,
-}: {
-  anchor: { top: number; left: number };
-  onSubmit: (body: string) => void;
-  onCancel: () => void;
-}) {
-  const [draft, setDraft] = useState("");
-  return (
-    <Popover open onOpenChange={(o) => !o && onCancel()}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="New region comment"
-          className="bg-primary text-primary-foreground absolute z-10 rounded-full p-1 shadow"
-          style={{ top: anchor.top, left: anchor.left }}
-        >
-          <MessageSquarePlus className="h-3 w-3" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-72 space-y-2 p-3">
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={3}
-          placeholder="Comment on this passage…"
-          autoFocus
-          className="border-input bg-background placeholder:text-muted-foreground w-full resize-none rounded border px-2 py-1 text-xs outline-none"
-        />
-        <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="xs" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            size="xs"
-            disabled={draft.trim().length === 0}
-            onClick={() => onSubmit(draft.trim())}
-          >
-            Comment
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
 }
