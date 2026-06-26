@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   Check,
-  ChevronDown,
   FileText,
   Highlighter,
   LifeBuoy,
@@ -26,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { type Locale, localeUrlSlug, slugToLocale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
+import { FaqAccordion } from "./_components/faq-accordion";
 import { MarketingFooter } from "./_components/marketing-footer";
 import { MarketingNav } from "./_components/marketing-nav";
 
@@ -83,7 +83,7 @@ async function Hero({ locale, home }: { locale: Locale; home: string }) {
         aria-hidden
         className="bg-primary/10 pointer-events-none absolute top-[-220px] left-1/2 h-[620px] w-[1100px] max-w-[120vw] -translate-x-1/2 rounded-full blur-3xl"
       />
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-20 text-center">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pt-20 pb-28 text-center">
         <Badge variant="outline" className="bg-card gap-2 px-3 py-1.5 font-mono shadow-sm">
           <span className="bg-primary size-1.5 rounded-full" />
           <span className="text-[11px] tracking-wider uppercase">{t("badge")}</span>
@@ -687,20 +687,7 @@ async function Faq({ locale }: { locale: Locale }) {
           {t("title")}
         </h2>
       </div>
-      <div className="flex flex-col gap-3">
-        {items.map((item) => (
-          <details
-            key={item.q}
-            className="group bg-card rounded-xl border px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
-          >
-            <summary className="flex cursor-pointer list-none items-center text-[15px] font-semibold">
-              {item.q}
-              <ChevronDown className="text-muted-foreground ml-auto size-4.5 transition-transform group-open:rotate-180" />
-            </summary>
-            <p className="text-muted-foreground mt-2.5 text-sm leading-relaxed">{item.a}</p>
-          </details>
-        ))}
-      </div>
+      <FaqAccordion items={items} />
     </section>
   );
 }

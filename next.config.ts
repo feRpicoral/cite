@@ -19,13 +19,17 @@ const supabaseWsOrigin = supabaseHost ? `wss://${supabaseHost}` : "wss://*.supab
 // 'unsafe-inline' on script-src: Next's bootstrap and next-themes inject inline
 // scripts without a nonce here. Tightening to a nonce-based policy needs the
 // app wired through middleware, which is out of scope for this header set.
+// 'unsafe-eval' is added in development only — React's dev runtime uses eval()
+// for debugging features; production never relies on it.
+const isDev = process.env.NODE_ENV !== "production";
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${supabaseHttpOrigin}`,
   "font-src 'self'",
