@@ -258,7 +258,9 @@
       "tooLong": "Message is too long — trim {count, plural, one {# character} other {# characters}} to send.",
       "send": "Send",
       "deliveryFailed": "Not delivered · connection lost",
-      "retry": "Retry"
+      "retry": "Retry",
+      "generating": "Generating response…",
+      "stop": "Stop"
     },
     "comments": {
       "title": "Comments",

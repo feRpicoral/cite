@@ -258,7 +258,9 @@
       "tooLong": "A mensagem é longa demais — corte {count, plural, one {# caractere} other {# caracteres}} para enviar.",
       "send": "Enviar",
       "deliveryFailed": "Não entregue · conexão perdida",
-      "retry": "Tentar novamente"
+      "retry": "Tentar novamente",
+      "generating": "Gerando resposta…",
+      "stop": "Parar"
     },
     "comments": {
       "title": "Comentários",
