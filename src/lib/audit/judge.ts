@@ -11,13 +11,19 @@ const JudgeResultSchema = z.object({
 });
 export type JudgeResult = z.infer<typeof JudgeResultSchema>;
 
+// `confidence` is a support score, not the model's certainty in its label.
+// The audit UI fills the confidence bar by this value and the dashboard sorts
+// "lowest confidence" first to triage weak citations, so it must rise with how
+// well the passage supports the claim and stay aligned with the verdict —
+// otherwise an UNSUPPORTED claim the model is sure about would read as a
+// near-full bar and sort away from the citations admins need to review.
 const SYSTEM = `You judge whether a citation supports a claim. Read the cited passage, then read the sentence(s) in the assistant's answer that bear the citation marker. Decide:
 
 - SUPPORTED: every claim in those sentences is directly supported by the passage.
 - PARTIAL: some claims are supported, others aren't (or are inferred without backing).
 - UNSUPPORTED: the passage doesn't support the cited claims.
 
-Confidence is your own (0..1). Reasoning is at most two sentences.`;
+Confidence is a support score from 0 to 1: how strongly the passage supports the claim. It must agree with the verdict — high (near 1) for SUPPORTED, low (near 0) for UNSUPPORTED, and in between for PARTIAL. Reasoning is at most two sentences.`;
 
 interface JudgeInput {
   /** The bearing sentence(s) — the assistant's claim with the citation marker. */
