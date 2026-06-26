@@ -17,32 +17,119 @@
     "themeSystem": "System"
   },
   "auth": {
+    "brandPanel": {
+      "eyebrow": "Agentic RAG · verifiable citations",
+      "title": "Answers you can defend.",
+      "body": "Cite turns your documents into grounded answers — every claim linked to the exact passage it came from. Click any citation and see the source, highlighted.",
+      "featureCitations": "Inline citations",
+      "featureHighlighting": "Source highlighting",
+      "featureAuditing": "Citation auditing"
+    },
     "login": {
-      "title": "Sign in to Cite",
-      "subtitle": "Welcome back.",
-      "emailLabel": "Email",
+      "title": "Sign in",
+      "subtitle": "Welcome back to your evidence workspace.",
+      "emailLabel": "Work email",
       "passwordLabel": "Password",
+      "forgotPassword": "Forgot password?",
       "submit": "Sign in",
-      "noAccount": "Don't have an account?",
-      "signUpLink": "Create one"
+      "submitting": "Signing in…",
+      "errorTitle": "Incorrect email or password",
+      "errorBody": "Check your details and try again, or reset your password.",
+      "noAccount": "New to Cite?",
+      "signUpLink": "Create an account"
     },
     "signup": {
-      "title": "Create your Cite account",
-      "subtitle": "Set up your workspace and start chatting with your documents.",
-      "emailLabel": "Email",
+      "title": "Create your account",
+      "subtitle": "Start grounding answers in your sources.",
+      "emailLabel": "Work email",
       "passwordLabel": "Password",
+      "passwordHint": "Password must be at least 8 characters.",
       "submit": "Create account",
+      "submitting": "Creating account…",
       "haveAccount": "Already have an account?",
       "signInLink": "Sign in"
+    },
+    "checkEmail": {
+      "title": "Check your email",
+      "body": "We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.",
+      "bodyGeneric": "We sent a confirmation link to your inbox. Click it to activate your account.",
+      "resend": "Resend link",
+      "resending": "Resending…",
+      "resent": "Link sent again.",
+      "spamHint": "Didn't get it? Check spam, or",
+      "useDifferentEmail": "use a different email",
+      "backToSignIn": "Back to sign in"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send a link to set a new password.",
+      "emailLabel": "Work email",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetSent": {
+      "title": "Check your email",
+      "body": "If an account exists for <strong>{email}</strong>, we sent a link to reset your password.",
+      "bodyGeneric": "If an account exists for that address, we sent a link to reset your password.",
+      "spamHint": "Didn't get it? Check spam, or",
+      "tryAgain": "try another email",
+      "backToSignIn": "Back to sign in"
+    },
+    "setPassword": {
+      "title": "Set a new password",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "passwordHint": "Password must be at least 8 characters.",
+      "strong": "Strong — {count} characters",
+      "mismatch": "Passwords don't match.",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Password updated.",
+      "expiredTitle": "This reset link has expired",
+      "expiredBody": "For your security, reset links are valid for one hour. Request a new one to continue.",
+      "requestNew": "Request a new link",
+      "backToSignIn": "Back to sign in"
+    },
+    "acceptInvite": {
+      "invitedBy": "{name} invited you to join",
+      "invited": "You've been invited to join",
+      "roleAdmin": "Admin",
+      "roleMember": "Member",
+      "joinAs": "You'll join as",
+      "switchNote": "Accepting switches your active workspace to {org}. You can switch back anytime.",
+      "accept": "Accept invitation",
+      "decline": "Not now",
+      "welcome": "Welcome!",
+      "missingToken": "Missing invite token.",
+      "errorTitle": "Can't accept this invite",
+      "expiredTitle": "Invitation expired",
+      "expiredBody": "This link is no longer valid. Ask an admin to send a new invitation.",
+      "notFoundTitle": "Invitation not found",
+      "notFoundBody": "It may have been revoked or already used. Ask an admin for a fresh link.",
+      "mismatchTitle": "This invite is for a different email",
+      "mismatchBody": "Invited <strong>{invited}</strong> — you're signed in as <strong>{current}</strong>.",
+      "switchAccount": "Switch account"
     }
   },
   "onboarding": {
     "createOrg": {
       "title": "Create your organization",
-      "subtitle": "Workspaces in Cite are organized by org. Pick a name your team will recognize.",
+      "subtitle": "You'll become the workspace admin. You can invite teammates next.",
       "nameLabel": "Organization name",
-      "namePlaceholder": "Acme Inc.",
-      "submit": "Create organization"
+      "namePlaceholder": "Northwind Legal",
+      "urlLabel": "Your workspace URL:",
+      "submit": "Create workspace",
+      "submitting": "Creating…"
+    },
+    "selectOrg": {
+      "title": "Choose a workspace",
+      "subtitle": "You belong to several. Pick one to continue.",
+      "roleAdmin": "Admin",
+      "roleMember": "Member",
+      "memberCount": "{count, plural, one {# member} other {# members}}",
+      "createNew": "Create a new organization",
+      "switchError": "Couldn't switch workspace. Try again."
     }
   },
   "app": {

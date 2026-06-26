@@ -17,32 +17,119 @@
     "themeSystem": "Sistema"
   },
   "auth": {
+    "brandPanel": {
+      "eyebrow": "RAG agêntico · citações verificáveis",
+      "title": "Respostas que você pode defender.",
+      "body": "O Cite transforma seus documentos em respostas fundamentadas — cada afirmação ligada ao trecho exato de onde veio. Clique em qualquer citação e veja a fonte, destacada.",
+      "featureCitations": "Citações inline",
+      "featureHighlighting": "Destaque na fonte",
+      "featureAuditing": "Auditoria de citações"
+    },
     "login": {
-      "title": "Entrar no Cite",
-      "subtitle": "Bem-vindo de volta.",
-      "emailLabel": "E-mail",
+      "title": "Entrar",
+      "subtitle": "Bem-vindo de volta ao seu workspace de evidências.",
+      "emailLabel": "E-mail de trabalho",
       "passwordLabel": "Senha",
+      "forgotPassword": "Esqueceu a senha?",
       "submit": "Entrar",
-      "noAccount": "Ainda não tem uma conta?",
-      "signUpLink": "Crie agora"
+      "submitting": "Entrando…",
+      "errorTitle": "E-mail ou senha incorretos",
+      "errorBody": "Confira seus dados e tente novamente, ou redefina sua senha.",
+      "noAccount": "Novo no Cite?",
+      "signUpLink": "Crie uma conta"
     },
     "signup": {
-      "title": "Crie sua conta no Cite",
-      "subtitle": "Configure seu workspace e comece a conversar com seus documentos.",
-      "emailLabel": "E-mail",
+      "title": "Crie sua conta",
+      "subtitle": "Comece a fundamentar respostas em suas fontes.",
+      "emailLabel": "E-mail de trabalho",
       "passwordLabel": "Senha",
+      "passwordHint": "A senha deve ter pelo menos 8 caracteres.",
       "submit": "Criar conta",
+      "submitting": "Criando conta…",
       "haveAccount": "Já tem uma conta?",
       "signInLink": "Entrar"
+    },
+    "checkEmail": {
+      "title": "Verifique seu e-mail",
+      "body": "Enviamos um link de confirmação para <strong>{email}</strong>. Clique nele para ativar sua conta.",
+      "bodyGeneric": "Enviamos um link de confirmação para sua caixa de entrada. Clique nele para ativar sua conta.",
+      "resend": "Reenviar link",
+      "resending": "Reenviando…",
+      "resent": "Link enviado novamente.",
+      "spamHint": "Não recebeu? Verifique o spam, ou",
+      "useDifferentEmail": "use outro e-mail",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "forgotPassword": {
+      "title": "Redefina sua senha",
+      "subtitle": "Informe seu e-mail e enviaremos um link para definir uma nova senha.",
+      "emailLabel": "E-mail de trabalho",
+      "submit": "Enviar link de redefinição",
+      "submitting": "Enviando…",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "resetSent": {
+      "title": "Verifique seu e-mail",
+      "body": "Se existir uma conta para <strong>{email}</strong>, enviamos um link para redefinir sua senha.",
+      "bodyGeneric": "Se existir uma conta para esse endereço, enviamos um link para redefinir sua senha.",
+      "spamHint": "Não recebeu? Verifique o spam, ou",
+      "tryAgain": "tente outro e-mail",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "setPassword": {
+      "title": "Defina uma nova senha",
+      "passwordLabel": "Nova senha",
+      "confirmLabel": "Confirmar senha",
+      "passwordHint": "A senha deve ter pelo menos 8 caracteres.",
+      "strong": "Forte — {count} caracteres",
+      "mismatch": "As senhas não coincidem.",
+      "submit": "Atualizar senha",
+      "submitting": "Atualizando…",
+      "success": "Senha atualizada.",
+      "expiredTitle": "Este link de redefinição expirou",
+      "expiredBody": "Por segurança, links de redefinição valem por uma hora. Solicite um novo para continuar.",
+      "requestNew": "Solicitar um novo link",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "acceptInvite": {
+      "invitedBy": "{name} convidou você para entrar em",
+      "invited": "Você foi convidado para entrar em",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "joinAs": "Você entrará como",
+      "switchNote": "Aceitar muda seu workspace ativo para {org}. Você pode voltar a qualquer momento.",
+      "accept": "Aceitar convite",
+      "decline": "Agora não",
+      "welcome": "Boas-vindas!",
+      "missingToken": "Token de convite ausente.",
+      "errorTitle": "Não foi possível aceitar este convite",
+      "expiredTitle": "Convite expirado",
+      "expiredBody": "Este link não é mais válido. Peça a um admin para enviar um novo convite.",
+      "notFoundTitle": "Convite não encontrado",
+      "notFoundBody": "Ele pode ter sido revogado ou já usado. Peça a um admin um novo link.",
+      "mismatchTitle": "Este convite é para outro e-mail",
+      "mismatchBody": "Convidou <strong>{invited}</strong> — você está conectado como <strong>{current}</strong>.",
+      "switchAccount": "Trocar de conta"
     }
   },
   "onboarding": {
     "createOrg": {
       "title": "Crie sua organização",
-      "subtitle": "Workspaces no Cite são organizados por org. Escolha um nome que seu time reconheça.",
+      "subtitle": "Você se tornará o admin do workspace. Você pode convidar colegas em seguida.",
       "nameLabel": "Nome da organização",
-      "namePlaceholder": "Acme Inc.",
-      "submit": "Criar organização"
+      "namePlaceholder": "Northwind Legal",
+      "urlLabel": "URL do seu workspace:",
+      "submit": "Criar workspace",
+      "submitting": "Criando…"
+    },
+    "selectOrg": {
+      "title": "Escolha um workspace",
+      "subtitle": "Você pertence a vários. Escolha um para continuar.",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "memberCount": "{count, plural, one {# membro} other {# membros}}",
+      "createNew": "Criar uma nova organização",
+      "switchError": "Não foi possível trocar de workspace. Tente novamente."
     }
   },
   "app": {
