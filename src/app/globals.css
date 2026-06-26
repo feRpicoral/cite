@@ -154,6 +154,17 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  /* Smooth the light/dark theme switch. Elements with their own transition
+     utilities keep them (utilities layer wins); this only covers the rest. */
+  @media (prefers-reduced-motion: no-preference) {
+    *,
+    *::before,
+    *::after {
+      transition-property: color, background-color, border-color, fill, stroke;
+      transition-duration: 200ms;
+      transition-timing-function: ease;
+    }
+  }
 }
 
 /* pdfjs-dist text layer — transparent spans overlay the canvas so the user
