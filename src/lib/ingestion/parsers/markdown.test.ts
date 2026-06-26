@@ -64,4 +64,46 @@ describe("MarkdownParser", () => {
     expect(doc.parts).toHaveLength(1);
     expect(doc.parts[0]?.metadata).toEqual({ kind: "html", heading: null });
   });
+
+  it("renders GFM tables, strikethrough, and task lists", async () => {
+    const md = [
+      "## Data",
+      "",
+      "| Col A | Col B |",
+      "| ----- | ----- |",
+      "| a1 | b1 |",
+      "| a2 | b2 |",
+      "",
+      "~~struck~~ text",
+      "",
+      "- [x] done",
+      "- [ ] todo",
+    ].join("\n");
+
+    const doc = await parser.parse(Buffer.from(md), {
+      filename: "doc.md",
+      mimeType: "text/markdown",
+    });
+
+    const body = doc.parts.map((p) => p.body).join("");
+    expect(body).toContain("<table>");
+    expect(body).toContain("<thead>");
+    expect(body).toContain("<td>a1</td>");
+    expect(body).toContain("<del>struck</del>");
+    expect(body).toContain('type="checkbox"');
+  });
+
+  it("emits a segment per table cell so cells are citable", async () => {
+    const md = `## Data\n\n| Name | Role |\n| ---- | ---- |\n| Ada | Engineer |`;
+
+    const doc = await parser.parse(Buffer.from(md), {
+      filename: "doc.md",
+      mimeType: "text/markdown",
+    });
+
+    const texts = doc.parts.flatMap((p) => p.segments.map((s) => s.text));
+    expect(texts).toContain("Name");
+    expect(texts).toContain("Ada");
+    expect(texts).toContain("Engineer");
+  });
 });

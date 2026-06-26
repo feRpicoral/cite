@@ -1,5 +1,7 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 import { type Prisma } from "@prisma/client";
 
 import { getPrisma } from "@/lib/db/client";
@@ -54,6 +56,14 @@ export async function parseStage(
  * too large to round-trip through Inngest step state. A retry of this stage
  * re-embeds.
  */
+// Embedding rows inserted per statement. Each row binds 3 params; 200 keeps
+// the statement well under Postgres's parameter ceiling for any document.
+const EMBEDDING_INSERT_BATCH = 200;
+// The persist transaction does the bulk DB work; the default 5s interactive
+// timeout is too short for large documents over a pooled connection.
+const PERSIST_TX_TIMEOUT_MS = 120_000;
+const PERSIST_TX_MAX_WAIT_MS = 15_000;
+
 export async function persistStage(
   orgId: OrgId,
   documentId: DocumentId,
@@ -74,32 +84,32 @@ export async function persistStage(
   const inputs = enriched.map(buildEmbeddingInput);
   const embeddings = await embedTexts(inputs);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.documentPart.deleteMany({ where: { documentId } });
-    await tx.documentPart.createMany({
-      data: normalized.parts.map((p) => ({
-        orgId,
-        documentId,
-        index: p.index,
-        body: p.body,
-        metadata: p.metadata,
-      })),
-    });
-    const parts = await tx.documentPart.findMany({
-      where: { documentId },
-      select: { id: true, index: true },
-    });
-    const partIdByIndex = new Map(parts.map((p) => [p.index, p.id]));
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.documentPart.deleteMany({ where: { documentId } });
+      await tx.documentPart.createMany({
+        data: normalized.parts.map((p) => ({
+          orgId,
+          documentId,
+          index: p.index,
+          body: p.body,
+          metadata: p.metadata,
+        })),
+      });
+      const parts = await tx.documentPart.findMany({
+        where: { documentId },
+        select: { id: true, index: true },
+      });
+      const partIdByIndex = new Map(parts.map((p) => [p.index, p.id]));
 
-    await tx.documentChunk.deleteMany({ where: { documentId } });
-    for (let i = 0; i < enriched.length; i++) {
-      const chunk = enriched[i]!;
-      const vector = embeddings[i]!;
-      const partId = partIdByIndex.get(chunk.partIndex);
-      if (!partId) throw new Error(`No part for index ${chunk.partIndex}`);
-
-      const createdChunk = await tx.documentChunk.create({
-        data: {
+      // Pre-generate chunk ids so chunks + their embeddings can be written in
+      // bulk (one createMany + batched inserts) rather than a per-chunk
+      // round-trip loop, which blew past the interactive-transaction timeout.
+      const chunkRows = enriched.map((chunk) => {
+        const partId = partIdByIndex.get(chunk.partIndex);
+        if (!partId) throw new Error(`No part for index ${chunk.partIndex}`);
+        return {
+          id: randomUUID(),
           orgId,
           documentId,
           partId,
@@ -108,21 +118,32 @@ export async function persistStage(
           contextualPreamble: chunk.contextualPreamble ?? null,
           tokenCount: chunk.tokenCount,
           location: chunk.location as unknown as Prisma.InputJsonValue,
-        },
+        };
       });
 
+      await tx.documentChunk.deleteMany({ where: { documentId } });
+      await tx.documentChunk.createMany({ data: chunkRows });
+
       // Raw SQL — pgvector's `halfvec` type isn't part of Prisma's generated
-      // client. Tenant scope is enforced by the application-level `orgId`
-      // column on the insert; RLS is the second layer.
-      await tx.$executeRawUnsafe(
-        `INSERT INTO embeddings (id, org_id, chunk_id, embedding, created_at)
-         VALUES (gen_random_uuid(), $1::uuid, $2::uuid, $3::halfvec, NOW())`,
-        orgId,
-        createdChunk.id,
-        `[${vector.join(",")}]`,
-      );
-    }
-  });
+      // client. Inserted in batches so a large document stays one statement per
+      // batch. Tenant scope is the application-level `orgId` column; RLS is the
+      // second layer.
+      for (let start = 0; start < chunkRows.length; start += EMBEDDING_INSERT_BATCH) {
+        const slice = chunkRows.slice(start, start + EMBEDDING_INSERT_BATCH);
+        const params: unknown[] = [];
+        const values = slice.map((row, j) => {
+          const base = j * 3;
+          params.push(orgId, row.id, `[${embeddings[start + j]!.join(",")}]`);
+          return `(gen_random_uuid(), $${base + 1}::uuid, $${base + 2}::uuid, $${base + 3}::halfvec, NOW())`;
+        });
+        await tx.$executeRawUnsafe(
+          `INSERT INTO embeddings (id, org_id, chunk_id, embedding, created_at) VALUES ${values.join(", ")}`,
+          ...params,
+        );
+      }
+    },
+    { timeout: PERSIST_TX_TIMEOUT_MS, maxWait: PERSIST_TX_MAX_WAIT_MS },
+  );
 
   await prisma.document.update({
     where: { id: documentId },

@@ -17,12 +17,24 @@
     "themeSystem": "System"
   },
   "auth": {
+    "brandPanel": {
+      "eyebrow": "Agentic RAG · verifiable citations",
+      "title": "Answers you can defend.",
+      "body": "Cite turns your documents into grounded answers — every claim linked to the exact passage it came from. Click any citation and see the source, highlighted.",
+      "featureCitations": "Inline citations",
+      "featureHighlighting": "Source highlighting",
+      "featureAuditing": "Citation auditing"
+    },
     "login": {
       "title": "Sign in to Cite",
       "subtitle": "Welcome back.",
       "emailLabel": "Email",
       "passwordLabel": "Password",
+      "forgotPassword": "Forgot password?",
       "submit": "Sign in",
+      "submitting": "Signing in…",
+      "errorTitle": "Incorrect email or password",
+      "errorBody": "Check your details and try again, or reset your password.",
       "noAccount": "Don't have an account?",
       "signUpLink": "Create one"
     },
@@ -31,9 +43,74 @@
       "subtitle": "Set up your workspace and start chatting with your documents.",
       "emailLabel": "Email",
       "passwordLabel": "Password",
+      "passwordHint": "Password must be at least 8 characters.",
       "submit": "Create account",
+      "submitting": "Creating account…",
       "haveAccount": "Already have an account?",
-      "signInLink": "Sign in"
+      "signInLink": "Sign in",
+      "nameLabel": "Name"
+    },
+    "checkEmail": {
+      "title": "Check your email",
+      "body": "We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.",
+      "bodyGeneric": "We sent a confirmation link to your inbox. Click it to activate your account.",
+      "resend": "Resend link",
+      "resending": "Resending…",
+      "resent": "Link sent again.",
+      "spamHint": "Didn't get it? Check spam, or",
+      "useDifferentEmail": "use a different email",
+      "backToSignIn": "Back to sign in"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send a link to set a new password.",
+      "emailLabel": "Work email",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetSent": {
+      "title": "Check your email",
+      "body": "If an account exists for <strong>{email}</strong>, we sent a link to reset your password.",
+      "bodyGeneric": "If an account exists for that address, we sent a link to reset your password.",
+      "spamHint": "Didn't get it? Check spam, or",
+      "tryAgain": "try another email",
+      "backToSignIn": "Back to sign in"
+    },
+    "setPassword": {
+      "title": "Set a new password",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "passwordHint": "Password must be at least 8 characters.",
+      "strong": "Strong — {count} characters",
+      "mismatch": "Passwords don't match.",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Password updated.",
+      "expiredTitle": "This reset link has expired",
+      "expiredBody": "For your security, reset links are valid for one hour. Request a new one to continue.",
+      "requestNew": "Request a new link",
+      "backToSignIn": "Back to sign in"
+    },
+    "acceptInvite": {
+      "invitedBy": "{name} invited you to join",
+      "invited": "You've been invited to join",
+      "roleAdmin": "Admin",
+      "roleMember": "Member",
+      "joinAs": "You'll join as",
+      "switchNote": "Accepting switches your active workspace to {org}. You can switch back anytime.",
+      "accept": "Accept invitation",
+      "decline": "Not now",
+      "welcome": "Welcome!",
+      "missingToken": "Missing invite token.",
+      "errorTitle": "Can't accept this invite",
+      "expiredTitle": "Invitation expired",
+      "expiredBody": "This link is no longer valid. Ask an admin to send a new invitation.",
+      "notFoundTitle": "Invitation not found",
+      "notFoundBody": "It may have been revoked or already used. Ask an admin for a fresh link.",
+      "mismatchTitle": "This invite is for a different email",
+      "mismatchBody": "Invited <strong>{invited}</strong> — you're signed in as <strong>{current}</strong>.",
+      "switchAccount": "Switch account"
     }
   },
   "onboarding": {
@@ -42,7 +119,18 @@
       "subtitle": "Workspaces in Cite are organized by org. Pick a name your team will recognize.",
       "nameLabel": "Organization name",
       "namePlaceholder": "Acme Inc.",
-      "submit": "Create organization"
+      "urlLabel": "Your workspace URL:",
+      "submit": "Create organization",
+      "submitting": "Creating…"
+    },
+    "selectOrg": {
+      "title": "Choose a workspace",
+      "subtitle": "You belong to several. Pick one to continue.",
+      "roleAdmin": "Admin",
+      "roleMember": "Member",
+      "memberCount": "{count, plural, one {# member} other {# members}}",
+      "createNew": "Create a new organization",
+      "switchError": "Couldn't switch workspace. Try again."
     }
   },
   "app": {
@@ -50,13 +138,149 @@
       "dashboard": "Dashboard",
       "documents": "Documents",
       "conversations": "Conversations",
-      "settings": "Settings"
+      "settings": "Settings",
+      "admin": "Admin",
+      "citationAccuracy": "Citation accuracy",
+      "workspace": "Workspace",
+      "switchWorkspace": "Switch workspace",
+      "signOut": "Sign out"
     },
     "dashboard": {
       "title": "Dashboard",
       "emptyTitle": "No activity yet",
       "emptyBody": "Upload a document to get started.",
       "uploadCta": "Upload document"
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "afternoon": "Good afternoon, {name}",
+      "evening": "Good evening, {name}"
+    },
+    "greetingContext": " — here's what's happening in <org>workspace</org>.",
+    "stats": {
+      "collections": "Collections",
+      "documents": "Documents",
+      "conversations": "Conversations",
+      "accuracy": "Accuracy",
+      "documentsSubtext": "{embedding} embedding · {failed} failed",
+      "accuracySubtext": "supported · {audited} audited"
+    },
+    "recentConversations": {
+      "title": "Recent conversations",
+      "viewAll": "View all",
+      "empty": "No conversations yet."
+    },
+    "recentlyIndexed": {
+      "title": "Recently indexed",
+      "empty": "Nothing indexed yet."
+    },
+    "accuracyCard": {
+      "title": "Citation accuracy",
+      "openAudit": "Open audit",
+      "supported": "Supported {pct}%",
+      "partial": "Partial {pct}%",
+      "unsupported": "Unsup. {pct}%",
+      "empty": "No citations audited yet."
+    },
+    "onboarding": {
+      "title": "Your workspace is ready",
+      "body": "Cite turns your documents into answers you can defend. Add sources, then ask questions and get responses grounded in exact, verifiable passages.",
+      "step1Title": "Create a collection",
+      "step1Body": "Group related documents — one matter, product, or policy set.",
+      "step1Cta": "Create",
+      "step2Title": "Upload sources",
+      "step2Body": "PDF, DOCX, HTML or Markdown — up to 100 MB each.",
+      "step3Title": "Ask a grounded question",
+      "step3Body": "Every answer arrives with inline, clickable citations."
+    }
+  },
+  "conversation": {
+    "cite": "Cite",
+    "empty": {
+      "title": "Ask anything about {collection}",
+      "description": "Answers are grounded in this collection's documents, each claim linked to its exact source.",
+      "suggestion1": "What's the termination notice period across our MSAs?",
+      "suggestion2": "Summarize the limitation-of-liability caps."
+    },
+    "reasoning": {
+      "classified": "Classified {shape}",
+      "shapeSimple": "simple",
+      "shapeDecompose": "decomposed",
+      "subQueries": "{count, plural, one {# sub-query} other {# sub-queries}}",
+      "reranked": "reranked",
+      "sufficiencyMet": "sufficiency met",
+      "sufficiencyShort": "sufficiency limited",
+      "ariaExpand": "Show how this answer was built",
+      "ariaCollapse": "Hide how this answer was built",
+      "live": {
+        "heading": "How this answer is being built",
+        "classifyTitle": "Classifying question",
+        "classifyDoneSimple": "Classified · single retrieval",
+        "classifyDoneDecompose": "Classified · multi-part retrieval",
+        "decomposeActive": "Decomposing into sub-queries",
+        "decomposeDone": "{count, plural, one {Decomposed into # sub-query} other {Decomposed into # sub-queries}}",
+        "retrieveTitle": "Hybrid search + rerank",
+        "retrieveActive": "Vector + keyword search",
+        "retrieveDone": "{candidates} candidates → reranked to top {reranked}",
+        "sufficiencyTitle": "Checking sufficiency",
+        "sufficiencyMet": "Evidence sufficient to answer",
+        "sufficiencyShort": "Evidence limited — widened the search",
+        "synthesizeTitle": "Synthesizing & placing citations…",
+        "synthesizeSubtitle": "Grounding each claim in retrieved passages"
+      }
+    },
+    "support": {
+      "supported": "{count} supported",
+      "partial": "{count} partial",
+      "unsupported": "{count} unsupported"
+    },
+    "citations": {
+      "linking": "Linking citations to sources…",
+      "pendingNote": "Citations will become clickable once they're verified against the source."
+    },
+    "streaming": {
+      "synthesizing": "Synthesizing answer…",
+      "searching": "Searching documents…",
+      "generating": "Generating response…",
+      "stop": "Stop"
+    },
+    "noAnswer": {
+      "title": "I couldn't find enough support to answer this confidently",
+      "body": "No indexed passage addressed your question well enough. I won't guess without a source."
+    },
+    "composer": {
+      "placeholder": "Ask a follow-up about {collection}…",
+      "placeholderNew": "Ask about {collection}…",
+      "hint": "Enter to send · Shift+Enter newline",
+      "counter": "{count} / {max}",
+      "tooLong": "Message is too long — trim {count, plural, one {# character} other {# characters}} to send.",
+      "send": "Send",
+      "deliveryFailed": "Not delivered · connection lost",
+      "retry": "Retry",
+      "generating": "Generating response…",
+      "stop": "Stop"
+    },
+    "comments": {
+      "title": "Comments",
+      "indicator": "{count, plural, one {# comment} other {# comments}}",
+      "empty": "No comments yet",
+      "emptyHint": "Start the thread to discuss this answer with your team.",
+      "resolve": "Resolve",
+      "reopen": "Reopen",
+      "reply": "Reply",
+      "delete": "Delete",
+      "replyPlaceholder": "Reply…",
+      "addPlaceholder": "Add a comment…",
+      "you": "You",
+      "addFailed": "Failed to post comment",
+      "updateFailed": "Failed to update",
+      "deleteFailed": "Failed to delete",
+      "replyFailed": "Failed to reply"
+    },
+    "viewer": {
+      "backToChat": "Chat"
     }
   },
   "settings": {
@@ -71,29 +295,574 @@
       "ADMIN": "Admin",
       "MEMBER": "Member"
     },
+    "dirty": {
+      "label": "Unsaved changes",
+      "save": "Save changes",
+      "cancel": "Cancel"
+    },
     "organization": {
       "title": "Organization",
       "description": "Workspace-level information visible to everyone in this organization.",
       "nameLabel": "Name",
       "slugLabel": "Slug",
-      "roleLabel": "Your role"
+      "roleLabel": "Your role",
+      "adminHint": "Admins manage members and view citation accuracy.",
+      "readOnlyBadge": "Read-only",
+      "readOnlyHint": "Only admins can edit workspace details.",
+      "saved": "Workspace updated.",
+      "nameRequired": "Workspace name can't be empty.",
+      "slugRequired": "Enter a workspace URL.",
+      "slugHint": "Lowercase letters, numbers and hyphens. Changing it breaks existing links."
     },
     "preferences": {
       "title": "Preferences",
       "description": "Personal settings for your account. These follow you across devices.",
       "languageLabel": "Language",
       "languageHint": "Affects the UI and messages app-wide.",
+      "themeLabel": "Theme",
       "save": "Save",
       "saved": "Preferences saved.",
       "localeOption": {
         "en-US": "English",
         "pt-BR": "Português"
+      },
+      "themeOption": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
       }
+    },
+    "members": {
+      "invite": {
+        "title": "Invite a teammate",
+        "description": "Generate a one-time link. Add an email to pin it to that address, or share an open link.",
+        "emailLabel": "Email (optional)",
+        "emailPlaceholder": "teammate@example.com",
+        "roleLabel": "Role",
+        "generate": "Generate link",
+        "copy": "Copy",
+        "copied": "Copied",
+        "linkCopied": "Link copied.",
+        "copyFailed": "Couldn't copy. Select the link and copy it manually.",
+        "expiresIn": "Expires in 7 days"
+      },
+      "table": {
+        "title": "Members",
+        "you": "You",
+        "columnMember": "Member",
+        "columnRole": "Role",
+        "columnActions": "Actions",
+        "makeAdmin": "Make admin",
+        "makeMember": "Make member",
+        "remove": "Remove",
+        "roleUpdated": "Role updated.",
+        "memberRemoved": "Member removed."
+      },
+      "pending": {
+        "title": "Pending invites",
+        "openLink": "Open link · no email pinned",
+        "expiresIn": "Expires {date}",
+        "revoke": "Revoke",
+        "revoked": "Invite revoked."
+      },
+      "removeDialog": {
+        "title": "Remove {name}?",
+        "description": "They lose access to this workspace immediately. Their comments remain.",
+        "confirm": "Remove"
+      },
+      "revokeDialog": {
+        "title": "Revoke this invite?",
+        "description": "The link stops working right away and can't be restored.",
+        "confirm": "Revoke"
+      },
+      "lastAdmin": {
+        "title": "You can't remove the last admin",
+        "description": "Promote another member to admin before removing or demoting yourself."
+      }
+    },
+    "account": {
+      "title": "Account",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "emailHint": "Changing your email sends a confirmation link to the new address.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "New password",
+      "passwordConfirmPlaceholder": "Confirm new password",
+      "save": "Save",
+      "nameSaved": "Name updated.",
+      "emailSaved": "Confirmation sent to your new email.",
+      "passwordSaved": "Password updated.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords don’t match."
     }
+  },
+  "conversationsList": {
+    "title": "Conversations",
+    "newConversation": "New conversation",
+    "searchPlaceholder": "Search conversations",
+    "allCollections": "All collections",
+    "total": "{count} total",
+    "messageCount": "{count, plural, one {# message} other {# messages}}",
+    "loadMore": "Load more",
+    "clearSearch": "Clear search",
+    "noneYet": {
+      "title": "No conversations yet",
+      "description": "Start one to ask grounded questions about a collection — every answer comes back with verifiable citations."
+    },
+    "noResults": {
+      "title": "No conversations match",
+      "description": "Nothing for \"{query}\". Try a different search or clear the filter.",
+      "descriptionFiltered": "No conversations in this collection yet. Try a different filter."
+    },
+    "noCollections": {
+      "title": "Create a collection first",
+      "description": "You need at least one collection with indexed documents before you can start a conversation.",
+      "createCollection": "Create collection"
+    },
+    "dialog": {
+      "title": "New conversation",
+      "description": "Choose a collection to ground your answers in.",
+      "documentCount": "{count, plural, one {# document} other {# documents}}",
+      "indexed": "indexed",
+      "embedding": "{count} embedding",
+      "empty": "indexing",
+      "cancel": "Cancel",
+      "start": "Start conversation",
+      "error": "Couldn't create conversation"
+    }
+  },
+  "documentViewer": {
+    "sourceFallbackTitle": "Source",
+    "close": "Close",
+    "backToChat": "Chat",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "pageCount": "{page} / {total}",
+    "pageLabel": "Page {page} / {total}",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit",
+    "loading": "Loading…",
+    "rendering": "Rendering page {page} of {total}…",
+    "failedTitle": "Couldn't load the document",
+    "failedDescription": "Something went wrong fetching this source. Check your connection and try again.",
+    "retry": "Retry",
+    "notFoundTitle": "Document not found",
+    "notFoundDescription": "This source may have been deleted or moved out of the collection. The citation can't be opened.",
+    "backToChatAction": "Back to chat",
+    "unsupportedTitle": "Inline preview not available",
+    "unsupportedDescription": "The cited text is still highlighted below. Download the original to view it with full formatting.",
+    "download": "Download",
+    "commentOnSelection": "Comment on selection",
+    "commentPlaceholder": "Comment on this passage…",
+    "cancel": "Cancel",
+    "comment": "Comment",
+    "viewComment": "View comment",
+    "newRegionComment": "New region comment"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "notFound": "Page not found.",
     "unauthorized": "You don't have access to this page."
+  },
+  "audit": {
+    "title": "Citation accuracy",
+    "subtitle": "LLM-judge verdicts on every citation across recent assistant messages.",
+    "dateRange": "Last {days} days",
+    "summary": {
+      "title": "Audited citations",
+      "meta": "{citations} citations · {messages} messages"
+    },
+    "stat": {
+      "supported": "Supported · {count}",
+      "partial": "Partial · {count}",
+      "unsupported": "Unsupported · {count}"
+    },
+    "controls": {
+      "searchPlaceholder": "Search messages or documents",
+      "searchLabel": "Search audited messages",
+      "verdictLabel": "Verdict",
+      "verdictAll": "All verdicts",
+      "sortLabel": "Sort",
+      "sortRecent": "Most recent",
+      "sortConfidence": "Lowest confidence",
+      "resultsCount": "{count, plural, one {# result} other {# results}}",
+      "clearFilter": "Clear filter"
+    },
+    "row": {
+      "citationLabel": "Citation {index}",
+      "expand": "Show per-citation detail",
+      "collapse": "Hide per-citation detail",
+      "created": "Created {date}",
+      "updated": "Updated {date}"
+    },
+    "empty": {
+      "title": "No audited messages yet",
+      "description": "Every citation is scored automatically after an answer is generated. Once your team starts chatting with sources, accuracy results appear here."
+    },
+    "filteredEmpty": {
+      "title": "No matching citations",
+      "description": "No audited citations match the current filters. Try clearing the search or verdict filter."
+    }
+  },
+  "system": {
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or may have moved.",
+      "backToDashboard": "Back to dashboard"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred and our team has been notified. Try reloading — your work is saved.",
+      "reference": "error_ref · {ref}",
+      "reload": "Reload",
+      "backToDashboard": "Back to dashboard"
+    },
+    "forbidden": {
+      "title": "You don't have access",
+      "description": "This page is restricted to workspace admins. Ask an admin if you think you should have access.",
+      "backToDashboard": "Back to dashboard"
+    },
+    "offline": {
+      "title": "You're offline",
+      "description": "Check your connection. Cite will reconnect automatically and pick up where you left off.",
+      "reconnecting": "Reconnecting…"
+    },
+    "removed": {
+      "title": "You've been removed from this workspace",
+      "description": "An admin removed your access to this workspace. You can still use any other workspaces you belong to.",
+      "continue": "Continue"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "collections": "Collections",
+    "newCollection": "New collection",
+    "createCollection": "Create collection",
+    "editCollection": "Edit collection",
+    "upload": "Upload",
+    "browse": "browse",
+    "documentCount": "{count, plural, =0 {No documents} one {# document} other {# documents}}",
+    "dropHint": "Drag files here or <browse>browse</browse>",
+    "formatHint": "PDF, DOCX, HTML, MD",
+    "sizeHint": "up to {size} each",
+    "dropToUpload": "Drop to upload to {name}",
+    "column": {
+      "name": "Name",
+      "size": "Size",
+      "added": "Added",
+      "status": "Status"
+    },
+    "status": {
+      "uploading": "Uploading",
+      "extracting": "Extracting",
+      "chunking": "Chunking",
+      "embedding": "Embedding",
+      "indexed": "Indexed",
+      "failed": "Failed",
+      "retry": "Retry"
+    },
+    "rowActions": {
+      "label": "Document actions",
+      "open": "Open / preview",
+      "rename": "Rename",
+      "retry": "Retry ingestion",
+      "delete": "Delete"
+    },
+    "rename": {
+      "title": "Rename document",
+      "label": "Name",
+      "save": "Save"
+    },
+    "deleteDocument": {
+      "title": "Delete \"{name}\"?",
+      "description": "This removes the document and any citations that reference it from this collection. This can't be undone.",
+      "confirm": "Delete document"
+    },
+    "deleteCollection": {
+      "title": "Delete \"{name}\"?",
+      "description": "This deletes the collection and all {count, plural, one {# document} other {# documents}} in it. This can't be undone.",
+      "confirm": "Delete collection"
+    },
+    "collectionActions": {
+      "label": "Collection actions",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Subprocessor Agreements",
+      "description": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "What's in this collection?",
+      "descriptionHint": "Group related documents to chat with together.",
+      "charCount": "{count} / {max}"
+    },
+    "upload2": {
+      "success": "Uploaded {name}",
+      "failed": "{name}: {error}",
+      "tooLarge": "Too large — {size}. Files must be under {max}.",
+      "unsupported": "Unsupported format. Cite accepts PDF, DOCX, HTML and Markdown.",
+      "noCollection": "No collection selected. Choose or create a collection before uploading."
+    },
+    "empty": {
+      "noCollectionsTitle": "No collections yet",
+      "noCollectionsBody": "Collections group related documents so you can chat with them together. Create your first to start uploading sources.",
+      "noSelectionTitle": "Select a collection",
+      "noSelectionBody": "Choose a collection on the left to see and manage its documents.",
+      "emptyCollectionTitle": "This collection is empty",
+      "emptyCollectionBody": "Drag files here or browse to upload. PDF, DOCX, HTML, Markdown — up to {size} each.",
+      "uploadDocuments": "Upload documents"
+    },
+    "toast": {
+      "renamed": "Document renamed",
+      "deleted": "Document deleted",
+      "retrying": "Retrying ingestion",
+      "collectionDeleted": "Collection deleted",
+      "collectionUpdated": "Collection updated"
+    }
+  },
+  "landing": {
+    "nav": {
+      "product": "Product",
+      "how": "How it works",
+      "useCases": "Use cases",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "createAccount": "Create account",
+      "menu": "Open menu"
+    },
+    "hero": {
+      "badge": "Agentic RAG · verifiable citations",
+      "title": "Every answer, traced to the source.",
+      "subtitle": "Cite turns your documents into grounded answers — every claim linked to the exact passage it came from. Click a citation, see the highlight.",
+      "ctaPrimary": "Create account",
+      "ctaSecondary": "See how it works",
+      "note": "100% free · works with PDF, DOCX, HTML & Markdown",
+      "demoTitle": "Termination & notice — MSA Contracts",
+      "demoQuestion": "What notice period applies to termination for convenience?",
+      "demoAnswerLead": "Termination for convenience needs",
+      "demoAnswerDays": "30 days'",
+      "demoAnswerMid": "written notice",
+      "demoAnswerTail": ", and prepaid fees are refunded pro-rata",
+      "demoSourceLabel": "Source · p.12",
+      "demoSourceQuote": "“…terminate upon thirty (30) days’ prior written notice…”",
+      "demoVerdict": "Supported · 0.92",
+      "floatClickTitle": "Click → highlight",
+      "floatClickBody": "Jump to the exact passage",
+      "floatAuditTitle": "94% supported",
+      "floatAuditBody": "Every citation, audited"
+    },
+    "stats": {
+      "supportedValue": "94%",
+      "supportedLabel": "of citations rated supported by the auditor",
+      "verifiedValue": "1.2M+",
+      "verifiedLabel": "citations verified against their source",
+      "latencyValue": "<2s",
+      "latencyLabel": "from clicking a citation to the highlight",
+      "formatsValue": "4",
+      "formatsLabel": "formats: PDF, DOCX, HTML & Markdown"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "From document to defensible answer.",
+      "subtitle": "Four steps, no setup. Upload your sources and start asking — every answer arrives ready to verify.",
+      "step1Title": "Upload sources",
+      "step1Body": "Drag in PDFs, DOCX, HTML or Markdown. Cite extracts, chunks and indexes them automatically.",
+      "step2Title": "Ask in plain language",
+      "step2Body": "Cite classifies the question, breaks it into sub-queries and runs hybrid search with reranking.",
+      "step3Title": "Read a cited answer",
+      "step3Body": "The answer streams in with inline citations — each one a clickable link to its grounding passage.",
+      "step4Title": "Verify in one click",
+      "step4Body": "Open the source, see the exact highlight, and check the auditor's verdict. Trust, then cite."
+    },
+    "retrieval": {
+      "eyebrow": "Agentic retrieval",
+      "title": "Retrieval you can watch think.",
+      "body": "No black-box \"thinking…\" spinner. Cite shows each phase — classify, decompose, search, rerank, check sufficiency — and lets you stop anytime.",
+      "point1": "Hybrid vector + keyword search with reranking",
+      "point2": "Sub-query decomposition for multi-part questions",
+      "point3": "Sufficiency check before it answers — or says it can't",
+      "demoTitle": "How this answer was built",
+      "demoClassified": "Classified · factual, single collection",
+      "demoTag1": "termination clause",
+      "demoTag2": "notice period",
+      "demoTag3": "fee refund",
+      "demoSearch": "Hybrid search · 24 → reranked to top 8",
+      "demoSynth": "Synthesizing & placing citations…"
+    },
+    "viewer": {
+      "eyebrow": "Citation viewer",
+      "title": "Click a citation. See the exact passage.",
+      "body": "Every citation opens the source in a side viewer, scrolled to the precise spot — a bounding box on a PDF page or a text range in HTML, highlighted in evidence amber.",
+      "point1": "PDF bounding boxes & HTML text ranges",
+      "point2": "Select any text to leave a region comment",
+      "point3": "Resizable split that snaps back when you're done",
+      "docName": "MSA — Acme.pdf",
+      "docPage": "Page 12 / 48",
+      "docHeading": "Article 12 — Termination",
+      "docClause2": "Material breach uncured thirty days after notice.",
+      "docHighlightLead": "12.3 Termination for Convenience.",
+      "docHighlightBody": "Either party may terminate for any reason upon thirty (30) days' prior written notice.",
+      "docClause4": "Survival of confidentiality and indemnity."
+    },
+    "audit": {
+      "eyebrow": "Citation auditing",
+      "title": "Every citation, scored.",
+      "bodyLead": "An automated judge rates each citation",
+      "bodySupported": "Supported",
+      "bodyPartial": "Partial",
+      "bodyUnsupported": "Unsupported",
+      "bodyTail": ", with a confidence score and short reasoning. Admins get a dashboard to triage the weak ones.",
+      "point1": "Workspace-wide accuracy at a glance",
+      "point2": "Filter to unsupported claims, jump to context",
+      "point3": "Per-citation reasoning, not just a number",
+      "cardTitle": "Citation accuracy",
+      "cardAudited": "1,284 audited",
+      "legendSupported": "Supported 94%",
+      "legendPartial": "Partial 4%",
+      "legendUnsupported": "Unsup. 2%",
+      "cardReason": "\"Refunded on a pro-rated basis\" — source omits the method.",
+      "cardVerdict": "Partial · 0.61"
+    },
+    "collab": {
+      "eyebrow": "Collaboration",
+      "title": "Decide together, in the evidence.",
+      "body": "Comment on a message or a document region, reply, resolve — and see who else is in the room in real time. The whole team works over the same source of truth.",
+      "point1": "Live presence & real-time message sync",
+      "point2": "Threaded comments on messages & regions",
+      "point3": "Admin & member roles, multi-tenant workspaces",
+      "demoMessage": "Either party may terminate on 30 days' notice",
+      "demoCommentAuthor": "Amara",
+      "demoCommentRole": "Admin",
+      "demoCommentTime": "2h",
+      "demoCommentBody": "Flag 30-day notice as the controlling provision?"
+    },
+    "features": {
+      "eyebrow": "Everything in the box",
+      "title": "A complete evidence workspace.",
+      "inlineTitle": "Inline citations",
+      "inlineBody": "Numbered chips in every answer, each a link to its grounding passage.",
+      "highlightTitle": "Source highlighting",
+      "highlightBody": "Exact bounding boxes on PDFs and text ranges in HTML & Markdown.",
+      "auditTitle": "Citation auditing",
+      "auditBody": "An LLM judge scores every citation with confidence and reasoning.",
+      "retrievalTitle": "Hybrid retrieval",
+      "retrievalBody": "Vector + keyword search with reranking and sub-query decomposition.",
+      "collabTitle": "Realtime collaboration",
+      "collabBody": "Presence, live sync and threaded comments on messages and regions.",
+      "workspacesTitle": "Workspaces & roles",
+      "workspacesBody": "Multi-tenant orgs with admin / member roles and shareable invites."
+    },
+    "useCases": {
+      "eyebrow": "Who it's for",
+      "title": "For teams who have to be right.",
+      "subtitle": "Anywhere a wrong answer is expensive, the citation is the deliverable.",
+      "legalTitle": "Legal & contracts",
+      "legalBody": "Pin the controlling clause across MSAs and amendments — with the page and line to back it.",
+      "complianceTitle": "Compliance & risk",
+      "complianceBody": "Answer audits and regulators with a defensible trail from claim to source policy.",
+      "supportTitle": "Customer support",
+      "supportBody": "Resolve from runbooks with the exact step cited — no more guessing at stale docs.",
+      "researchTitle": "Research & analysts",
+      "researchBody": "Synthesize across dense reports and trace every figure back to its primary source."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Good to know.",
+      "q1": "What file formats can I upload?",
+      "a1": "PDF, DOCX, HTML and Markdown — up to 100 MB each. Cite extracts, chunks, embeds and indexes them automatically, then shows the ingestion status per document.",
+      "q2": "How are citations verified?",
+      "a2": "An automated judge compares each cited claim against its source passage and labels it Supported, Partial or Unsupported, with a confidence score and short reasoning you can review.",
+      "q3": "Does it work with my own private documents?",
+      "a3": "Yes. Documents stay inside your organization's workspace and are visible only to members according to their roles. We never sell your data or train third-party models on it.",
+      "q4": "Can my team collaborate in real time?",
+      "a4": "Live presence, real-time message sync and threaded comments on messages and document regions keep your whole team working over one source of truth.",
+      "q5": "Is Cite available in Portuguese?",
+      "a5": "Yes. The entire interface is available in English and Brazilian Portuguese, and you can switch language at any time."
+    },
+    "cta": {
+      "title": "Stop trusting. Start verifying.",
+      "subtitle": "Create a workspace, upload your first source, and get a cited answer in minutes.",
+      "primary": "Create account",
+      "secondary": "Sign in",
+      "note": "100% free, forever · no credit card"
+    },
+    "footer": {
+      "tagline": "Agentic answers with verifiable citations. The evidence workspace for teams who must defend their answers.",
+      "productHeading": "Product",
+      "features": "Features",
+      "how": "How it works",
+      "useCases": "Use cases",
+      "createAccount": "Create account",
+      "legalHeading": "Legal",
+      "terms": "Terms of Use",
+      "privacy": "Privacy Policy",
+      "security": "Security",
+      "rights": "© 2026 Cite. All rights reserved."
+    }
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "lastUpdated": "Last updated · June 2026",
+    "backToSite": "Back to site",
+    "createAccount": "Create account",
+    "privacy": {
+      "title": "Privacy Policy",
+      "crossLink": "Terms of Use →",
+      "intro": "This Privacy Policy explains how Cite collects, uses, and protects information when you use the Service. Your documents are yours — we treat them as confidential and never sell your data.",
+      "s1Title": "1. Information we collect",
+      "s1Body": "We collect account details (name, email), the documents and content you upload, the questions and conversations you create, and usage and device information needed to operate and secure the Service.",
+      "s2Title": "2. How we use information",
+      "s2Body": "We use information to provide the Service — indexing your sources, generating cited answers, auditing citations, and enabling collaboration — and to maintain security, prevent abuse, and improve reliability. We do not use Your Content to train third-party models without your instruction.",
+      "s3Title": "3. Your documents & data",
+      "s3Body": "Documents you upload are stored within your organization's workspace and are accessible only to its members according to their roles. Your workspace is yours: you can export or delete your content and your account at any time.",
+      "s4Title": "4. Sharing & subprocessors",
+      "s4Body": "We share information only with service providers (\"subprocessors\") that help us run the Service — such as cloud hosting and model providers — under contracts that require appropriate confidentiality and security. We do not sell personal information or document content.",
+      "s5Title": "5. Security",
+      "s5Body": "We protect data in transit and at rest with encryption, enforce role-based access within workspaces, and apply administrative and technical safeguards aligned with industry best practices. No method of transmission or storage is perfectly secure, but we work continuously to protect your information and to notify you of incidents where required.",
+      "s6Title": "6. Data retention",
+      "s6Body": "We retain information for as long as your account is active or as needed to provide the Service. When you delete content or close your account, we delete or de-identify the associated data within a reasonable period, except where retention is required by law.",
+      "s7Title": "7. Your rights",
+      "s7Body": "Depending on your location, you may have rights to access, correct, export, or delete your personal data, and to object to or restrict certain processing (for example under the LGPD or GDPR). You can exercise many of these directly in-product, or by contacting us.",
+      "s8Title": "8. Cookies & international transfers",
+      "s8Body": "We use essential cookies to keep you signed in and to remember your preferences such as theme and language. Where data is transferred across borders, we use appropriate safeguards consistent with applicable law.",
+      "s9Title": "9. Changes & contact",
+      "s9BodyLead": "We may update this Policy; material changes will be communicated in-product or by email. For privacy questions or to reach our Data Protection Officer, contact",
+      "contactEmail": "privacy@cite.app"
+    },
+    "terms": {
+      "title": "Terms of Use",
+      "crossLink": "Privacy Policy →",
+      "intro": "These Terms of Use (\"Terms\") govern your access to and use of Cite, an evidence workspace for grounded answers with verifiable citations (the \"Service\"), provided by Cite. By creating an account or using the Service, you agree to these Terms.",
+      "s1Title": "1. The Service",
+      "s1Body": "Cite lets teams upload documents into collections and ask questions in natural language. Answers are generated with inline citations linked to the source passages, and citations are automatically audited for accuracy. Features may change over time as we improve the Service.",
+      "s2Title": "2. Accounts & eligibility",
+      "s2Body": "You must provide accurate account information and keep your credentials secure. You are responsible for activity under your account and for your workspace members. Admins may manage members, roles, and invitations within their organization.",
+      "s3Title": "3. Acceptable use",
+      "s3Body": "You agree not to misuse the Service: no unlawful content, no infringement of others' rights, no attempts to disrupt or reverse-engineer the Service, and no uploading of material you do not have the right to use. We may suspend accounts that violate these Terms.",
+      "s4Title": "4. Your content & sources",
+      "s4Body": "You retain ownership of the documents and content you upload (\"Your Content\"). You grant Cite a limited licence to host, process, index, and display Your Content solely to provide the Service to you and your workspace. You are responsible for having the rights to upload and use Your Content.",
+      "s5Title": "5. AI-generated answers",
+      "s5Body": "Answers are generated automatically and, while grounded in your sources and auditable, may contain errors. Citation verdicts are an automated quality signal, not a guarantee. You are responsible for reviewing answers and citations before relying on them, particularly for legal, compliance, or other high-stakes decisions.",
+      "s6Title": "6. Intellectual property",
+      "s6Body": "The Service, including its software, design, and trademarks, is owned by Cite and protected by intellectual-property laws. These Terms do not grant you any rights in the Service except the limited right to use it as described.",
+      "s7Title": "7. Confidentiality & security",
+      "s7BodyLead": "We apply administrative, technical, and organizational safeguards to protect Your Content, as described in our",
+      "s7Link": "Privacy Policy",
+      "s7BodyTail": ". We do not sell Your Content and do not use it to train third-party models without your instruction.",
+      "s8Title": "8. Disclaimers",
+      "s8Body": "The Service is provided \"as is\" and \"as available\" without warranties of any kind, whether express or implied, including fitness for a particular purpose and non-infringement, to the maximum extent permitted by law.",
+      "s9Title": "9. Limitation of liability",
+      "s9Body": "To the maximum extent permitted by law, Cite will not be liable for indirect, incidental, special, or consequential damages, or for lost profits or data, arising from your use of the Service. Our aggregate liability is limited to the amounts you paid for the Service in the twelve months preceding the claim.",
+      "s10Title": "10. Termination",
+      "s10Body": "You may stop using the Service at any time. We may suspend or terminate access if you breach these Terms or to protect the Service. On termination, your right to use the Service ends; we will make Your Content available for export for a reasonable period unless prohibited by law.",
+      "s11Title": "11. Changes & governing law",
+      "s11Body": "We may update these Terms; material changes will be communicated in-product or by email, and continued use constitutes acceptance. These Terms are governed by the laws of the jurisdiction in which Cite is established, without regard to conflict-of-laws principles.",
+      "s12Title": "12. Contact",
+      "s12BodyLead": "Questions about these Terms? Reach us at",
+      "contactEmail": "legal@cite.app"
+    }
   }
 }

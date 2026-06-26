@@ -63,6 +63,30 @@ describe("locateHtmlRange", () => {
     expect(locate).not.toThrow();
     expect(locate()).toBeNull();
   });
+
+  it("indexes offsets against whitespace-collapsed text, not raw DOM text", () => {
+    const root = buildRoot([
+      "<blockquote>\n<p>quoted line one\nquoted line two</p>\n</blockquote>",
+    ]);
+
+    const range = locateHtmlRange(
+      root,
+      0,
+      ":scope > blockquote:nth-of-type(1)",
+      0,
+      "quoted line one quoted line two".length,
+    );
+
+    expect(range!.toString().replace(/\s+/g, " ").trim()).toBe("quoted line one quoted line two");
+  });
+
+  it("ignores leading insignificant whitespace when slicing a sub-span", () => {
+    const root = buildRoot(["<pre><code>\nalpha beta gamma\n</code></pre>"]);
+
+    const range = locateHtmlRange(root, 0, ":scope > pre:nth-of-type(1)", 6, 10);
+
+    expect(range!.toString()).toBe("beta");
+  });
 });
 
 describe("rangeToHtmlLocation round-trip", () => {

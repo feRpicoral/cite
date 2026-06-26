@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Copy, Loader2, Send } from "lucide-react";
+import { Check, Copy, Link2, Loader2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -19,13 +20,10 @@ import {
 
 import { createInviteAction } from "./actions";
 
-/**
- * Generates a shareable invite link. Cite has no email pipeline, so the
- * admin copies the URL and shares it manually. Pinning to a specific
- * email is optional but if provided, the accept page enforces it.
- */
 export function InviteMemberForm() {
   const router = useRouter();
+  const t = useTranslations("settings.members.invite");
+  const tRole = useTranslations("settings.role");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [pending, startTransition] = useTransition();
@@ -54,35 +52,39 @@ export function InviteMemberForm() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Link copied");
+      toast.success(t("linkCopied"));
     } catch {
-      toast.error("Couldn't copy. Select the link and copy it manually.");
+      toast.error(t("copyFailed"));
     }
   }
 
   return (
-    <Card>
+    <Card className="max-w-2xl">
       <CardHeader>
-        <CardTitle>Invite a teammate</CardTitle>
-        <CardDescription>
-          Generate a one-time link and share it. Optional email pins the link to that address.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_10rem_auto] md:items-end">
-          <div className="space-y-2">
-            <Label htmlFor="invite-email">Email (optional)</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              placeholder="teammate@example.com"
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={pending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-role">Role</Label>
+        {/* Two explicit rows (labels, then controls) so labels stay aligned and
+            controls hug them even if a password manager inflates the email
+            input's height — column-level item heights can't bleed across. */}
+        <div className="grid grid-cols-1 items-start gap-x-3 gap-y-2 sm:grid-cols-[1fr_9rem_auto]">
+          <Label htmlFor="invite-email" className="sm:col-start-1 sm:row-start-1">
+            {t("emailLabel")}
+          </Label>
+          <Input
+            id="invite-email"
+            type="email"
+            value={email}
+            placeholder={t("emailPlaceholder")}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={pending}
+            className="self-start sm:col-start-1 sm:row-start-2"
+          />
+          <Label htmlFor="invite-role" className="sm:col-start-2 sm:row-start-1">
+            {t("roleLabel")}
+          </Label>
+          <div className="self-start sm:col-start-2 sm:row-start-2">
             <Select
               value={role}
               onValueChange={(v) => setRole(v as "ADMIN" | "MEMBER")}
@@ -92,23 +94,38 @@ export function InviteMemberForm() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="MEMBER">Member</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
+                <SelectItem value="MEMBER">{tRole("MEMBER")}</SelectItem>
+                <SelectItem value="ADMIN">{tRole("ADMIN")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={submit} disabled={pending}>
-            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            Generate link
+          <Button
+            onClick={submit}
+            disabled={pending}
+            className="self-start sm:col-start-3 sm:row-start-2"
+          >
+            {pending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            {t("generate")}
           </Button>
         </div>
 
         {url && (
-          <div className="bg-muted/40 flex items-center gap-2 rounded-md border p-2">
-            <Input readOnly value={url} className="bg-background font-mono text-xs" />
-            <Button variant="outline" size="sm" onClick={copy}>
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copied" : "Copy"}
+          <div className="bg-muted/40 border-border flex items-center gap-2 rounded-lg border px-3 py-2">
+            <Link2 className="text-muted-foreground size-4 shrink-0" />
+            <span className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs">
+              {url}
+            </span>
+            <span className="text-muted-foreground hidden shrink-0 font-mono text-[10px] sm:inline">
+              {t("expiresIn")}
+            </span>
+            <Button
+              variant={copied ? "secondary" : "outline"}
+              size="sm"
+              onClick={copy}
+              className={copied ? "text-success" : undefined}
+            >
+              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+              {copied ? t("copied") : t("copy")}
             </Button>
           </div>
         )}

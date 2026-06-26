@@ -15,7 +15,7 @@ const tx = {
   },
   documentChunk: {
     deleteMany: vi.fn(() => calls.push("tx.chunk.deleteMany")),
-    create: vi.fn().mockResolvedValue({ id: "chunk-0" }),
+    createMany: vi.fn(),
   },
   $executeRawUnsafe: vi.fn(),
 };
@@ -67,7 +67,6 @@ describe("persistStage", () => {
     calls.length = 0;
     vi.clearAllMocks();
     tx.documentPart.findMany.mockResolvedValue([{ id: "part-0", index: 0 }]);
-    tx.documentChunk.create.mockResolvedValue({ id: "chunk-0" });
   });
 
   afterEach(() => {
@@ -93,6 +92,7 @@ describe("persistStage", () => {
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     expect(tx.documentChunk.deleteMany).toHaveBeenCalledTimes(1);
-    expect(tx.documentChunk.create).toHaveBeenCalledTimes(1);
+    expect(tx.documentChunk.createMany).toHaveBeenCalledTimes(1);
+    expect(tx.$executeRawUnsafe).toHaveBeenCalledTimes(1);
   });
 });

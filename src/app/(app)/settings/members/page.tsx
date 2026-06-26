@@ -1,11 +1,13 @@
-import { requireAdmin } from "@/lib/auth/session";
+import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
 import { InviteMemberForm } from "./invite-form";
 import { MembersTable } from "./members-table";
 
 export default async function MembersPage() {
-  const session = await requireAdmin();
+  const session = await requireSession();
+  const isAdmin = session.role === "ADMIN";
+
   const db = getDb(session.orgId);
 
   // Memberships join `user.email` which lives on a non-tenant table. The
@@ -16,14 +18,19 @@ export default async function MembersPage() {
     orderBy: { createdAt: "asc" },
   });
 
-  const invites = await db.invite.findMany({
-    where: { acceptedAt: null, expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-  });
+  // Pending invites are an admin concern; members see only the roster.
+  const invites = isAdmin
+    ? await db.invite.findMany({
+        where: { acceptedAt: null, expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+
+  const adminCount = memberships.filter((m) => m.role === "ADMIN").length;
 
   return (
     <div className="space-y-6">
-      <InviteMemberForm />
+      {isAdmin && <InviteMemberForm />}
       <MembersTable
         memberships={memberships.map((m) => ({
           id: m.id,
@@ -39,6 +46,8 @@ export default async function MembersPage() {
           expiresAt: i.expiresAt.toISOString(),
         }))}
         currentUserId={session.userId}
+        adminCount={adminCount}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import "server-only";
 import { anthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
 
-import { runAgent } from "@/lib/agents/runner";
+import { type AgentProgress, runAgent } from "@/lib/agents/runner";
 import type { AgentState } from "@/lib/agents/state";
 import { type CollectionId, type OrgId } from "@/lib/db/types";
 
@@ -23,6 +23,17 @@ interface SynthesizeInput {
   collectionId: CollectionId;
   query: string;
   conversationContext?: { role: "user" | "assistant"; content: string }[];
+  /**
+   * Forwarded to the agent runner so the caller can stream the retrieval
+   * trace (classify → decompose → retrieve → sufficiency) to the UI before
+   * synthesis text arrives.
+   */
+  onProgress?: (event: AgentProgress) => void;
+  /**
+   * Aborts the synthesis stream when the client stops generation. The agent
+   * phases run before this point; this only bounds the text stream.
+   */
+  abortSignal?: AbortSignal;
 }
 
 export interface SynthesizeResult {
@@ -43,6 +54,7 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesizeResu
     orgId: input.orgId,
     collectionId: input.collectionId,
     query: input.query,
+    onProgress: input.onProgress,
   });
 
   const passages = state.finalChunks
@@ -52,6 +64,7 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesizeResu
   const stream = streamText({
     model: anthropic("claude-sonnet-4-6"),
     system: SYNTHESIS_SYSTEM,
+    abortSignal: input.abortSignal,
     messages: [
       ...(input.conversationContext ?? []),
       {

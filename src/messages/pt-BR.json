@@ -17,12 +17,24 @@
     "themeSystem": "Sistema"
   },
   "auth": {
+    "brandPanel": {
+      "eyebrow": "RAG agêntico · citações verificáveis",
+      "title": "Respostas que você pode defender.",
+      "body": "O Cite transforma seus documentos em respostas fundamentadas — cada afirmação ligada ao trecho exato de onde veio. Clique em qualquer citação e veja a fonte, destacada.",
+      "featureCitations": "Citações inline",
+      "featureHighlighting": "Destaque na fonte",
+      "featureAuditing": "Auditoria de citações"
+    },
     "login": {
       "title": "Entrar no Cite",
       "subtitle": "Bem-vindo de volta.",
       "emailLabel": "E-mail",
       "passwordLabel": "Senha",
+      "forgotPassword": "Esqueceu a senha?",
       "submit": "Entrar",
+      "submitting": "Entrando…",
+      "errorTitle": "E-mail ou senha incorretos",
+      "errorBody": "Confira seus dados e tente novamente, ou redefina sua senha.",
       "noAccount": "Ainda não tem uma conta?",
       "signUpLink": "Crie agora"
     },
@@ -31,9 +43,74 @@
       "subtitle": "Configure seu workspace e comece a conversar com seus documentos.",
       "emailLabel": "E-mail",
       "passwordLabel": "Senha",
+      "passwordHint": "A senha deve ter pelo menos 8 caracteres.",
       "submit": "Criar conta",
+      "submitting": "Criando conta…",
       "haveAccount": "Já tem uma conta?",
-      "signInLink": "Entrar"
+      "signInLink": "Entrar",
+      "nameLabel": "Nome"
+    },
+    "checkEmail": {
+      "title": "Verifique seu e-mail",
+      "body": "Enviamos um link de confirmação para <strong>{email}</strong>. Clique nele para ativar sua conta.",
+      "bodyGeneric": "Enviamos um link de confirmação para sua caixa de entrada. Clique nele para ativar sua conta.",
+      "resend": "Reenviar link",
+      "resending": "Reenviando…",
+      "resent": "Link enviado novamente.",
+      "spamHint": "Não recebeu? Verifique o spam, ou",
+      "useDifferentEmail": "use outro e-mail",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "forgotPassword": {
+      "title": "Redefina sua senha",
+      "subtitle": "Informe seu e-mail e enviaremos um link para definir uma nova senha.",
+      "emailLabel": "E-mail de trabalho",
+      "submit": "Enviar link de redefinição",
+      "submitting": "Enviando…",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "resetSent": {
+      "title": "Verifique seu e-mail",
+      "body": "Se existir uma conta para <strong>{email}</strong>, enviamos um link para redefinir sua senha.",
+      "bodyGeneric": "Se existir uma conta para esse endereço, enviamos um link para redefinir sua senha.",
+      "spamHint": "Não recebeu? Verifique o spam, ou",
+      "tryAgain": "tente outro e-mail",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "setPassword": {
+      "title": "Defina uma nova senha",
+      "passwordLabel": "Nova senha",
+      "confirmLabel": "Confirmar senha",
+      "passwordHint": "A senha deve ter pelo menos 8 caracteres.",
+      "strong": "Forte — {count} caracteres",
+      "mismatch": "As senhas não coincidem.",
+      "submit": "Atualizar senha",
+      "submitting": "Atualizando…",
+      "success": "Senha atualizada.",
+      "expiredTitle": "Este link de redefinição expirou",
+      "expiredBody": "Por segurança, links de redefinição valem por uma hora. Solicite um novo para continuar.",
+      "requestNew": "Solicitar um novo link",
+      "backToSignIn": "Voltar para entrar"
+    },
+    "acceptInvite": {
+      "invitedBy": "{name} convidou você para entrar em",
+      "invited": "Você foi convidado para entrar em",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "joinAs": "Você entrará como",
+      "switchNote": "Aceitar muda seu workspace ativo para {org}. Você pode voltar a qualquer momento.",
+      "accept": "Aceitar convite",
+      "decline": "Agora não",
+      "welcome": "Boas-vindas!",
+      "missingToken": "Token de convite ausente.",
+      "errorTitle": "Não foi possível aceitar este convite",
+      "expiredTitle": "Convite expirado",
+      "expiredBody": "Este link não é mais válido. Peça a um admin para enviar um novo convite.",
+      "notFoundTitle": "Convite não encontrado",
+      "notFoundBody": "Ele pode ter sido revogado ou já usado. Peça a um admin um novo link.",
+      "mismatchTitle": "Este convite é para outro e-mail",
+      "mismatchBody": "Convidou <strong>{invited}</strong> — você está conectado como <strong>{current}</strong>.",
+      "switchAccount": "Trocar de conta"
     }
   },
   "onboarding": {
@@ -42,7 +119,18 @@
       "subtitle": "Workspaces no Cite são organizados por org. Escolha um nome que seu time reconheça.",
       "nameLabel": "Nome da organização",
       "namePlaceholder": "Acme Inc.",
-      "submit": "Criar organização"
+      "urlLabel": "URL do seu workspace:",
+      "submit": "Criar organização",
+      "submitting": "Criando…"
+    },
+    "selectOrg": {
+      "title": "Escolha um workspace",
+      "subtitle": "Você pertence a vários. Escolha um para continuar.",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "memberCount": "{count, plural, one {# membro} other {# membros}}",
+      "createNew": "Criar uma nova organização",
+      "switchError": "Não foi possível trocar de workspace. Tente novamente."
     }
   },
   "app": {
@@ -50,13 +138,149 @@
       "dashboard": "Painel",
       "documents": "Documentos",
       "conversations": "Conversas",
-      "settings": "Configurações"
+      "settings": "Configurações",
+      "admin": "Admin",
+      "citationAccuracy": "Precisão das citações",
+      "workspace": "Espaço de trabalho",
+      "switchWorkspace": "Trocar de espaço",
+      "signOut": "Sair"
     },
     "dashboard": {
       "title": "Painel",
       "emptyTitle": "Nenhuma atividade ainda",
       "emptyBody": "Faça upload de um documento para começar.",
       "uploadCta": "Enviar documento"
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Bom dia, {name}",
+      "afternoon": "Boa tarde, {name}",
+      "evening": "Boa noite, {name}"
+    },
+    "greetingContext": " — veja o que está acontecendo em <org>workspace</org>.",
+    "stats": {
+      "collections": "Coleções",
+      "documents": "Documentos",
+      "conversations": "Conversas",
+      "accuracy": "Precisão",
+      "documentsSubtext": "{embedding} indexando · {failed} com falha",
+      "accuracySubtext": "com suporte · {audited} auditadas"
+    },
+    "recentConversations": {
+      "title": "Conversas recentes",
+      "viewAll": "Ver todas",
+      "empty": "Nenhuma conversa ainda."
+    },
+    "recentlyIndexed": {
+      "title": "Indexados recentemente",
+      "empty": "Nada indexado ainda."
+    },
+    "accuracyCard": {
+      "title": "Precisão das citações",
+      "openAudit": "Abrir auditoria",
+      "supported": "Com suporte {pct}%",
+      "partial": "Parcial {pct}%",
+      "unsupported": "Sem suporte {pct}%",
+      "empty": "Nenhuma citação auditada ainda."
+    },
+    "onboarding": {
+      "title": "Seu workspace está pronto",
+      "body": "O Cite transforma seus documentos em respostas que você pode defender. Adicione fontes, faça perguntas e receba respostas fundamentadas em trechos exatos e verificáveis.",
+      "step1Title": "Crie uma coleção",
+      "step1Body": "Agrupe documentos relacionados — um caso, produto ou conjunto de políticas.",
+      "step1Cta": "Criar",
+      "step2Title": "Envie suas fontes",
+      "step2Body": "PDF, DOCX, HTML ou Markdown — até 100 MB cada.",
+      "step3Title": "Faça uma pergunta fundamentada",
+      "step3Body": "Toda resposta vem com citações clicáveis no texto."
+    }
+  },
+  "conversation": {
+    "cite": "Cite",
+    "empty": {
+      "title": "Pergunte qualquer coisa sobre {collection}",
+      "description": "As respostas são fundamentadas nos documentos desta coleção, cada afirmação ligada à sua fonte exata.",
+      "suggestion1": "Qual é o prazo de aviso de rescisão nos nossos MSAs?",
+      "suggestion2": "Resuma os limites de responsabilidade."
+    },
+    "reasoning": {
+      "classified": "Classificada como {shape}",
+      "shapeSimple": "simples",
+      "shapeDecompose": "decomposta",
+      "subQueries": "{count, plural, one {# subconsulta} other {# subconsultas}}",
+      "reranked": "reordenada",
+      "sufficiencyMet": "suficiência atingida",
+      "sufficiencyShort": "suficiência limitada",
+      "ariaExpand": "Mostrar como esta resposta foi construída",
+      "ariaCollapse": "Ocultar como esta resposta foi construída",
+      "live": {
+        "heading": "Como esta resposta está sendo construída",
+        "classifyTitle": "Classificando a pergunta",
+        "classifyDoneSimple": "Classificada · recuperação única",
+        "classifyDoneDecompose": "Classificada · recuperação em partes",
+        "decomposeActive": "Decompondo em subconsultas",
+        "decomposeDone": "{count, plural, one {Decomposta em # subconsulta} other {Decomposta em # subconsultas}}",
+        "retrieveTitle": "Busca híbrida + reordenação",
+        "retrieveActive": "Busca vetorial + por palavra-chave",
+        "retrieveDone": "{candidates} candidatos → reordenados para os {reranked} melhores",
+        "sufficiencyTitle": "Verificando suficiência",
+        "sufficiencyMet": "Evidências suficientes para responder",
+        "sufficiencyShort": "Evidências limitadas — busca ampliada",
+        "synthesizeTitle": "Sintetizando e inserindo citações…",
+        "synthesizeSubtitle": "Fundamentando cada afirmação nas passagens recuperadas"
+      }
+    },
+    "support": {
+      "supported": "{count} confirmadas",
+      "partial": "{count} parciais",
+      "unsupported": "{count} sem suporte"
+    },
+    "citations": {
+      "linking": "Vinculando citações às fontes…",
+      "pendingNote": "As citações ficarão clicáveis assim que forem verificadas na fonte."
+    },
+    "streaming": {
+      "synthesizing": "Sintetizando resposta…",
+      "searching": "Buscando documentos…",
+      "generating": "Gerando resposta…",
+      "stop": "Parar"
+    },
+    "noAnswer": {
+      "title": "Não encontrei suporte suficiente para responder com confiança",
+      "body": "Nenhum trecho indexado respondeu bem à sua pergunta. Não vou adivinhar sem uma fonte."
+    },
+    "composer": {
+      "placeholder": "Faça uma pergunta de acompanhamento sobre {collection}…",
+      "placeholderNew": "Pergunte sobre {collection}…",
+      "hint": "Enter para enviar · Shift+Enter para nova linha",
+      "counter": "{count} / {max}",
+      "tooLong": "A mensagem é longa demais — corte {count, plural, one {# caractere} other {# caracteres}} para enviar.",
+      "send": "Enviar",
+      "deliveryFailed": "Não entregue · conexão perdida",
+      "retry": "Tentar novamente",
+      "generating": "Gerando resposta…",
+      "stop": "Parar"
+    },
+    "comments": {
+      "title": "Comentários",
+      "indicator": "{count, plural, one {# comentário} other {# comentários}}",
+      "empty": "Nenhum comentário ainda",
+      "emptyHint": "Inicie a conversa para discutir esta resposta com seu time.",
+      "resolve": "Resolver",
+      "reopen": "Reabrir",
+      "reply": "Responder",
+      "delete": "Excluir",
+      "replyPlaceholder": "Responder…",
+      "addPlaceholder": "Adicionar um comentário…",
+      "you": "Você",
+      "addFailed": "Falha ao publicar comentário",
+      "updateFailed": "Falha ao atualizar",
+      "deleteFailed": "Falha ao excluir",
+      "replyFailed": "Falha ao responder"
+    },
+    "viewer": {
+      "backToChat": "Chat"
     }
   },
   "settings": {
@@ -71,29 +295,574 @@
       "ADMIN": "Administrador",
       "MEMBER": "Membro"
     },
+    "dirty": {
+      "label": "Alterações não salvas",
+      "save": "Salvar alterações",
+      "cancel": "Cancelar"
+    },
     "organization": {
       "title": "Organização",
       "description": "Informações da workspace visíveis a todos nesta organização.",
       "nameLabel": "Nome",
       "slugLabel": "Slug",
-      "roleLabel": "Seu papel"
+      "roleLabel": "Seu papel",
+      "adminHint": "Administradores gerenciam membros e veem a precisão das citações.",
+      "readOnlyBadge": "Somente leitura",
+      "readOnlyHint": "Apenas administradores podem editar os detalhes da workspace.",
+      "saved": "Workspace atualizada.",
+      "nameRequired": "O nome da workspace não pode ficar vazio.",
+      "slugRequired": "Informe uma URL do espaço.",
+      "slugHint": "Letras minúsculas, números e hífens. Alterar quebra links existentes."
     },
     "preferences": {
       "title": "Preferências",
       "description": "Configurações pessoais da sua conta. Acompanham você entre dispositivos.",
       "languageLabel": "Idioma",
       "languageHint": "Afeta a interface e mensagens em todo o app.",
+      "themeLabel": "Tema",
       "save": "Salvar",
       "saved": "Preferências salvas.",
       "localeOption": {
         "en-US": "English",
         "pt-BR": "Português"
+      },
+      "themeOption": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
       }
+    },
+    "members": {
+      "invite": {
+        "title": "Convidar um colega",
+        "description": "Gere um link de uso único. Adicione um e-mail para vinculá-lo a esse endereço ou compartilhe um link aberto.",
+        "emailLabel": "E-mail (opcional)",
+        "emailPlaceholder": "colega@exemplo.com",
+        "roleLabel": "Papel",
+        "generate": "Gerar link",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "linkCopied": "Link copiado.",
+        "copyFailed": "Não foi possível copiar. Selecione o link e copie manualmente.",
+        "expiresIn": "Expira em 7 dias"
+      },
+      "table": {
+        "title": "Membros",
+        "you": "Você",
+        "columnMember": "Membro",
+        "columnRole": "Papel",
+        "columnActions": "Ações",
+        "makeAdmin": "Tornar administrador",
+        "makeMember": "Tornar membro",
+        "remove": "Remover",
+        "roleUpdated": "Papel atualizado.",
+        "memberRemoved": "Membro removido."
+      },
+      "pending": {
+        "title": "Convites pendentes",
+        "openLink": "Link aberto · sem e-mail vinculado",
+        "expiresIn": "Expira {date}",
+        "revoke": "Revogar",
+        "revoked": "Convite revogado."
+      },
+      "removeDialog": {
+        "title": "Remover {name}?",
+        "description": "A pessoa perde o acesso a esta workspace imediatamente. Os comentários dela permanecem.",
+        "confirm": "Remover"
+      },
+      "revokeDialog": {
+        "title": "Revogar este convite?",
+        "description": "O link para de funcionar imediatamente e não pode ser restaurado.",
+        "confirm": "Revogar"
+      },
+      "lastAdmin": {
+        "title": "Você não pode remover o último administrador",
+        "description": "Promova outro membro a administrador antes de remover ou rebaixar você mesmo."
+      }
+    },
+    "account": {
+      "title": "Conta",
+      "nameLabel": "Nome",
+      "emailLabel": "E-mail",
+      "emailHint": "Alterar o e-mail envia um link de confirmação para o novo endereço.",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Nova senha",
+      "passwordConfirmPlaceholder": "Confirmar nova senha",
+      "save": "Salvar",
+      "nameSaved": "Nome atualizado.",
+      "emailSaved": "Confirmação enviada para o novo e-mail.",
+      "passwordSaved": "Senha atualizada.",
+      "passwordTooShort": "A senha deve ter ao menos 8 caracteres.",
+      "passwordMismatch": "As senhas não coincidem."
     }
+  },
+  "conversationsList": {
+    "title": "Conversas",
+    "newConversation": "Nova conversa",
+    "searchPlaceholder": "Buscar conversas",
+    "allCollections": "Todas as coleções",
+    "total": "{count} no total",
+    "messageCount": "{count, plural, one {# mensagem} other {# mensagens}}",
+    "loadMore": "Carregar mais",
+    "clearSearch": "Limpar busca",
+    "noneYet": {
+      "title": "Nenhuma conversa ainda",
+      "description": "Inicie uma para fazer perguntas embasadas sobre uma coleção — cada resposta vem com citações verificáveis."
+    },
+    "noResults": {
+      "title": "Nenhuma conversa corresponde",
+      "description": "Nada para \"{query}\". Tente outra busca ou limpe o filtro.",
+      "descriptionFiltered": "Nenhuma conversa nesta coleção ainda. Tente outro filtro."
+    },
+    "noCollections": {
+      "title": "Crie uma coleção primeiro",
+      "description": "Você precisa de ao menos uma coleção com documentos indexados antes de iniciar uma conversa.",
+      "createCollection": "Criar coleção"
+    },
+    "dialog": {
+      "title": "Nova conversa",
+      "description": "Escolha uma coleção para embasar suas respostas.",
+      "documentCount": "{count, plural, one {# documento} other {# documentos}}",
+      "indexed": "indexado",
+      "embedding": "{count} indexando",
+      "empty": "indexando",
+      "cancel": "Cancelar",
+      "start": "Iniciar conversa",
+      "error": "Não foi possível criar a conversa"
+    }
+  },
+  "documentViewer": {
+    "sourceFallbackTitle": "Fonte",
+    "close": "Fechar",
+    "backToChat": "Conversa",
+    "previousPage": "Página anterior",
+    "nextPage": "Próxima página",
+    "pageCount": "{page} / {total}",
+    "pageLabel": "Página {page} / {total}",
+    "zoomIn": "Aumentar zoom",
+    "zoomOut": "Diminuir zoom",
+    "fit": "Ajustar",
+    "loading": "Carregando…",
+    "rendering": "Renderizando página {page} de {total}…",
+    "failedTitle": "Não foi possível carregar o documento",
+    "failedDescription": "Algo deu errado ao buscar esta fonte. Verifique sua conexão e tente novamente.",
+    "retry": "Tentar novamente",
+    "notFoundTitle": "Documento não encontrado",
+    "notFoundDescription": "Esta fonte pode ter sido excluída ou removida da coleção. A citação não pode ser aberta.",
+    "backToChatAction": "Voltar para a conversa",
+    "unsupportedTitle": "Pré-visualização indisponível",
+    "unsupportedDescription": "O texto citado continua destacado abaixo. Baixe o original para visualizá-lo com a formatação completa.",
+    "download": "Baixar",
+    "commentOnSelection": "Comentar na seleção",
+    "commentPlaceholder": "Comente sobre este trecho…",
+    "cancel": "Cancelar",
+    "comment": "Comentar",
+    "viewComment": "Ver comentário",
+    "newRegionComment": "Novo comentário na região"
   },
   "errors": {
     "generic": "Algo deu errado. Tente novamente.",
     "notFound": "Página não encontrada.",
     "unauthorized": "Você não tem acesso a esta página."
+  },
+  "audit": {
+    "title": "Precisão das citações",
+    "subtitle": "Veredictos do juiz LLM sobre cada citação nas mensagens recentes do assistente.",
+    "dateRange": "Últimos {days} dias",
+    "summary": {
+      "title": "Citações auditadas",
+      "meta": "{citations} citações · {messages} mensagens"
+    },
+    "stat": {
+      "supported": "Sustentada · {count}",
+      "partial": "Parcial · {count}",
+      "unsupported": "Sem suporte · {count}"
+    },
+    "controls": {
+      "searchPlaceholder": "Buscar mensagens ou documentos",
+      "searchLabel": "Buscar mensagens auditadas",
+      "verdictLabel": "Veredicto",
+      "verdictAll": "Todos os veredictos",
+      "sortLabel": "Ordenar",
+      "sortRecent": "Mais recentes",
+      "sortConfidence": "Menor confiança",
+      "resultsCount": "{count, plural, one {# resultado} other {# resultados}}",
+      "clearFilter": "Limpar filtro"
+    },
+    "row": {
+      "citationLabel": "Citação {index}",
+      "expand": "Mostrar detalhes por citação",
+      "collapse": "Ocultar detalhes por citação",
+      "created": "Criada em {date}",
+      "updated": "Atualizada em {date}"
+    },
+    "empty": {
+      "title": "Nenhuma mensagem auditada ainda",
+      "description": "Cada citação é avaliada automaticamente após a geração de uma resposta. Assim que seu time começar a conversar com as fontes, os resultados de precisão aparecerão aqui."
+    },
+    "filteredEmpty": {
+      "title": "Nenhuma citação correspondente",
+      "description": "Nenhuma citação auditada corresponde aos filtros atuais. Tente limpar a busca ou o filtro de veredicto."
+    }
+  },
+  "system": {
+    "notFound": {
+      "code": "404",
+      "title": "Página não encontrada",
+      "description": "A página que você procura não existe ou pode ter sido movida.",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "error": {
+      "title": "Algo deu errado",
+      "description": "Ocorreu um erro inesperado e nossa equipe foi avisada. Tente recarregar — seu trabalho está salvo.",
+      "reference": "error_ref · {ref}",
+      "reload": "Recarregar",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "forbidden": {
+      "title": "Você não tem acesso",
+      "description": "Esta página é restrita a administradores do workspace. Fale com um administrador se acha que deveria ter acesso.",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "offline": {
+      "title": "Você está offline",
+      "description": "Verifique sua conexão. O Cite vai reconectar automaticamente e retomar de onde você parou.",
+      "reconnecting": "Reconectando…"
+    },
+    "removed": {
+      "title": "Você foi removido deste workspace",
+      "description": "Um administrador removeu seu acesso a este workspace. Você ainda pode usar qualquer outro workspace ao qual pertença.",
+      "continue": "Continuar"
+    }
+  },
+  "documents": {
+    "title": "Documentos",
+    "collections": "Coleções",
+    "newCollection": "Nova coleção",
+    "createCollection": "Criar coleção",
+    "editCollection": "Editar coleção",
+    "upload": "Enviar",
+    "browse": "procurar",
+    "documentCount": "{count, plural, =0 {Nenhum documento} one {# documento} other {# documentos}}",
+    "dropHint": "Arraste arquivos aqui ou <browse>procure</browse>",
+    "formatHint": "PDF, DOCX, HTML, MD",
+    "sizeHint": "até {size} cada",
+    "dropToUpload": "Solte para enviar para {name}",
+    "column": {
+      "name": "Nome",
+      "size": "Tamanho",
+      "added": "Adicionado",
+      "status": "Status"
+    },
+    "status": {
+      "uploading": "Enviando",
+      "extracting": "Extraindo",
+      "chunking": "Dividindo",
+      "embedding": "Indexando",
+      "indexed": "Indexado",
+      "failed": "Falhou",
+      "retry": "Tentar de novo"
+    },
+    "rowActions": {
+      "label": "Ações do documento",
+      "open": "Abrir / visualizar",
+      "rename": "Renomear",
+      "retry": "Repetir processamento",
+      "delete": "Excluir"
+    },
+    "rename": {
+      "title": "Renomear documento",
+      "label": "Nome",
+      "save": "Salvar"
+    },
+    "deleteDocument": {
+      "title": "Excluir \"{name}\"?",
+      "description": "Isso remove o documento e todas as citações que o referenciam desta coleção. Não pode ser desfeito.",
+      "confirm": "Excluir documento"
+    },
+    "deleteCollection": {
+      "title": "Excluir \"{name}\"?",
+      "description": "Isso exclui a coleção e {count, plural, one {# documento} other {# documentos}} dentro dela. Não pode ser desfeito.",
+      "confirm": "Excluir coleção"
+    },
+    "collectionActions": {
+      "label": "Ações da coleção",
+      "edit": "Editar",
+      "delete": "Excluir"
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "Acordos de Subprocessadores",
+      "description": "Descrição",
+      "descriptionOptional": "(opcional)",
+      "descriptionPlaceholder": "O que há nesta coleção?",
+      "descriptionHint": "Agrupe documentos relacionados para conversar com eles juntos.",
+      "charCount": "{count} / {max}"
+    },
+    "upload2": {
+      "success": "{name} enviado",
+      "failed": "{name}: {error}",
+      "tooLarge": "Muito grande — {size}. Os arquivos devem ter menos de {max}.",
+      "unsupported": "Formato não suportado. O Cite aceita PDF, DOCX, HTML e Markdown.",
+      "noCollection": "Nenhuma coleção selecionada. Escolha ou crie uma coleção antes de enviar."
+    },
+    "empty": {
+      "noCollectionsTitle": "Nenhuma coleção ainda",
+      "noCollectionsBody": "Coleções agrupam documentos relacionados para você conversar com eles juntos. Crie a primeira para começar a enviar fontes.",
+      "noSelectionTitle": "Selecione uma coleção",
+      "noSelectionBody": "Escolha uma coleção à esquerda para ver e gerenciar seus documentos.",
+      "emptyCollectionTitle": "Esta coleção está vazia",
+      "emptyCollectionBody": "Arraste arquivos aqui ou procure para enviar. PDF, DOCX, HTML, Markdown — até {size} cada.",
+      "uploadDocuments": "Enviar documentos"
+    },
+    "toast": {
+      "renamed": "Documento renomeado",
+      "deleted": "Documento excluído",
+      "retrying": "Repetindo processamento",
+      "collectionDeleted": "Coleção excluída",
+      "collectionUpdated": "Coleção atualizada"
+    }
+  },
+  "landing": {
+    "nav": {
+      "product": "Produto",
+      "how": "Como funciona",
+      "useCases": "Casos de uso",
+      "faq": "Perguntas",
+      "signIn": "Entrar",
+      "createAccount": "Criar conta",
+      "menu": "Abrir menu"
+    },
+    "hero": {
+      "badge": "RAG agêntico · citações verificáveis",
+      "title": "Cada resposta, ligada à fonte.",
+      "subtitle": "O Cite transforma seus documentos em respostas fundamentadas — cada afirmação ligada à passagem exata de onde veio. Clique numa citação e veja o destaque.",
+      "ctaPrimary": "Criar conta",
+      "ctaSecondary": "Veja como funciona",
+      "note": "100% gratuito · funciona com PDF, DOCX, HTML e Markdown",
+      "demoTitle": "Rescisão e aviso prévio — Contratos MSA",
+      "demoQuestion": "Qual o prazo de aviso para rescisão por conveniência?",
+      "demoAnswerLead": "A rescisão por conveniência exige aviso por escrito de",
+      "demoAnswerDays": "30 dias",
+      "demoAnswerMid": "",
+      "demoAnswerTail": ", e os valores pré-pagos são reembolsados proporcionalmente",
+      "demoSourceLabel": "Fonte · p.12",
+      "demoSourceQuote": "“…rescindir mediante aviso prévio por escrito de trinta (30) dias…”",
+      "demoVerdict": "Confirmado · 0,92",
+      "floatClickTitle": "Clique → destaque",
+      "floatClickBody": "Vá direto à passagem exata",
+      "floatAuditTitle": "94% confirmadas",
+      "floatAuditBody": "Toda citação, auditada"
+    },
+    "stats": {
+      "supportedValue": "94%",
+      "supportedLabel": "das citações avaliadas como confirmadas pelo auditor",
+      "verifiedValue": "1,2M+",
+      "verifiedLabel": "citações verificadas contra a fonte",
+      "latencyValue": "<2s",
+      "latencyLabel": "do clique na citação até o destaque",
+      "formatsValue": "4",
+      "formatsLabel": "formatos: PDF, DOCX, HTML e Markdown"
+    },
+    "how": {
+      "eyebrow": "Como funciona",
+      "title": "Do documento à resposta defensável.",
+      "subtitle": "Quatro passos, sem configuração. Envie suas fontes e comece a perguntar — cada resposta chega pronta para verificar.",
+      "step1Title": "Envie suas fontes",
+      "step1Body": "Arraste PDFs, DOCX, HTML ou Markdown. O Cite extrai, divide e indexa tudo automaticamente.",
+      "step2Title": "Pergunte em linguagem natural",
+      "step2Body": "O Cite classifica a pergunta, divide em subconsultas e roda busca híbrida com reranqueamento.",
+      "step3Title": "Leia uma resposta citada",
+      "step3Body": "A resposta surge com citações em linha — cada uma é um link clicável para a passagem que a fundamenta.",
+      "step4Title": "Verifique com um clique",
+      "step4Body": "Abra a fonte, veja o destaque exato e confira o veredito do auditor. Confie, depois cite."
+    },
+    "retrieval": {
+      "eyebrow": "Recuperação agêntica",
+      "title": "Uma recuperação que você vê raciocinar.",
+      "body": "Sem o spinner de \"pensando…\" caixa-preta. O Cite mostra cada fase — classificar, decompor, buscar, reranquear, checar suficiência — e deixa você parar a qualquer momento.",
+      "point1": "Busca híbrida vetorial + por palavra-chave com reranqueamento",
+      "point2": "Decomposição em subconsultas para perguntas com várias partes",
+      "point3": "Checagem de suficiência antes de responder — ou de dizer que não pode",
+      "demoTitle": "Como esta resposta foi construída",
+      "demoClassified": "Classificada · factual, coleção única",
+      "demoTag1": "cláusula de rescisão",
+      "demoTag2": "prazo de aviso",
+      "demoTag3": "reembolso de taxas",
+      "demoSearch": "Busca híbrida · 24 → reranqueadas para o top 8",
+      "demoSynth": "Sintetizando e posicionando citações…"
+    },
+    "viewer": {
+      "eyebrow": "Visualizador de citações",
+      "title": "Clique numa citação. Veja a passagem exata.",
+      "body": "Cada citação abre a fonte num visualizador lateral, rolado até o ponto preciso — uma caixa delimitadora numa página de PDF ou um trecho de texto em HTML, destacado em âmbar de evidência.",
+      "point1": "Caixas delimitadoras em PDF e trechos de texto em HTML",
+      "point2": "Selecione qualquer texto para deixar um comentário de região",
+      "point3": "Divisão redimensionável que volta ao normal quando você termina",
+      "docName": "MSA — Acme.pdf",
+      "docPage": "Página 12 / 48",
+      "docHeading": "Artigo 12 — Rescisão",
+      "docClause2": "Violação material não sanada trinta dias após o aviso.",
+      "docHighlightLead": "12.3 Rescisão por Conveniência.",
+      "docHighlightBody": "Qualquer parte pode rescindir por qualquer motivo mediante aviso prévio por escrito de trinta (30) dias.",
+      "docClause4": "Sobrevivência de confidencialidade e indenização."
+    },
+    "audit": {
+      "eyebrow": "Auditoria de citações",
+      "title": "Toda citação, pontuada.",
+      "bodyLead": "Um juiz automatizado avalia cada citação como",
+      "bodySupported": "Confirmada",
+      "bodyPartial": "Parcial",
+      "bodyUnsupported": "Não confirmada",
+      "bodyTail": ", com um índice de confiança e um raciocínio curto. Admins têm um painel para triar as mais fracas.",
+      "point1": "Precisão de todo o workspace num relance",
+      "point2": "Filtre por afirmações não confirmadas e vá ao contexto",
+      "point3": "Raciocínio por citação, não apenas um número",
+      "cardTitle": "Precisão das citações",
+      "cardAudited": "1.284 auditadas",
+      "legendSupported": "Confirmadas 94%",
+      "legendPartial": "Parciais 4%",
+      "legendUnsupported": "Não conf. 2%",
+      "cardReason": "\"Reembolsado proporcionalmente\" — a fonte omite o método.",
+      "cardVerdict": "Parcial · 0,61"
+    },
+    "collab": {
+      "eyebrow": "Colaboração",
+      "title": "Decidam juntos, dentro da evidência.",
+      "body": "Comente em uma mensagem ou numa região do documento, responda, resolva — e veja quem mais está na sala em tempo real. O time todo trabalha sobre a mesma fonte da verdade.",
+      "point1": "Presença ao vivo e sincronização de mensagens em tempo real",
+      "point2": "Comentários encadeados em mensagens e regiões",
+      "point3": "Papéis de admin e membro, workspaces multi-tenant",
+      "demoMessage": "Qualquer parte pode rescindir com 30 dias de aviso",
+      "demoCommentAuthor": "Amara",
+      "demoCommentRole": "Admin",
+      "demoCommentTime": "2h",
+      "demoCommentBody": "Marcar o aviso de 30 dias como a cláusula controladora?"
+    },
+    "features": {
+      "eyebrow": "Tudo no pacote",
+      "title": "Um workspace de evidências completo.",
+      "inlineTitle": "Citações em linha",
+      "inlineBody": "Chips numerados em cada resposta, cada um ligado à sua passagem de fundamento.",
+      "highlightTitle": "Destaque na fonte",
+      "highlightBody": "Caixas delimitadoras exatas em PDFs e trechos de texto em HTML e Markdown.",
+      "auditTitle": "Auditoria de citações",
+      "auditBody": "Um juiz de IA pontua cada citação com confiança e raciocínio.",
+      "retrievalTitle": "Recuperação híbrida",
+      "retrievalBody": "Busca vetorial + por palavra-chave com reranqueamento e decomposição em subconsultas.",
+      "collabTitle": "Colaboração em tempo real",
+      "collabBody": "Presença, sincronização ao vivo e comentários encadeados em mensagens e regiões.",
+      "workspacesTitle": "Workspaces e papéis",
+      "workspacesBody": "Orgs multi-tenant com papéis de admin / membro e convites compartilháveis."
+    },
+    "useCases": {
+      "eyebrow": "Para quem é",
+      "title": "Para times que precisam acertar.",
+      "subtitle": "Onde uma resposta errada custa caro, a citação é a entrega.",
+      "legalTitle": "Jurídico e contratos",
+      "legalBody": "Fixe a cláusula controladora entre MSAs e aditivos — com a página e a linha para sustentar.",
+      "complianceTitle": "Compliance e risco",
+      "complianceBody": "Responda a auditorias e reguladores com uma trilha defensável da afirmação até a política de origem.",
+      "supportTitle": "Suporte ao cliente",
+      "supportBody": "Resolva a partir de runbooks com o passo exato citado — sem mais adivinhação em docs desatualizados.",
+      "researchTitle": "Pesquisa e analistas",
+      "researchBody": "Sintetize entre relatórios densos e rastreie cada número até sua fonte primária."
+    },
+    "faq": {
+      "eyebrow": "Perguntas",
+      "title": "Bom saber.",
+      "q1": "Quais formatos posso enviar?",
+      "a1": "PDF, DOCX, HTML e Markdown — até 100 MB cada. O Cite extrai, divide, gera embeddings e indexa tudo automaticamente, e mostra o status de ingestão por documento.",
+      "q2": "Como as citações são verificadas?",
+      "a2": "Um juiz automatizado compara cada afirmação citada com sua passagem de origem e a rotula como Confirmada, Parcial ou Não confirmada, com um índice de confiança e um raciocínio curto para você revisar.",
+      "q3": "Funciona com meus próprios documentos privados?",
+      "a3": "Sim. Os documentos ficam dentro do workspace da sua organização e são visíveis apenas para membros conforme seus papéis. Nunca vendemos seus dados nem treinamos modelos de terceiros com eles.",
+      "q4": "Meu time pode colaborar em tempo real?",
+      "a4": "Presença ao vivo, sincronização de mensagens em tempo real e comentários encadeados em mensagens e regiões do documento mantêm o time todo sobre uma única fonte da verdade.",
+      "q5": "O Cite está disponível em português?",
+      "a5": "Sim. Toda a interface está disponível em inglês e português do Brasil, e você pode trocar de idioma a qualquer momento."
+    },
+    "cta": {
+      "title": "Pare de confiar. Comece a verificar.",
+      "subtitle": "Crie um workspace, envie sua primeira fonte e receba uma resposta citada em minutos.",
+      "primary": "Criar conta",
+      "secondary": "Entrar",
+      "note": "100% gratuito, para sempre · sem cartão de crédito"
+    },
+    "footer": {
+      "tagline": "Respostas agênticas com citações verificáveis. O workspace de evidências para times que precisam defender suas respostas.",
+      "productHeading": "Produto",
+      "features": "Recursos",
+      "how": "Como funciona",
+      "useCases": "Casos de uso",
+      "createAccount": "Criar conta",
+      "legalHeading": "Jurídico",
+      "terms": "Termos de Uso",
+      "privacy": "Política de Privacidade",
+      "security": "Segurança",
+      "rights": "© 2026 Cite. Todos os direitos reservados."
+    }
+  },
+  "legal": {
+    "eyebrow": "Jurídico",
+    "lastUpdated": "Atualizado em · junho de 2026",
+    "backToSite": "Voltar ao site",
+    "createAccount": "Criar conta",
+    "privacy": {
+      "title": "Política de Privacidade",
+      "crossLink": "Termos de Uso →",
+      "intro": "Esta Política de Privacidade explica como o Cite coleta, usa e protege informações quando você usa o Serviço. Seus documentos são seus — tratamos tudo como confidencial e nunca vendemos seus dados.",
+      "s1Title": "1. Informações que coletamos",
+      "s1Body": "Coletamos dados de conta (nome, e-mail), os documentos e conteúdos que você envia, as perguntas e conversas que você cria, e informações de uso e dispositivo necessárias para operar e proteger o Serviço.",
+      "s2Title": "2. Como usamos as informações",
+      "s2Body": "Usamos as informações para prestar o Serviço — indexar suas fontes, gerar respostas citadas, auditar citações e habilitar a colaboração — e para manter a segurança, prevenir abusos e melhorar a confiabilidade. Não usamos Seu Conteúdo para treinar modelos de terceiros sem sua instrução.",
+      "s3Title": "3. Seus documentos e dados",
+      "s3Body": "Os documentos que você envia ficam armazenados no workspace da sua organização e são acessíveis apenas aos seus membros conforme seus papéis. Seu workspace é seu: você pode exportar ou excluir seu conteúdo e sua conta a qualquer momento.",
+      "s4Title": "4. Compartilhamento e suboperadores",
+      "s4Body": "Compartilhamos informações apenas com prestadores de serviço (\"suboperadores\") que nos ajudam a operar o Serviço — como hospedagem em nuvem e provedores de modelos — sob contratos que exigem confidencialidade e segurança adequadas. Não vendemos informações pessoais nem conteúdo de documentos.",
+      "s5Title": "5. Segurança",
+      "s5Body": "Protegemos os dados em trânsito e em repouso com criptografia, aplicamos controle de acesso por papel dentro dos workspaces e adotamos salvaguardas administrativas e técnicas alinhadas às melhores práticas do setor. Nenhum método de transmissão ou armazenamento é perfeitamente seguro, mas trabalhamos continuamente para proteger suas informações e notificá-lo sobre incidentes quando exigido.",
+      "s6Title": "6. Retenção de dados",
+      "s6Body": "Retemos informações enquanto sua conta estiver ativa ou conforme necessário para prestar o Serviço. Quando você exclui conteúdo ou encerra a conta, excluímos ou desidentificamos os dados associados em prazo razoável, exceto quando a retenção for exigida por lei.",
+      "s7Title": "7. Seus direitos",
+      "s7Body": "Dependendo da sua localização, você pode ter direitos de acessar, corrigir, exportar ou excluir seus dados pessoais, e de se opor ou restringir certos tratamentos (por exemplo, sob a LGPD ou o GDPR). Você pode exercer muitos deles diretamente no produto ou entrando em contato conosco.",
+      "s8Title": "8. Cookies e transferências internacionais",
+      "s8Body": "Usamos cookies essenciais para mantê-lo conectado e lembrar suas preferências, como tema e idioma. Quando dados são transferidos entre países, usamos salvaguardas adequadas conforme a lei aplicável.",
+      "s9Title": "9. Alterações e contato",
+      "s9BodyLead": "Podemos atualizar esta Política; mudanças relevantes serão comunicadas no produto ou por e-mail. Para questões de privacidade ou para falar com nosso Encarregado de Dados, contate",
+      "contactEmail": "privacy@cite.app"
+    },
+    "terms": {
+      "title": "Termos de Uso",
+      "crossLink": "Política de Privacidade →",
+      "intro": "Estes Termos de Uso (\"Termos\") regem seu acesso e uso do Cite, um workspace de evidências para respostas fundamentadas com citações verificáveis (o \"Serviço\"), fornecido pela Cite. Ao criar uma conta ou usar o Serviço, você concorda com estes Termos.",
+      "s1Title": "1. O Serviço",
+      "s1Body": "O Cite permite que times enviem documentos para coleções e façam perguntas em linguagem natural. As respostas são geradas com citações em linha ligadas às passagens de origem, e as citações são auditadas automaticamente quanto à precisão. Os recursos podem mudar ao longo do tempo conforme melhoramos o Serviço.",
+      "s2Title": "2. Contas e elegibilidade",
+      "s2Body": "Você deve fornecer informações de conta precisas e manter suas credenciais seguras. Você é responsável pela atividade na sua conta e pelos membros do seu workspace. Admins podem gerenciar membros, papéis e convites dentro de sua organização.",
+      "s3Title": "3. Uso aceitável",
+      "s3Body": "Você concorda em não usar o Serviço de forma indevida: nada de conteúdo ilegal, violação de direitos de terceiros, tentativas de interromper ou fazer engenharia reversa do Serviço, nem envio de material que você não tem o direito de usar. Podemos suspender contas que violem estes Termos.",
+      "s4Title": "4. Seu conteúdo e suas fontes",
+      "s4Body": "Você mantém a titularidade dos documentos e conteúdos que envia (\"Seu Conteúdo\"). Você concede ao Cite uma licença limitada para hospedar, processar, indexar e exibir Seu Conteúdo apenas para prestar o Serviço a você e ao seu workspace. Você é responsável por ter os direitos de enviar e usar Seu Conteúdo.",
+      "s5Title": "5. Respostas geradas por IA",
+      "s5Body": "As respostas são geradas automaticamente e, embora fundamentadas em suas fontes e auditáveis, podem conter erros. Os vereditos de citação são um sinal automatizado de qualidade, não uma garantia. Você é responsável por revisar respostas e citações antes de confiar nelas, especialmente em decisões jurídicas, de compliance ou de alto risco.",
+      "s6Title": "6. Propriedade intelectual",
+      "s6Body": "O Serviço, incluindo seu software, design e marcas, pertence à Cite e é protegido por leis de propriedade intelectual. Estes Termos não concedem a você quaisquer direitos sobre o Serviço, exceto o direito limitado de usá-lo conforme descrito.",
+      "s7Title": "7. Confidencialidade e segurança",
+      "s7BodyLead": "Aplicamos salvaguardas administrativas, técnicas e organizacionais para proteger Seu Conteúdo, conforme descrito em nossa",
+      "s7Link": "Política de Privacidade",
+      "s7BodyTail": ". Não vendemos Seu Conteúdo nem o usamos para treinar modelos de terceiros sem sua instrução.",
+      "s8Title": "8. Isenções",
+      "s8Body": "O Serviço é fornecido \"no estado em que se encontra\" e \"conforme disponível\", sem garantias de qualquer tipo, expressas ou implícitas, incluindo adequação a um fim específico e não violação, na máxima extensão permitida por lei.",
+      "s9Title": "9. Limitação de responsabilidade",
+      "s9Body": "Na máxima extensão permitida por lei, a Cite não será responsável por danos indiretos, incidentais, especiais ou consequenciais, nem por lucros ou dados perdidos, decorrentes do seu uso do Serviço. Nossa responsabilidade agregada limita-se aos valores que você pagou pelo Serviço nos doze meses anteriores à reclamação.",
+      "s10Title": "10. Rescisão",
+      "s10Body": "Você pode parar de usar o Serviço a qualquer momento. Podemos suspender ou encerrar o acesso se você violar estes Termos ou para proteger o Serviço. Na rescisão, seu direito de usar o Serviço termina; disponibilizaremos Seu Conteúdo para exportação por um período razoável, salvo proibição legal.",
+      "s11Title": "11. Alterações e lei aplicável",
+      "s11Body": "Podemos atualizar estes Termos; mudanças relevantes serão comunicadas no produto ou por e-mail, e o uso continuado constitui aceitação. Estes Termos são regidos pelas leis da jurisdição em que a Cite está estabelecida, sem considerar princípios de conflito de leis.",
+      "s12Title": "12. Contato",
+      "s12BodyLead": "Dúvidas sobre estes Termos? Fale conosco em",
+      "contactEmail": "legal@cite.app"
+    }
   }
 }

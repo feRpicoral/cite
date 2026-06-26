@@ -7,6 +7,7 @@ import { appUrl } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 const SignupSchema = z.object({
+  name: z.string().trim().min(1, "Enter your name.").max(80),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters."),
 });
@@ -15,6 +16,7 @@ export type SignupState = { error?: string };
 
 export async function signupAction(_prev: SignupState, formData: FormData): Promise<SignupState> {
   const parsed = SignupSchema.safeParse({
+    name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -27,10 +29,13 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      // Stored on auth.users.raw_user_meta_data; the handle_auth_user trigger
+      // mirrors it into public.users.name.
+      data: { name: parsed.data.name },
       emailRedirectTo: new URL("/auth/callback", appUrl()).toString(),
     },
   });
   if (error) return { error: error.message };
 
-  redirect("/auth/check-email");
+  redirect(`/auth/check-email?email=${encodeURIComponent(parsed.data.email)}`);
 }

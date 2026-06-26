@@ -28,6 +28,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
           id: true,
           role: true,
           content: true,
+          agentState: true,
           citations: {
             select: {
               displayIndex: true,
@@ -37,7 +38,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
                   id: true,
                   documentId: true,
                   location: true,
-                  document: { select: { name: true } },
+                  document: { select: { name: true, format: true } },
                 },
               },
             },
@@ -49,18 +50,32 @@ export default async function ConversationPage({ params }: ConversationPageProps
   });
   if (!conversation) notFound();
 
+  const messageIds = conversation.messages.map((m) => m.id);
+  const audits = await db.citationAudit.findMany({
+    where: { messageId: { in: messageIds } },
+    select: { messageId: true, displayIndex: true, verdict: true, confidence: true },
+  });
+  const auditByKey = new Map(audits.map((a) => [`${a.messageId}:${a.displayIndex}`, a]));
+
   const initial: InitialMessage[] = conversation.messages.map((m) => ({
     id: m.id,
     role: m.role === "USER" ? "user" : "assistant",
     content: m.content,
-    citations: m.citations.map((c) => ({
-      displayIndex: c.displayIndex,
-      quote: c.quote,
-      chunkId: c.chunk.id,
-      documentId: c.chunk.documentId,
-      documentName: c.chunk.document.name,
-      location: parseLocation(c.chunk.location),
-    })),
+    agentState: m.agentState ?? null,
+    citations: m.citations.map((c) => {
+      const audit = auditByKey.get(`${m.id}:${c.displayIndex}`);
+      return {
+        displayIndex: c.displayIndex,
+        quote: c.quote,
+        chunkId: c.chunk.id,
+        documentId: c.chunk.documentId,
+        documentName: c.chunk.document.name,
+        format: c.chunk.document.format,
+        location: parseLocation(c.chunk.location),
+        verdict: audit?.verdict ?? null,
+        confidence: audit?.confidence ?? null,
+      };
+    }),
   }));
 
   return (

@@ -1,44 +1,52 @@
 "use client";
 
 import type { InitialCitation } from "@/app/(app)/conversations/[id]/chat-panel";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { CitationChip as CitationChipPrimitive } from "@/components/cite/citation-chip";
 import { useViewer } from "@/components/viewer/viewer-state";
 
 interface CitationChipProps {
   displayIndex: number;
   citation?: InitialCitation;
+  pending?: boolean;
 }
 
-export function CitationChip({ displayIndex, citation }: CitationChipProps) {
-  const { open } = useViewer();
+export function CitationChip({ displayIndex, citation, pending }: CitationChipProps) {
+  const { open, target } = useViewer();
 
-  const chip = (
-    <button
-      type="button"
-      onClick={() => {
-        if (!citation) return;
-        open({
-          documentId: citation.documentId,
-          documentName: citation.documentName,
-          location: citation.location,
-        });
-      }}
-      className="bg-highlight/30 text-highlight-foreground hover:bg-highlight/50 mx-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded px-1 align-baseline text-[10px] leading-none font-semibold transition-colors"
-      aria-label={`Open citation ${displayIndex}`}
-    >
-      {displayIndex}
-    </button>
-  );
+  if (pending || !citation) {
+    return <CitationChipPrimitive index={displayIndex} state="pending" />;
+  }
 
-  if (!citation) return chip;
+  const isOpen =
+    target?.documentId === citation.documentId && target?.displayIndex === citation.displayIndex;
+
+  const activate = () =>
+    open({
+      documentId: citation.documentId,
+      documentName: citation.documentName,
+      format: citation.format ?? undefined,
+      location: citation.location,
+      displayIndex: citation.displayIndex,
+      quote: citation.quote,
+      verdict: citation.verdict ?? undefined,
+      confidence: citation.confidence ?? undefined,
+    });
+
+  const page = citation.location.kind === "pdf" ? citation.location.page + 1 : null;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{chip}</TooltipTrigger>
-      <TooltipContent side="top" className="max-w-sm">
-        <p className="text-xs font-semibold">{citation.documentName}</p>
-        <p className="mt-1 line-clamp-4 text-xs">{citation.quote}</p>
-      </TooltipContent>
-    </Tooltip>
+    <CitationChipPrimitive
+      index={displayIndex}
+      state={isOpen ? "open" : "default"}
+      onActivate={activate}
+      preview={{
+        documentName: citation.documentName,
+        format: citation.format ?? undefined,
+        page,
+        quote: citation.quote,
+        verdict: citation.verdict ?? undefined,
+        confidence: citation.confidence ?? undefined,
+      }}
+    />
   );
 }

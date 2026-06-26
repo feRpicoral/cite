@@ -12,7 +12,7 @@ const LoginSchema = z.object({
   next: z.string().optional(),
 });
 
-export type LoginState = { error?: string };
+export type LoginState = { error?: boolean };
 
 export async function loginAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = LoginSchema.safeParse({
@@ -21,7 +21,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     next: formData.get("next") ?? undefined,
   });
   if (!parsed.success) {
-    return { error: "Invalid email or password format." };
+    return { error: true };
   }
 
   const supabase = await createServerSupabase();
@@ -29,7 +29,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     email: parsed.data.email,
     password: parsed.data.password,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: true };
 
   redirect(safeNextPath(parsed.data.next, "/dashboard"));
 }

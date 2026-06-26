@@ -1,10 +1,10 @@
 "use client";
 
-import { Loader2, MessageSquarePlus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { NewRegionCommentPopover } from "@/components/viewer/new-region-comment-popover";
+import { RegionCommentPin } from "@/components/viewer/region-comment-pin";
+import { ViewerLoading, ViewerUnsupported } from "@/components/viewer/viewer-states";
 import type { DocumentLocation } from "@/lib/ingestion/location";
 import {
   clearHighlights,
@@ -13,12 +13,12 @@ import {
   rangeToHtmlLocation,
 } from "@/lib/viewer/locate-html";
 
-import { RegionCommentPin } from "./region-comment-pin";
-
 interface HtmlViewerProps {
   documentId: string;
   location: Extract<DocumentLocation, { kind: "html" }>;
   currentUserId: string;
+  downloadUrl: string;
+  activation?: number;
 }
 
 interface PartShape {
@@ -54,8 +54,15 @@ interface PendingSelection {
   anchor: { top: number; left: number };
 }
 
-export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerProps) {
+export function HtmlViewer({
+  documentId,
+  location,
+  currentUserId,
+  downloadUrl,
+  activation,
+}: HtmlViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [state, dispatch] = useReducer(reducer, { parts: null, loading: true, error: null });
   const { parts, loading, error } = state;
   const [pending, setPending] = useState<PendingSelection | null>(null);
@@ -100,7 +107,16 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
     if (!range) return;
     const mark = highlightRange(range);
     mark.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [parts, location.partIndex, location.selector, location.charStart, location.charEnd]);
+    // `activation` re-runs this on every citation click so re-clicking the
+    // open citation re-applies the highlight and re-scrolls to it.
+  }, [
+    parts,
+    location.partIndex,
+    location.selector,
+    location.charStart,
+    location.charEnd,
+    activation,
+  ]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
@@ -144,11 +160,17 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
       setPending(null);
       return;
     }
+    const scrollEl = scrollRef.current;
     const rect = range.getBoundingClientRect();
-    const rootRect = root.getBoundingClientRect();
+    const originRect = (scrollEl ?? root).getBoundingClientRect();
+    const scrollTop = scrollEl?.scrollTop ?? 0;
+    const scrollLeft = scrollEl?.scrollLeft ?? 0;
     setPending({
       location: { kind: "html", ...loc },
-      anchor: { top: rect.bottom - rootRect.top, left: rect.left - rootRect.left },
+      anchor: {
+        top: rect.bottom - originRect.top + scrollTop,
+        left: rect.left - originRect.left + scrollLeft,
+      },
     });
   }, []);
 
@@ -172,22 +194,27 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
     [pending, documentId, refreshPins],
   );
 
-  const pinPositions = usePinPositions(containerRef, parts, pins);
+  const pinPositions = usePinPositions(containerRef, scrollRef, parts, pins);
+
+  if (loading) return <ViewerLoading />;
+  if (error) {
+    return (
+      <div className="bg-muted/30 flex flex-1 items-center justify-center p-7">
+        <p className="text-destructive text-sm">{error}</p>
+      </div>
+    );
+  }
+  if (parts && parts.length === 0) {
+    return <ViewerUnsupported downloadUrl={downloadUrl} />;
+  }
 
   return (
-    <div className="relative flex flex-1 flex-col">
-      <div className="bg-muted/30 relative flex-1 overflow-auto p-6" onMouseUp={onMouseUp}>
-        {loading && (
-          <div className="text-muted-foreground flex items-center justify-center gap-2 py-4 text-xs">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Loading…
-          </div>
-        )}
-        {error && <p className="text-destructive p-4 text-sm">{error}</p>}
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <div ref={scrollRef} className="relative flex-1 overflow-auto p-8" onMouseUp={onMouseUp}>
         {parts && (
           <article
             ref={containerRef}
-            className="prose prose-sm dark:prose-invert mx-auto max-w-3xl pr-12"
+            className="cite-doc prose prose-sm dark:prose-invert mx-auto max-w-3xl pr-12"
           >
             {parts.map((p) => (
               <section
@@ -204,14 +231,15 @@ export function HtmlViewer({ documentId, location, currentUserId }: HtmlViewerPr
             documentId={documentId}
             commentId={p.commentId}
             resolved={p.resolved}
-            top={p.top}
             currentUserId={currentUserId}
+            side="left"
+            style={{ top: p.top, right: 8 }}
             onChange={() => void refreshPins()}
           />
         ))}
         {pending && (
           <NewRegionCommentPopover
-            anchor={pending.anchor}
+            anchor={{ top: pending.anchor.top, left: pending.anchor.left }}
             onSubmit={createRegionComment}
             onCancel={() => setPending(null)}
           />
@@ -235,6 +263,7 @@ interface RegionPin {
  */
 function usePinPositions(
   containerRef: React.RefObject<HTMLDivElement | null>,
+  scrollRef: React.RefObject<HTMLDivElement | null>,
   parts: PartShape[] | null,
   pins: RegionPin[],
 ): { commentId: string; resolved: boolean; top: number }[] {
@@ -248,12 +277,16 @@ function usePinPositions(
       setPositions([]);
       return;
     }
+    // Ranges are located within the article, but pins are positioned inside the
+    // scrolling container, so coordinates must be relative to that container
+    // (the article doesn't scroll — its scrollTop is always 0).
     const root = containerRef.current;
-    if (!root) {
+    const scrollEl = scrollRef.current;
+    if (!root || !scrollEl) {
       setPositions([]);
       return;
     }
-    const rootRect = root.getBoundingClientRect();
+    const originRect = scrollEl.getBoundingClientRect();
     const out: { commentId: string; resolved: boolean; top: number }[] = [];
     for (const pin of pins) {
       const range = locateHtmlRange(
@@ -268,60 +301,12 @@ function usePinPositions(
       out.push({
         commentId: pin.commentId,
         resolved: pin.resolved,
-        top: rect.top - rootRect.top + root.scrollTop,
+        top: rect.top - originRect.top + scrollEl.scrollTop,
       });
     }
     setPositions(out);
-  }, [parts, pins, containerRef]);
+  }, [parts, pins, containerRef, scrollRef]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return positions;
-}
-
-function NewRegionCommentPopover({
-  anchor,
-  onSubmit,
-  onCancel,
-}: {
-  anchor: { top: number; left: number };
-  onSubmit: (body: string) => void;
-  onCancel: () => void;
-}) {
-  const [draft, setDraft] = useState("");
-  return (
-    <Popover open onOpenChange={(o) => !o && onCancel()}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="New region comment"
-          className="bg-primary text-primary-foreground absolute z-10 rounded-full p-1 shadow"
-          style={{ top: anchor.top, left: anchor.left }}
-        >
-          <MessageSquarePlus className="h-3 w-3" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-72 space-y-2 p-3">
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={3}
-          placeholder="Comment on this passage…"
-          autoFocus
-          className="border-input bg-background placeholder:text-muted-foreground w-full resize-none rounded border px-2 py-1 text-xs outline-none"
-        />
-        <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="xs" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            size="xs"
-            disabled={draft.trim().length === 0}
-            onClick={() => onSubmit(draft.trim())}
-          >
-            Comment
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
 }

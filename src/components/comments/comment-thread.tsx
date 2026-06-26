@@ -1,22 +1,23 @@
 "use client";
 
-import { Check, MessageCircle, MoreHorizontal, Send, Trash2 } from "lucide-react";
+import { Check, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useReducer, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+interface Author {
+  name: string | null;
+  email: string;
+}
 
 interface CommentReply {
   id: string;
   authorUserId: string;
+  author?: Author | null;
   body: string;
   createdAt: string;
 }
@@ -26,6 +27,7 @@ interface Comment {
   targetType: "MESSAGE" | "DOCUMENT_REGION";
   targetId: string;
   authorUserId: string;
+  author?: Author | null;
   body: string;
   resolvedAt: string | null;
   createdAt: string;
@@ -89,6 +91,7 @@ interface CommentThreadProps {
    * form, since new region comments come from a text selection upstream.
    */
   focusCommentId?: string;
+  onCountChange?: (count: number) => void;
 }
 
 export function CommentThread({
@@ -96,9 +99,18 @@ export function CommentThread({
   targetId,
   currentUserId,
   focusCommentId,
+  onCountChange,
 }: CommentThreadProps) {
+  const t = useTranslations("conversation.comments");
   const [state, dispatch] = useReducer(reducer, { comments: [], loading: true, error: null });
   const [draft, setDraft] = useState("");
+
+  const visible = state.comments.filter((c) => (focusCommentId ? c.id === focusCommentId : true));
+  const firstResolved = visible.find((c) => c.resolvedAt != null) ?? null;
+
+  useEffect(() => {
+    if (!state.loading) onCountChange?.(visible.length);
+  }, [state.loading, visible.length, onCountChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -132,7 +144,7 @@ export function CommentThread({
       body: JSON.stringify({ targetType, targetId, body }),
     });
     if (!res.ok) {
-      toast.error("Failed to post comment");
+      toast.error(t("addFailed"));
       return;
     }
     const { id } = (await res.json()) as { id: string };
@@ -159,7 +171,7 @@ export function CommentThread({
       body: JSON.stringify({ resolved }),
     });
     if (!res.ok) {
-      toast.error("Failed to update");
+      toast.error(t("updateFailed"));
       return;
     }
     dispatch({ type: "setResolved", commentId, resolved });
@@ -168,22 +180,43 @@ export function CommentThread({
   const remove = async (commentId: string) => {
     const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
     if (!res.ok) {
-      toast.error("Failed to delete");
+      toast.error(t("deleteFailed"));
       return;
     }
     dispatch({ type: "removeComment", commentId });
   };
 
   return (
-    <div className="space-y-3 text-sm">
-      {state.loading && <p className="text-muted-foreground text-xs">Loading…</p>}
-      {state.error && <p className="text-destructive text-xs">{state.error}</p>}
-      {state.comments.length === 0 && !state.loading && (
-        <p className="text-muted-foreground text-xs">No comments yet.</p>
-      )}
-      {state.comments
-        .filter((c) => (focusCommentId ? c.id === focusCommentId : true))
-        .map((c) => (
+    <div className="text-sm">
+      <div className="flex h-10 items-center gap-2 border-b px-3.5">
+        <span className="text-foreground text-[13px] font-semibold">{t("title")}</span>
+        {visible.length > 0 && (
+          <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+            {visible.length}
+          </span>
+        )}
+        {firstResolved == null && visible.length > 0 && (
+          <button
+            type="button"
+            onClick={() => void resolve(visible[0]!.id, true)}
+            className="text-success ml-auto inline-flex items-center gap-1.5 text-[11px] font-semibold"
+          >
+            <Check className="size-3" strokeWidth={2.6} />
+            {t("resolve")}
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3.5 px-3.5 py-3">
+        {state.loading && <ThreadSkeleton />}
+        {state.error && <p className="text-destructive text-xs">{state.error}</p>}
+        {!state.loading && visible.length === 0 && (
+          <div className="py-2 text-center">
+            <p className="text-foreground text-[13px] font-semibold">{t("empty")}</p>
+            <p className="text-muted-foreground mt-1 text-xs">{t("emptyHint")}</p>
+          </div>
+        )}
+        {visible.map((c) => (
           <CommentItem
             key={c.id}
             comment={c}
@@ -193,26 +226,44 @@ export function CommentThread({
             onReply={(reply) => dispatch({ type: "addReply", commentId: c.id, reply })}
           />
         ))}
+      </div>
+
       {!focusCommentId && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void submit();
           }}
-          className="border-input bg-background flex items-end gap-2 rounded-lg border p-2"
+          className="bg-muted/40 flex items-center gap-2 border-t px-3 py-2.5"
         >
-          <textarea
+          <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            rows={1}
-            placeholder="Add a comment…"
-            className="placeholder:text-muted-foreground max-h-24 min-h-[24px] w-full resize-none border-0 bg-transparent px-1 py-1 text-xs outline-none"
+            placeholder={t("addPlaceholder")}
+            className="bg-card focus:border-ring placeholder:text-muted-foreground h-8 flex-1 rounded-lg border px-2.5 text-xs outline-none"
           />
-          <Button type="submit" size="icon-xs" disabled={draft.trim().length === 0}>
-            <Send className="h-3 w-3" />
+          <Button
+            type="submit"
+            size="icon-sm"
+            disabled={draft.trim().length === 0}
+            aria-label={t("reply")}
+          >
+            <Send />
           </Button>
         </form>
       )}
+    </div>
+  );
+}
+
+function ThreadSkeleton() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="bg-muted animate-cite-pulse size-6 shrink-0 rounded-full" />
+      <div className="flex flex-1 flex-col gap-1.5">
+        <div className="bg-muted animate-cite-pulse h-2 w-1/2 rounded" />
+        <div className="bg-muted animate-cite-pulse h-2 w-4/5 rounded" />
+      </div>
     </div>
   );
 }
@@ -232,7 +283,9 @@ function CommentItem({
   onDelete,
   onReply,
 }: CommentItemProps) {
+  const t = useTranslations("conversation.comments");
   const [draft, setDraft] = useState("");
+  const [replying, setReplying] = useState(false);
   const isOwn = comment.authorUserId === currentUserId;
   const resolved = comment.resolvedAt != null;
 
@@ -245,7 +298,7 @@ function CommentItem({
       body: JSON.stringify({ body }),
     });
     if (!res.ok) {
-      toast.error("Failed to reply");
+      toast.error(t("replyFailed"));
       return;
     }
     const { id } = (await res.json()) as { id: string };
@@ -256,71 +309,169 @@ function CommentItem({
       createdAt: new Date().toISOString(),
     });
     setDraft("");
+    setReplying(false);
   };
 
   return (
-    <div className={cn("rounded-md border p-2", resolved && "opacity-60")}>
-      <div className="flex items-start gap-2">
-        <Avatar className="h-5 w-5">
-          <AvatarFallback className="text-[9px]">{shortId(comment.authorUserId)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 space-y-1">
-          <div className="flex items-center justify-between gap-1">
-            <p className="text-[10px] font-medium">{shortId(comment.authorUserId)}</p>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-xs" aria-label="Comment menu">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => onResolveToggle(!resolved)}>
-                  <Check className="h-3 w-3" />
-                  {resolved ? "Reopen" : "Resolve"}
-                </DropdownMenuItem>
-                {isOwn && (
-                  <DropdownMenuItem onSelect={onDelete} className="text-destructive">
-                    <Trash2 className="h-3 w-3" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <p className="text-xs whitespace-pre-wrap">{comment.body}</p>
-          {comment.replies.length > 0 && (
-            <ul className="mt-2 space-y-1 border-l pl-2">
-              {comment.replies.map((r) => (
-                <li key={r.id} className="text-muted-foreground text-xs">
-                  <span className="text-foreground font-medium">{shortId(r.authorUserId)}: </span>
-                  {r.body}
-                </li>
-              ))}
-            </ul>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submitReply();
-            }}
-            className="mt-2 flex items-center gap-1"
+    <div className={cn(resolved && "opacity-70")}>
+      <CommentRow
+        authorUserId={comment.authorUserId}
+        author={comment.author}
+        isOwn={isOwn}
+        createdAt={comment.createdAt}
+      >
+        {resolved ? (
+          <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed line-through">
+            {comment.body}
+          </p>
+        ) : (
+          <p className="text-foreground mt-1 text-[13px] leading-relaxed whitespace-pre-wrap">
+            {comment.body}
+          </p>
+        )}
+        <div className="mt-1.5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setReplying((v) => !v)}
+            className="text-muted-foreground hover:text-foreground text-[10.5px] font-semibold"
           >
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Reply…"
-              className="placeholder:text-muted-foreground flex-1 border-0 bg-transparent px-1 text-[11px] outline-none"
-            />
-            <Button type="submit" size="icon-xs" disabled={draft.trim().length === 0}>
-              <MessageCircle className="h-3 w-3" />
-            </Button>
-          </form>
+            {t("reply")}
+          </button>
+          <button
+            type="button"
+            onClick={() => onResolveToggle(!resolved)}
+            className="text-muted-foreground hover:text-foreground text-[10.5px] font-semibold"
+          >
+            {resolved ? t("reopen") : t("resolve")}
+          </button>
+          {isOwn && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="text-destructive text-[10.5px] font-semibold"
+            >
+              {t("delete")}
+            </button>
+          )}
         </div>
+      </CommentRow>
+
+      {comment.replies.length > 0 && (
+        <div className="mt-3 flex flex-col gap-3 pl-[34px]">
+          {comment.replies.map((r) => (
+            <CommentRow
+              key={r.id}
+              authorUserId={r.authorUserId}
+              author={r.author}
+              isOwn={r.authorUserId === currentUserId}
+              createdAt={r.createdAt}
+            >
+              <p className="text-foreground mt-1 text-[13px] leading-relaxed whitespace-pre-wrap">
+                {r.body}
+              </p>
+            </CommentRow>
+          ))}
+        </div>
+      )}
+
+      {replying && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submitReply();
+          }}
+          className="mt-2 flex items-center gap-2 pl-[34px]"
+        >
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            autoFocus
+            placeholder={t("replyPlaceholder")}
+            className="bg-card focus:border-ring placeholder:text-muted-foreground h-8 flex-1 rounded-lg border px-2.5 text-xs outline-none"
+          />
+          <Button
+            type="submit"
+            size="icon-sm"
+            disabled={draft.trim().length === 0}
+            aria-label={t("reply")}
+          >
+            <Send />
+          </Button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function CommentRow({
+  authorUserId,
+  author,
+  isOwn,
+  createdAt,
+  children,
+}: {
+  authorUserId: string;
+  author?: Author | null;
+  isOwn: boolean;
+  createdAt: string;
+  children: React.ReactNode;
+}) {
+  const t = useTranslations("conversation.comments");
+  const name = displayName(author, isOwn, authorUserId, t("you"));
+  return (
+    <div className="flex gap-2.5">
+      <Avatar className="size-6 shrink-0">
+        <AvatarFallback className="text-[9px] font-semibold">{initialsOf(name)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-foreground truncate text-[12.5px] font-semibold">{name}</span>
+          {isOwn && (
+            <span className="bg-primary/12 text-primary rounded px-1.5 py-0.5 text-[9px] font-semibold">
+              {t("you")}
+            </span>
+          )}
+          <span className="text-muted-foreground ml-auto font-mono text-[10px]">
+            {relativeTime(createdAt)}
+          </span>
+        </div>
+        {children}
       </div>
     </div>
   );
 }
 
-function shortId(uuid: string): string {
-  return uuid.slice(0, 6);
+function displayName(
+  author: Author | null | undefined,
+  isOwn: boolean,
+  authorUserId: string,
+  youLabel: string,
+): string {
+  if (author?.name) return author.name;
+  const local = author?.email?.split("@")[0];
+  if (local) return local;
+  if (isOwn) return youLabel;
+  return authorUserId.slice(0, 6);
+}
+
+function initialsOf(name: string): string {
+  return (
+    name
+      .split(/[\s.@_-]+/)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .slice(0, 2)
+      .join("") || "?"
+  );
+}
+
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < MINUTE_MS) return "now";
+  if (diff < HOUR_MS) return `${Math.floor(diff / MINUTE_MS)}m`;
+  if (diff < DAY_MS) return `${Math.floor(diff / HOUR_MS)}h`;
+  return `${Math.floor(diff / DAY_MS)}d`;
 }

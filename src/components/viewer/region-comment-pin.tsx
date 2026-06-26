@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { Check, MessageSquare } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { CommentThread } from "@/components/comments/comment-thread";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,37 +11,44 @@ interface RegionCommentPinProps {
   documentId: string;
   commentId: string;
   resolved: boolean;
-  top: number;
   currentUserId: string;
   onChange: () => void;
+  style?: React.CSSProperties;
+  side?: "left" | "right" | "bottom";
 }
 
 export function RegionCommentPin({
   documentId,
   commentId,
   resolved,
-  top,
   currentUserId,
   onChange,
+  style,
+  side = "left",
 }: RegionCommentPinProps) {
+  const t = useTranslations("documentViewer");
   return (
     <Popover onOpenChange={(open) => !open && onChange()}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="View comment"
-          style={{ top }}
+          aria-label={t("viewComment")}
+          style={style}
           className={cn(
-            "absolute right-2 flex h-6 w-6 items-center justify-center rounded-full border shadow-sm transition-colors",
+            "absolute flex size-5 items-center justify-center rounded-[50%_50%_50%_2px] shadow-sm transition-transform hover:scale-110",
             resolved
-              ? "bg-muted text-muted-foreground border-muted-foreground/20"
-              : "bg-card border-border hover:bg-muted",
+              ? "bg-card ring-success/70 text-success ring-[1.5px]"
+              : "bg-highlight-border text-white",
           )}
         >
-          <MessageSquare className="h-3 w-3" />
+          {resolved ? (
+            <Check className="size-2.5" strokeWidth={3} />
+          ) : (
+            <MessageSquare className="size-2.5" strokeWidth={2.4} />
+          )}
         </button>
       </PopoverTrigger>
-      <PopoverContent side="left" align="start" className="w-80 p-3">
+      <PopoverContent side={side} align="start" className="w-80 p-3">
         <CommentThread
           targetType="DOCUMENT_REGION"
           targetId={documentId}

@@ -3,27 +3,18 @@ import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { requireSession } from "@/lib/auth/session";
 
-import { TabLink } from "./tab-link";
-
-type SettingsTabKey = "organization" | "preferences" | "members";
-
-interface SettingsTab {
-  href: string;
-  labelKey: SettingsTabKey;
-  adminOnly?: boolean;
-}
-
-const TABS: SettingsTab[] = [
-  { href: "/settings", labelKey: "organization" },
-  { href: "/settings/preferences", labelKey: "preferences" },
-  { href: "/settings/members", labelKey: "members", adminOnly: true },
-];
+import { type SettingsTabItem, SettingsTabs } from "./settings-tabs";
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSession();
   const t = await getTranslations("settings");
   const tTabs = await getTranslations("settings.tabs");
-  const visible = TABS.filter((tab) => !tab.adminOnly || session.role === "ADMIN");
+
+  const tabs: SettingsTabItem[] = [
+    { href: "/settings", label: tTabs("organization") },
+    { href: "/settings/preferences", label: tTabs("preferences") },
+    { href: "/settings/members", label: tTabs("members") },
+  ];
 
   return (
     <div className="flex flex-1 flex-col">
@@ -31,14 +22,10 @@ export default async function SettingsLayout({ children }: { children: React.Rea
         title={t("title")}
         description={t("workspaceDescription", { orgName: session.orgName })}
       />
-      <div className="border-border border-b px-8">
-        <nav className="-mb-px flex gap-6">
-          {visible.map((tab) => (
-            <TabLink key={tab.href} href={tab.href} label={tTabs(tab.labelKey)} />
-          ))}
-        </nav>
+      <div className="border-border border-b px-4 py-2.5 sm:px-8">
+        <SettingsTabs tabs={tabs} />
       </div>
-      <div className="p-8">{children}</div>
+      <div className="p-4 sm:p-8">{children}</div>
     </div>
   );
 }
