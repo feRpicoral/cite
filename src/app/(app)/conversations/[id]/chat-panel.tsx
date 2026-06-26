@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AskAnything } from "@/components/chat/ask-anything";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { CitationChip } from "@/components/chat/citation-chip";
+import { LiveReasoningTrace } from "@/components/chat/live-reasoning-trace";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { NoAnswer } from "@/components/chat/no-answer";
 import { type ReasoningSummary, summarizeReasoning } from "@/components/chat/reasoning";
@@ -18,6 +19,7 @@ import { StreamingStatus } from "@/components/chat/streaming-status";
 import { SupportFooter } from "@/components/chat/support-footer";
 import { CommentButton } from "@/components/comments/comment-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { parseTraceData, TRACE_PART_ID, type TraceData } from "@/lib/chat/trace";
 import { type DocumentLocation, DocumentLocationSchema } from "@/lib/ingestion/location";
 import { type MessageInsertPayload, useMessageInserts } from "@/lib/realtime/message-sync";
 import { findReconcilableMessageIndex } from "@/lib/realtime/reconcile";
@@ -219,6 +221,7 @@ export function ChatPanel({
               const hasMarkers = CITATION_MARKER.test(text);
               const hydrating = isPersisted && hasMarkers && !citationsByMessage.has(m.id);
               const reasoning = reasoningById.get(m.id);
+              const liveTrace = extractTrace(m.parts);
               const noAnswer = isPersisted && text.length > 0 && !hasMarkers;
               const streaming = status === "streaming" && m.id === lastMessage?.id && !isPersisted;
 
@@ -230,6 +233,7 @@ export function ChatPanel({
                   citations={citations}
                   linking={hydrating}
                   reasoning={reasoning}
+                  liveTrace={liveTrace}
                   noAnswer={noAnswer}
                   isPersisted={isPersisted}
                   streaming={streaming}
@@ -314,6 +318,7 @@ function AssistantMessage({
   citations,
   linking,
   reasoning,
+  liveTrace,
   noAnswer,
   isPersisted,
   streaming,
@@ -324,6 +329,7 @@ function AssistantMessage({
   citations: InitialCitation[];
   linking: boolean;
   reasoning?: ReasoningSummary;
+  liveTrace?: TraceData;
   noAnswer: boolean;
   isPersisted: boolean;
   streaming: boolean;
@@ -331,13 +337,21 @@ function AssistantMessage({
 }) {
   const t = useTranslations("conversation");
 
+  // The live trace streams alongside the answer; once the message is persisted
+  // it falls back to the collapsed static trace built from agentState.
+  const showLiveTrace = !isPersisted && liveTrace != null;
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <CiteLabel />
         {streaming && <StreamingStatus status="streaming" />}
       </div>
-      {reasoning && <ReasoningTrace summary={reasoning} />}
+      {showLiveTrace ? (
+        <LiveReasoningTrace trace={liveTrace} />
+      ) : (
+        reasoning && <ReasoningTrace summary={reasoning} />
+      )}
       {linking && (
         <span className="text-warning bg-warning/12 inline-flex h-6 items-center gap-2 self-start rounded-lg px-2.5 text-[11px] font-medium">
           <span className="animate-cite-spin size-3 rounded-full border-[1.5px] border-current border-t-transparent" />
@@ -429,6 +443,17 @@ function RenderedAssistantText({
       )}
     </div>
   );
+}
+
+// Pulls the streamed retrieval trace out of a UI message's parts. The chat
+// route writes it as a single `data-trace` part (replace-in-place by id), so
+// only the latest snapshot is present.
+function extractTrace(parts: { type: string }[]): TraceData | undefined {
+  const part = parts.find(
+    (p): p is { type: string; id?: string; data?: unknown } => p.type === `data-${TRACE_PART_ID}`,
+  );
+  if (!part) return undefined;
+  return parseTraceData(part.data) ?? undefined;
 }
 
 interface RawCitation {

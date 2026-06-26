@@ -213,7 +213,23 @@
       "sufficiencyMet": "sufficiency met",
       "sufficiencyShort": "sufficiency limited",
       "ariaExpand": "Show how this answer was built",
-      "ariaCollapse": "Hide how this answer was built"
+      "ariaCollapse": "Hide how this answer was built",
+      "live": {
+        "heading": "How this answer is being built",
+        "classifyTitle": "Classifying question",
+        "classifyDoneSimple": "Classified · single retrieval",
+        "classifyDoneDecompose": "Classified · multi-part retrieval",
+        "decomposeActive": "Decomposing into sub-queries",
+        "decomposeDone": "{count, plural, one {Decomposed into # sub-query} other {Decomposed into # sub-queries}}",
+        "retrieveTitle": "Hybrid search + rerank",
+        "retrieveActive": "Vector + keyword search",
+        "retrieveDone": "{candidates} candidates → reranked to top {reranked}",
+        "sufficiencyTitle": "Checking sufficiency",
+        "sufficiencyMet": "Evidence sufficient to answer",
+        "sufficiencyShort": "Evidence limited — widened the search",
+        "synthesizeTitle": "Synthesizing & placing citations…",
+        "synthesizeSubtitle": "Grounding each claim in retrieved passages"
+      }
     },
     "support": {
       "supported": "{count} supported",
