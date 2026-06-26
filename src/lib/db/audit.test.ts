@@ -93,6 +93,7 @@ describe("listAudits", () => {
         content: "answer",
         createdAt: new Date("2026-06-01"),
         conversation: { id: "c1", title: "Conv" },
+        citations: [{ displayIndex: 1, quote: "the cited passage" }],
       },
     ]);
     getDb.mockReturnValue(makeDb({ auditFindMany, messageFindMany }));
@@ -100,6 +101,8 @@ describe("listAudits", () => {
     const { audits } = await listAudits(ORG);
 
     expect(audits[0]?.message?.conversation.title).toBe("Conv");
+    expect(audits[0]?.quote).toBe("the cited passage");
     expect(audits[1]?.message).toBeNull();
+    expect(audits[1]?.quote).toBeNull();
   });
 });

@@ -26,6 +26,7 @@ export interface AuditRow {
   reasoning: string;
   confidence: number;
   createdAt: Date;
+  quote: string | null;
   message: {
     id: string;
     content: string;
@@ -87,20 +88,38 @@ export async function listAudits(
       content: true,
       createdAt: true,
       conversation: { select: { id: true, title: true } },
+      citations: { select: { displayIndex: true, quote: true } },
     },
   });
   const messageById = new Map(messages.map((m) => [m.id, m]));
+  // The source quote lives on MessageCitation (snapshot at synthesis), keyed by
+  // the same (messageId, displayIndex) as the audit verdict.
+  const quoteByKey = new Map<string, string>();
+  for (const m of messages) {
+    for (const c of m.citations) quoteByKey.set(`${m.id}:${c.displayIndex}`, c.quote);
+  }
 
   return {
-    audits: audits.map((a) => ({
-      id: a.id,
-      messageId: a.messageId,
-      displayIndex: a.displayIndex,
-      verdict: a.verdict,
-      reasoning: a.reasoning,
-      confidence: a.confidence,
-      createdAt: a.createdAt,
-      message: messageById.get(a.messageId) ?? null,
-    })),
+    audits: audits.map((a) => {
+      const msg = messageById.get(a.messageId);
+      return {
+        id: a.id,
+        messageId: a.messageId,
+        displayIndex: a.displayIndex,
+        verdict: a.verdict,
+        reasoning: a.reasoning,
+        confidence: a.confidence,
+        createdAt: a.createdAt,
+        quote: quoteByKey.get(`${a.messageId}:${a.displayIndex}`) ?? null,
+        message: msg
+          ? {
+              id: msg.id,
+              content: msg.content,
+              createdAt: msg.createdAt,
+              conversation: msg.conversation,
+            }
+          : null,
+      };
+    }),
   };
 }
