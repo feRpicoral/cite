@@ -115,29 +115,96 @@
     "tabs": {
       "organization": "Organization",
       "preferences": "Preferences",
-      "members": "Members"
+      "members": "Members",
+      "adminBadge": "Admin"
     },
     "role": {
       "ADMIN": "Admin",
       "MEMBER": "Member"
     },
+    "dirty": {
+      "label": "Unsaved changes",
+      "save": "Save changes",
+      "cancel": "Cancel"
+    },
     "organization": {
       "title": "Organization",
-      "description": "Workspace-level information visible to everyone in this organization.",
-      "nameLabel": "Name",
-      "slugLabel": "Slug",
-      "roleLabel": "Your role"
+      "description": "Manage how your workspace appears across Cite.",
+      "nameLabel": "Workspace name",
+      "slugLabel": "Workspace URL",
+      "roleLabel": "Your role",
+      "adminHint": "Admins manage members and view citation accuracy.",
+      "readOnlyBadge": "Read-only",
+      "readOnlyHint": "Only admins can edit workspace details.",
+      "saved": "Workspace updated.",
+      "nameRequired": "Workspace name can't be empty."
     },
     "preferences": {
       "title": "Preferences",
-      "description": "Personal settings for your account. These follow you across devices.",
+      "description": "Saved to your account and synced across devices.",
       "languageLabel": "Language",
       "languageHint": "Affects the UI and messages app-wide.",
-      "save": "Save",
+      "themeLabel": "Theme",
+      "save": "Save preferences",
       "saved": "Preferences saved.",
       "localeOption": {
-        "en-US": "English",
-        "pt-BR": "Português"
+        "en-US": "English (US)",
+        "pt-BR": "Português (BR)"
+      },
+      "themeOption": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
+    },
+    "members": {
+      "permissionDeniedTitle": "Admins only",
+      "permissionDeniedDescription": "Only workspace admins can manage members and invites. Ask an admin if you need access.",
+      "invite": {
+        "title": "Invite a teammate",
+        "description": "Generate a one-time link. Add an email to pin it to that address, or share an open link.",
+        "emailLabel": "Email (optional)",
+        "emailPlaceholder": "teammate@example.com",
+        "roleLabel": "Role",
+        "generate": "Generate link",
+        "copy": "Copy",
+        "copied": "Copied",
+        "linkCopied": "Link copied.",
+        "copyFailed": "Couldn't copy. Select the link and copy it manually.",
+        "expiresIn": "Expires in 7 days"
+      },
+      "table": {
+        "title": "Members",
+        "you": "You",
+        "columnMember": "Member",
+        "columnRole": "Role",
+        "columnActions": "Actions",
+        "makeAdmin": "Make admin",
+        "makeMember": "Make member",
+        "remove": "Remove",
+        "roleUpdated": "Role updated.",
+        "memberRemoved": "Member removed."
+      },
+      "pending": {
+        "title": "Pending invites",
+        "openLink": "Open link · no email pinned",
+        "expiresIn": "Expires {date}",
+        "revoke": "Revoke",
+        "revoked": "Invite revoked."
+      },
+      "removeDialog": {
+        "title": "Remove {name}?",
+        "description": "They lose access to this workspace immediately. Their comments remain.",
+        "confirm": "Remove"
+      },
+      "revokeDialog": {
+        "title": "Revoke this invite?",
+        "description": "The link stops working right away and can't be restored.",
+        "confirm": "Revoke"
+      },
+      "lastAdmin": {
+        "title": "You can't remove the last admin",
+        "description": "Promote another member to admin before removing or demoting yourself."
       }
     }
   },

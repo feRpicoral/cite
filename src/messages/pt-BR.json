@@ -115,29 +115,96 @@
     "tabs": {
       "organization": "Organização",
       "preferences": "Preferências",
-      "members": "Membros"
+      "members": "Membros",
+      "adminBadge": "Admin"
     },
     "role": {
       "ADMIN": "Administrador",
       "MEMBER": "Membro"
     },
+    "dirty": {
+      "label": "Alterações não salvas",
+      "save": "Salvar alterações",
+      "cancel": "Cancelar"
+    },
     "organization": {
       "title": "Organização",
-      "description": "Informações da workspace visíveis a todos nesta organização.",
-      "nameLabel": "Nome",
-      "slugLabel": "Slug",
-      "roleLabel": "Seu papel"
+      "description": "Gerencie como sua workspace aparece no Cite.",
+      "nameLabel": "Nome da workspace",
+      "slugLabel": "URL da workspace",
+      "roleLabel": "Seu papel",
+      "adminHint": "Administradores gerenciam membros e veem a precisão das citações.",
+      "readOnlyBadge": "Somente leitura",
+      "readOnlyHint": "Apenas administradores podem editar os detalhes da workspace.",
+      "saved": "Workspace atualizada.",
+      "nameRequired": "O nome da workspace não pode ficar vazio."
     },
     "preferences": {
       "title": "Preferências",
-      "description": "Configurações pessoais da sua conta. Acompanham você entre dispositivos.",
+      "description": "Salvas na sua conta e sincronizadas entre dispositivos.",
       "languageLabel": "Idioma",
       "languageHint": "Afeta a interface e mensagens em todo o app.",
-      "save": "Salvar",
+      "themeLabel": "Tema",
+      "save": "Salvar preferências",
       "saved": "Preferências salvas.",
       "localeOption": {
-        "en-US": "English",
-        "pt-BR": "Português"
+        "en-US": "English (US)",
+        "pt-BR": "Português (BR)"
+      },
+      "themeOption": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      }
+    },
+    "members": {
+      "permissionDeniedTitle": "Apenas administradores",
+      "permissionDeniedDescription": "Apenas administradores da workspace podem gerenciar membros e convites. Peça acesso a um administrador.",
+      "invite": {
+        "title": "Convidar um colega",
+        "description": "Gere um link de uso único. Adicione um e-mail para vinculá-lo a esse endereço ou compartilhe um link aberto.",
+        "emailLabel": "E-mail (opcional)",
+        "emailPlaceholder": "colega@exemplo.com",
+        "roleLabel": "Papel",
+        "generate": "Gerar link",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "linkCopied": "Link copiado.",
+        "copyFailed": "Não foi possível copiar. Selecione o link e copie manualmente.",
+        "expiresIn": "Expira em 7 dias"
+      },
+      "table": {
+        "title": "Membros",
+        "you": "Você",
+        "columnMember": "Membro",
+        "columnRole": "Papel",
+        "columnActions": "Ações",
+        "makeAdmin": "Tornar administrador",
+        "makeMember": "Tornar membro",
+        "remove": "Remover",
+        "roleUpdated": "Papel atualizado.",
+        "memberRemoved": "Membro removido."
+      },
+      "pending": {
+        "title": "Convites pendentes",
+        "openLink": "Link aberto · sem e-mail vinculado",
+        "expiresIn": "Expira {date}",
+        "revoke": "Revogar",
+        "revoked": "Convite revogado."
+      },
+      "removeDialog": {
+        "title": "Remover {name}?",
+        "description": "A pessoa perde o acesso a esta workspace imediatamente. Os comentários dela permanecem.",
+        "confirm": "Remover"
+      },
+      "revokeDialog": {
+        "title": "Revogar este convite?",
+        "description": "O link para de funcionar imediatamente e não pode ser restaurado.",
+        "confirm": "Revogar"
+      },
+      "lastAdmin": {
+        "title": "Você não pode remover o último administrador",
+        "description": "Promova outro membro a administrador antes de remover ou rebaixar você mesmo."
       }
     }
   },
