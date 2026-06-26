@@ -64,6 +64,51 @@
       "uploadCta": "Upload document"
     }
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "afternoon": "Good afternoon, {name}",
+      "evening": "Good evening, {name}"
+    },
+    "greetingContext": " — here's what's happening in <org>workspace</org>.",
+    "stats": {
+      "collections": "Collections",
+      "documents": "Documents",
+      "conversations": "Conversations",
+      "accuracy": "Accuracy",
+      "adminBadge": "ADMIN",
+      "documentsSubtext": "{embedding} embedding · {failed} failed",
+      "accuracySubtext": "supported · {audited} audited"
+    },
+    "recentConversations": {
+      "title": "Recent conversations",
+      "viewAll": "View all",
+      "empty": "No conversations yet."
+    },
+    "recentlyIndexed": {
+      "title": "Recently indexed",
+      "empty": "Nothing indexed yet."
+    },
+    "accuracyCard": {
+      "title": "Citation accuracy",
+      "openAudit": "Open audit",
+      "supported": "Supported {pct}%",
+      "partial": "Partial {pct}%",
+      "unsupported": "Unsup. {pct}%",
+      "empty": "No citations audited yet."
+    },
+    "onboarding": {
+      "title": "Your workspace is ready",
+      "body": "Cite turns your documents into answers you can defend. Add sources, then ask questions and get responses grounded in exact, verifiable passages.",
+      "step1Title": "Create a collection",
+      "step1Body": "Group related documents — one matter, product, or policy set.",
+      "step1Cta": "Create",
+      "step2Title": "Upload sources",
+      "step2Body": "PDF, DOCX, HTML or Markdown — up to 100 MB each.",
+      "step3Title": "Ask a grounded question",
+      "step3Body": "Every answer arrives with inline, clickable citations."
+    }
+  },
   "settings": {
     "title": "Settings",
     "workspaceDescription": "Manage {orgName} and your personal preferences.",
