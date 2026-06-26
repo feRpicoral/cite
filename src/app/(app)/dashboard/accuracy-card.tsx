@@ -6,16 +6,12 @@ import type { AccuracySummary } from "@/lib/db/dashboard";
 
 export async function AccuracyCard({ accuracy }: { accuracy: AccuracySummary }) {
   const t = await getTranslations("dashboard.accuracyCard");
-  const tStats = await getTranslations("dashboard.stats");
   const hasData = accuracy.total > 0;
 
   return (
     <Card size="sm" className="gap-0 px-4 py-4">
       <div className="flex items-center gap-1.5">
         <span className="font-heading text-sm font-semibold">{t("title")}</span>
-        <span className="text-muted-foreground bg-muted rounded-[3px] px-1 py-0.5 font-mono text-[8px] font-semibold">
-          {tStats("adminBadge")}
-        </span>
         <Link href="/admin/audit" className="text-primary ml-auto text-xs font-semibold">
           {t("openAudit")}
         </Link>

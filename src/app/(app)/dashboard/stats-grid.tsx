@@ -35,7 +35,6 @@ export async function StatsGrid({ counts, accuracy, isAdmin, numberFormat }: Sta
       {isAdmin && (
         <StatCard
           label={t("accuracy")}
-          adminBadge={t("adminBadge")}
           value={`${accuracy.supportedPct}%`}
           valueClassName="text-success"
           subtext={
@@ -53,13 +52,11 @@ function StatCard({
   label,
   value,
   subtext,
-  adminBadge,
   valueClassName,
 }: {
   label: string;
   value: string;
   subtext?: React.ReactNode;
-  adminBadge?: string;
   valueClassName?: string;
 }) {
   return (
@@ -68,11 +65,6 @@ function StatCard({
         <span className="text-muted-foreground font-mono text-[10px] font-semibold tracking-[0.1em] uppercase">
           {label}
         </span>
-        {adminBadge && (
-          <span className="text-muted-foreground bg-muted rounded-[3px] px-1 py-0.5 font-mono text-[8px] font-semibold">
-            {adminBadge}
-          </span>
-        )}
       </div>
       <div
         className={cn(
