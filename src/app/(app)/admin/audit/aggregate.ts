@@ -13,7 +13,6 @@ export interface MessageGroup {
   message: NonNullable<AuditRow["message"]>;
   audits: AuditRow[];
   counts: VerdictCounts;
-  latestAt: Date;
   lowestConfidence: number;
 }
 
@@ -48,7 +47,6 @@ export function groupByMessage(audits: AuditRow[]): MessageGroup[] {
       existing.audits.push(audit);
       existing.counts[verdictKey(audit.verdict)] += 1;
       existing.lowestConfidence = Math.min(existing.lowestConfidence, audit.confidence);
-      if (audit.createdAt > existing.latestAt) existing.latestAt = audit.createdAt;
       continue;
     }
 
@@ -61,7 +59,6 @@ export function groupByMessage(audits: AuditRow[]): MessageGroup[] {
         partial: audit.verdict === "PARTIAL" ? 1 : 0,
         unsupported: audit.verdict === "UNSUPPORTED" ? 1 : 0,
       },
-      latestAt: audit.createdAt,
       lowestConfidence: audit.confidence,
     });
   }

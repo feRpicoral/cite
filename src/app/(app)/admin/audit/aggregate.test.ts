@@ -102,24 +102,13 @@ describe("groupByMessage", () => {
     expect(groups.map((g) => g.messageId)).toEqual(["second", "first"]);
   });
 
-  it("tracks the lowest confidence and latest timestamp per group", () => {
+  it("tracks the lowest confidence per group", () => {
     const groups = groupByMessage([
-      auditRow({
-        id: "a1",
-        messageId: "m1",
-        confidence: 0.8,
-        createdAt: new Date("2026-01-01T00:00:00Z"),
-      }),
-      auditRow({
-        id: "a2",
-        messageId: "m1",
-        confidence: 0.2,
-        createdAt: new Date("2026-01-02T00:00:00Z"),
-      }),
+      auditRow({ id: "a1", messageId: "m1", confidence: 0.8 }),
+      auditRow({ id: "a2", messageId: "m1", confidence: 0.2 }),
     ]);
 
     expect(groups[0]!.lowestConfidence).toBe(0.2);
-    expect(groups[0]!.latestAt).toEqual(new Date("2026-01-02T00:00:00Z"));
   });
 
   it("drops audits whose message could not be resolved", () => {
