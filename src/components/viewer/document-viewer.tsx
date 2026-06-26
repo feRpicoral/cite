@@ -145,6 +145,7 @@ function Rendered({
         currentUserId={currentUserId}
         displayIndex={target.displayIndex}
         quote={target.quote}
+        activation={target.activationId}
       />
     );
   }
@@ -155,6 +156,7 @@ function Rendered({
         location={target.location}
         currentUserId={currentUserId}
         downloadUrl={signed.url}
+        activation={target.activationId}
       />
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import type { CitationVerdict, DocumentFormat } from "@prisma/client";
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
 import type { DocumentLocation } from "@/lib/ingestion/location";
 
@@ -14,6 +14,8 @@ export interface ViewerTarget {
   quote?: string;
   verdict?: CitationVerdict | null;
   confidence?: number | null;
+  /** Bumped on every open() so re-clicking the same citation re-highlights. */
+  activationId?: number;
 }
 
 interface ViewerContextValue {
@@ -26,7 +28,11 @@ const ViewerContext = createContext<ViewerContextValue | null>(null);
 
 export function ViewerProvider({ children }: { children: React.ReactNode }) {
   const [target, setTarget] = useState<ViewerTarget | null>(null);
-  const open = useCallback((t: ViewerTarget) => setTarget(t), []);
+  const activationRef = useRef(0);
+  const open = useCallback((t: ViewerTarget) => {
+    activationRef.current += 1;
+    setTarget({ ...t, activationId: activationRef.current });
+  }, []);
   const close = useCallback(() => setTarget(null), []);
   const value = useMemo(() => ({ target, open, close }), [target, open, close]);
   return <ViewerContext.Provider value={value}>{children}</ViewerContext.Provider>;

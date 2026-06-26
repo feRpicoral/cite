@@ -18,6 +18,7 @@ interface HtmlViewerProps {
   location: Extract<DocumentLocation, { kind: "html" }>;
   currentUserId: string;
   downloadUrl: string;
+  activation?: number;
 }
 
 interface PartShape {
@@ -53,7 +54,13 @@ interface PendingSelection {
   anchor: { top: number; left: number };
 }
 
-export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }: HtmlViewerProps) {
+export function HtmlViewer({
+  documentId,
+  location,
+  currentUserId,
+  downloadUrl,
+  activation,
+}: HtmlViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [state, dispatch] = useReducer(reducer, { parts: null, loading: true, error: null });
@@ -100,7 +107,16 @@ export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }:
     if (!range) return;
     const mark = highlightRange(range);
     mark.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [parts, location.partIndex, location.selector, location.charStart, location.charEnd]);
+    // `activation` re-runs this on every citation click so re-clicking the
+    // open citation re-applies the highlight and re-scrolls to it.
+  }, [
+    parts,
+    location.partIndex,
+    location.selector,
+    location.charStart,
+    location.charEnd,
+    activation,
+  ]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);

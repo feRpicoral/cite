@@ -21,6 +21,7 @@ interface PdfViewerProps {
   currentUserId: string;
   displayIndex?: number;
   quote?: string;
+  activation?: number;
 }
 
 const BASE_SCALE = 1.4;
@@ -90,6 +91,7 @@ export function PdfViewer({
   currentUserId,
   displayIndex,
   quote,
+  activation,
 }: PdfViewerProps) {
   const t = useTranslations("documentViewer");
   const isMobile = useIsMobile();
@@ -117,7 +119,9 @@ export function PdfViewer({
   // so clicking another citation on the *same* page after the user has
   // chevron-navigated away still snaps the viewer back. Tracking the prior
   // signature with a ref keeps chevron navigation working in between.
-  const locationKey = `${location.page}:${location.bbox.join(",")}`;
+  // `activation` is part of the key so re-clicking the same citation (after
+  // chevron-navigating away) snaps back to its page and re-highlights.
+  const locationKey = `${location.page}:${location.bbox.join(",")}:${activation ?? ""}`;
   const lastLocationKeyRef = useRef(locationKey);
   useEffect(() => {
     if (lastLocationKeyRef.current !== locationKey) {
@@ -280,7 +284,7 @@ export function PdfViewer({
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [docReady, page, zoom, location.bbox, location.page, displayIndex, quote]);
+  }, [docReady, page, zoom, location.bbox, location.page, displayIndex, quote, activation]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
