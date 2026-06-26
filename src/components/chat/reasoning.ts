@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { TraceData, TracePhase } from "@/lib/chat/trace";
+
 const AgentStateShape = z.object({
   classify: z.object({ shape: z.enum(["simple", "decompose"]) }).optional(),
   subQueries: z.array(z.string()).optional(),
@@ -29,5 +31,23 @@ export function summarizeReasoning(agentState: unknown): ReasoningSummary | null
     subQueries: subQueries ?? [],
     reranked: (rounds?.length ?? 0) > 0,
     sufficient: sufficiency?.verdict !== "insufficient",
+  };
+}
+
+/**
+ * Builds the same summary from a completed live trace, so a just-streamed
+ * message (which has no client-side agentState) collapses to the same chip the
+ * server-loaded one shows. Returns null until classification is known.
+ */
+export function summarizeTrace(trace: TraceData): ReasoningSummary | null {
+  const find = <K extends TracePhase["kind"]>(kind: K) =>
+    trace.phases.find((p): p is Extract<TracePhase, { kind: K }> => p.kind === kind);
+  const classify = find("classify");
+  if (!classify?.shape) return null;
+  return {
+    shape: classify.shape,
+    subQueries: find("decompose")?.subQueries ?? [],
+    reranked: find("retrieve") != null,
+    sufficient: find("sufficiency")?.verdict !== "insufficient",
   };
 }

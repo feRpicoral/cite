@@ -232,3 +232,113 @@
     animation: none;
   }
 }
+
+/* Markdown answer rendering (react-markdown). Tailwind's preflight strips
+   element styling, so restore readable prose spacing scoped to .cite-prose. */
+.cite-prose {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.cite-prose > :first-child {
+  margin-top: 0;
+}
+.cite-prose > :last-child {
+  margin-bottom: 0;
+}
+.cite-prose p {
+  margin: 0.75em 0;
+}
+.cite-prose h1,
+.cite-prose h2,
+.cite-prose h3,
+.cite-prose h4 {
+  margin: 1.2em 0 0.5em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.cite-prose h1 {
+  font-size: 1.3em;
+}
+.cite-prose h2 {
+  font-size: 1.15em;
+}
+.cite-prose h3 {
+  font-size: 1.05em;
+}
+.cite-prose ul,
+.cite-prose ol {
+  margin: 0.75em 0;
+  padding-left: 1.4em;
+}
+.cite-prose ul {
+  list-style: disc;
+}
+.cite-prose ol {
+  list-style: decimal;
+}
+.cite-prose li {
+  margin: 0.3em 0;
+}
+.cite-prose li > ul,
+.cite-prose li > ol {
+  margin: 0.3em 0;
+}
+.cite-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cite-prose strong {
+  font-weight: 600;
+}
+.cite-prose code {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.cite-prose pre {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.85em 1em;
+  margin: 0.75em 0;
+  overflow-x: auto;
+}
+.cite-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+.cite-prose blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 0.9em;
+  margin: 0.75em 0;
+  color: var(--muted-foreground);
+}
+.cite-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1.2em 0;
+}
+.cite-prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.85em 0;
+  font-size: 0.9em;
+}
+.cite-prose th,
+.cite-prose td {
+  border: 1px solid var(--border);
+  padding: 0.4em 0.7em;
+  text-align: left;
+  vertical-align: top;
+}
+.cite-prose th {
+  background: var(--muted);
+  font-weight: 600;
+}
