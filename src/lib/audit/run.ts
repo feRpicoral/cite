@@ -27,16 +27,16 @@ function isWorse(candidate: JudgeResult, current: JudgeResult): boolean {
   return VERDICT_SEVERITY[candidate.verdict] > VERDICT_SEVERITY[current.verdict];
 }
 
-/**
- * Loads a message's citations and groups every citation-bearing claim under its
- * marker. Returns one target per citation marker with all claims that reference
- * it, or an empty list when the message is missing, foreign, or uncited.
- */
 // Judge against the full chunk text, not the 500-char UI quote snapshot — a
 // claim supported by text past the truncation point would otherwise read as
 // UNSUPPORTED. Capped to bound the judge prompt.
 const MAX_PASSAGE_LEN = 4_000;
 
+/**
+ * Loads a message's citations and groups every citation-bearing claim under its
+ * marker. Returns one target per citation marker with all claims that reference
+ * it, or an empty list when the message is missing, foreign, or uncited.
+ */
 export async function loadAuditTargets(orgId: OrgId, messageId: string): Promise<AuditTarget[]> {
   const prisma = getPrisma();
   const message = await prisma.message.findUnique({
@@ -47,7 +47,6 @@ export async function loadAuditTargets(orgId: OrgId, messageId: string): Promise
       citations: {
         select: {
           displayIndex: true,
-          quote: true,
           chunk: { select: { text: true, document: { select: { name: true } } } },
         },
       },
@@ -67,13 +66,10 @@ export async function loadAuditTargets(orgId: OrgId, messageId: string): Promise
 
   return Array.from(claimsByIndex.entries()).map(([displayIndex, claims]) => {
     const cite = citationByIndex.get(displayIndex)!;
-    // chunk is non-null while it exists; the citation cascades away with it, so
-    // a present citation always has its chunk. Fall back to the quote defensively.
-    const passage = (cite.chunk?.text ?? cite.quote).slice(0, MAX_PASSAGE_LEN);
     return {
       displayIndex,
       claims,
-      passage,
+      passage: cite.chunk.text.slice(0, MAX_PASSAGE_LEN),
       documentName: cite.chunk.document.name,
     };
   });
