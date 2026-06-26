@@ -191,7 +191,7 @@ export function HtmlViewer({ documentId, location, currentUserId, downloadUrl }:
         {parts && (
           <article
             ref={containerRef}
-            className="prose prose-sm dark:prose-invert mx-auto max-w-3xl pr-12"
+            className="cite-doc prose prose-sm dark:prose-invert mx-auto max-w-3xl pr-12"
           >
             {parts.map((p) => (
               <section
