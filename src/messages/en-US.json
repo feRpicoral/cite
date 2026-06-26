@@ -180,5 +180,43 @@
     "generic": "Something went wrong. Please try again.",
     "notFound": "Page not found.",
     "unauthorized": "You don't have access to this page."
+  },
+  "audit": {
+    "title": "Citation accuracy",
+    "subtitle": "LLM-judge verdicts on every citation across recent assistant messages.",
+    "dateRange": "Last {days} days",
+    "summary": {
+      "title": "Audited citations",
+      "meta": "{citations} citations · {messages} messages"
+    },
+    "stat": {
+      "supported": "Supported · {count}",
+      "partial": "Partial · {count}",
+      "unsupported": "Unsupported · {count}"
+    },
+    "controls": {
+      "searchPlaceholder": "Search messages or documents",
+      "searchLabel": "Search audited messages",
+      "verdictLabel": "Verdict",
+      "verdictAll": "All verdicts",
+      "sortLabel": "Sort",
+      "sortRecent": "Most recent",
+      "sortConfidence": "Lowest confidence",
+      "resultsCount": "{count, plural, one {# result} other {# results}}",
+      "clearFilter": "Clear filter"
+    },
+    "row": {
+      "citationLabel": "Citation {index}",
+      "expand": "Show per-citation detail",
+      "collapse": "Hide per-citation detail"
+    },
+    "empty": {
+      "title": "No audited messages yet",
+      "description": "Every citation is scored automatically after an answer is generated. Once your team starts chatting with sources, accuracy results appear here."
+    },
+    "filteredEmpty": {
+      "title": "No matching citations",
+      "description": "No audited citations match the current filters. Try clearing the search or verdict filter."
+    }
   }
 }
