@@ -12,31 +12,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { updateOrgNameAction } from "./members/actions";
+import { updateOrgAction } from "./members/actions";
 
 interface OrgFormProps {
   initialName: string;
-  slug: string;
+  initialSlug: string;
   roleLabel: string;
 }
 
-export function OrgForm({ initialName, slug, roleLabel }: OrgFormProps) {
+export function OrgForm({ initialName, initialSlug, roleLabel }: OrgFormProps) {
   const router = useRouter();
   const t = useTranslations("settings.organization");
   const tDirty = useTranslations("settings.dirty");
   const [name, setName] = useState(initialName);
+  const [slug, setSlug] = useState(initialSlug);
   const [pending, startTransition] = useTransition();
 
   const trimmed = name.trim();
-  const dirty = trimmed !== initialName;
+  const trimmedSlug = slug.trim();
+  const dirty = trimmed !== initialName || trimmedSlug !== initialSlug;
+
+  function reset() {
+    setName(initialName);
+    setSlug(initialSlug);
+  }
 
   function save() {
     if (!trimmed) {
       toast.error(t("nameRequired"));
       return;
     }
+    if (!trimmedSlug) {
+      toast.error(t("slugRequired"));
+      return;
+    }
     startTransition(async () => {
-      const result = await updateOrgNameAction({ name: trimmed });
+      const result = await updateOrgAction({ name: trimmed, slug: trimmedSlug });
       if (result.ok) {
         toast.success(t("saved"));
         router.refresh();
@@ -67,12 +78,20 @@ export function OrgForm({ initialName, slug, roleLabel }: OrgFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="org-slug">{t("slugLabel")}</Label>
-          <div className="border-input flex max-w-sm items-center overflow-hidden rounded-lg border">
+          <div className="border-input focus-within:border-ring focus-within:ring-ring/50 flex max-w-sm items-center overflow-hidden rounded-lg border focus-within:ring-3">
             <span className="text-muted-foreground bg-muted border-input border-r px-3 py-1.5 font-mono text-sm">
               cite.app/
             </span>
-            <span className="px-3 py-1.5 text-sm">{slug}</span>
+            <input
+              id="org-slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              disabled={pending}
+              maxLength={60}
+              className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent px-3 py-1.5 font-mono text-sm outline-none disabled:opacity-50"
+            />
           </div>
+          <p className="text-muted-foreground text-xs">{t("slugHint")}</p>
         </div>
 
         <div className="space-y-2">
@@ -90,7 +109,7 @@ export function OrgForm({ initialName, slug, roleLabel }: OrgFormProps) {
               {tDirty("label")}
             </span>
             <div className="ml-auto flex gap-2">
-              <Button variant="ghost" onClick={() => setName(initialName)} disabled={pending}>
+              <Button variant="ghost" onClick={reset} disabled={pending}>
                 {tDirty("cancel")}
               </Button>
               <Button onClick={save} disabled={pending}>

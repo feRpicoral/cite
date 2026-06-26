@@ -9,6 +9,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getPrisma } from "@/lib/db/client";
 import { getDb } from "@/lib/db/with-org";
 import { appUrl } from "@/lib/env";
+import { slugify } from "@/lib/slug";
 import { getServiceSupabase } from "@/lib/supabase/admin";
 import { createServerSupabase } from "@/lib/supabase/server";
 import type { Result } from "@/lib/types/result";
@@ -88,24 +89,33 @@ export async function createInviteAction(
   return { ok: true, url };
 }
 
-const UpdateOrgNameSchema = z.object({
+const UpdateOrgSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  slug: z.string().trim().min(1).max(60),
 });
 
-export async function updateOrgNameAction(
-  input: z.infer<typeof UpdateOrgNameSchema>,
-): Promise<Result> {
+export async function updateOrgAction(input: z.infer<typeof UpdateOrgSchema>): Promise<Result> {
   const session = await requireAdmin();
-  const parsed = UpdateOrgNameSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid organization name." };
+  const parsed = UpdateOrgSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid organization details." };
+
+  const slug = slugify(parsed.data.slug);
+  if (!slug) return { ok: false, error: "Enter a valid workspace URL." };
 
   // Organization is not a tenant-scoped model, so getDb won't inject orgId.
   // The session's orgId is already verified via membership in getSession.
-  await getPrisma().organization.update({
-    where: { id: session.orgId },
-    data: { name: parsed.data.name },
-  });
-  revalidatePath("/settings");
+  try {
+    await getPrisma().organization.update({
+      where: { id: session.orgId },
+      data: { name: parsed.data.name, slug },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return { ok: false, error: `The URL cite.app/${slug} is taken.` };
+    }
+    throw err;
+  }
+  revalidatePath("/settings", "layout");
   return { ok: true };
 }
 
@@ -256,23 +266,25 @@ export async function acceptInviteAction(
         where: { orgId_userId: { orgId: invite.orgId, userId: user.id } },
       });
 
-      // A stamped token is single-use. The only accepted replay is the same
-      // user who already joined — anything else is a reused link.
-      if (invite.acceptedAt && !existing) throw new InviteAlreadyAcceptedError();
+      // Already in this org — accepting (even an unused open link) is a no-op
+      // we reject so the user gets clear feedback instead of silently consuming
+      // the invite.
+      if (existing) throw new AlreadyMemberError();
+      // A stamped token is single-use.
+      if (invite.acceptedAt) throw new InviteAlreadyAcceptedError();
 
-      if (!existing) {
-        await tx.membership.create({
-          data: { orgId: invite.orgId, userId: user.id, role: invite.role },
-        });
-      }
-      if (!invite.acceptedAt) {
-        await tx.invite.update({
-          where: { id: invite.id },
-          data: { acceptedAt: new Date() },
-        });
-      }
+      await tx.membership.create({
+        data: { orgId: invite.orgId, userId: user.id, role: invite.role },
+      });
+      await tx.invite.update({
+        where: { id: invite.id },
+        data: { acceptedAt: new Date() },
+      });
     });
   } catch (err) {
+    if (err instanceof AlreadyMemberError) {
+      return { ok: false, error: "You're already a member of this organization." };
+    }
     if (err instanceof InviteAlreadyAcceptedError) {
       return { ok: false, error: "This invite has already been used." };
     }
@@ -314,5 +326,11 @@ class InviteAlreadyAcceptedError extends Error {
   constructor() {
     super("invite_already_accepted");
     this.name = "InviteAlreadyAcceptedError";
+  }
+}
+class AlreadyMemberError extends Error {
+  constructor() {
+    super("already_member");
+    this.name = "AlreadyMemberError";
   }
 }

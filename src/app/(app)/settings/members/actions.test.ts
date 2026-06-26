@@ -46,7 +46,7 @@ import {
   changeRoleAction,
   createInviteAction,
   removeMemberAction,
-  updateOrgNameAction,
+  updateOrgAction,
 } from "./actions";
 
 function signedInAs(id: string, email: string) {
@@ -105,7 +105,7 @@ describe("acceptInviteAction single-use", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("accepts an already-accepted token for the existing member (idempotent)", async () => {
+  it("rejects an invite when the user is already a member", async () => {
     signedInAs(member, "new@example.com");
     prismaInvite.findUnique.mockResolvedValue({
       id: "i1",
@@ -113,19 +113,26 @@ describe("acceptInviteAction single-use", () => {
       email: null,
       role: "MEMBER",
       expiresAt: new Date(Date.now() + 100_000),
-      acceptedAt: new Date(),
+      acceptedAt: null,
     });
+    const create = vi.fn();
+    const update = vi.fn();
     prismaTransaction.mockImplementation(async (cb) => {
       const tx = {
-        membership: { findUnique: vi.fn().mockResolvedValue({ id: "m1" }), create: vi.fn() },
-        invite: { update: vi.fn() },
+        membership: { findUnique: vi.fn().mockResolvedValue({ id: "m1" }), create },
+        invite: { update },
       };
       return cb(tx);
     });
 
     const result = await acceptInviteAction({ token: "a".repeat(32) });
 
-    expect(result).toEqual({ ok: true, orgId: session.orgId });
+    expect(result).toEqual({
+      ok: false,
+      error: "You're already a member of this organization.",
+    });
+    expect(create).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("treats a concurrent P2002 on membership create as success", async () => {
@@ -282,23 +289,23 @@ describe("last-admin guard", () => {
   });
 });
 
-describe("updateOrgNameAction", () => {
+describe("updateOrgAction", () => {
   it("rejects a blank name", async () => {
-    const result = await updateOrgNameAction({ name: "  " });
+    const result = await updateOrgAction({ name: "  ", slug: "acme" });
 
-    expect(result).toEqual({ ok: false, error: "Invalid organization name." });
+    expect(result).toEqual({ ok: false, error: "Invalid organization details." });
     expect(prismaOrganization.update).not.toHaveBeenCalled();
   });
 
-  it("updates the session's org scoped to its id", async () => {
+  it("updates the session's org name and slug scoped to its id", async () => {
     prismaOrganization.update.mockResolvedValue({});
 
-    const result = await updateOrgNameAction({ name: "Acme Inc" });
+    const result = await updateOrgAction({ name: "Acme Inc", slug: "Acme Inc" });
 
     expect(result).toEqual({ ok: true });
     expect(prismaOrganization.update).toHaveBeenCalledWith({
       where: { id: session.orgId },
-      data: { name: "Acme Inc" },
+      data: { name: "Acme Inc", slug: "acme-inc" },
     });
   });
 });

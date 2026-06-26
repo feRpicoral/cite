@@ -14,7 +14,11 @@ export default async function OrgSettingsPage() {
 
   if (session.role === "ADMIN") {
     return (
-      <OrgForm initialName={session.orgName} slug={session.orgSlug} roleLabel={tRole("ADMIN")} />
+      <OrgForm
+        initialName={session.orgName}
+        initialSlug={session.orgSlug}
+        roleLabel={tRole("ADMIN")}
+      />
     );
   }
 
