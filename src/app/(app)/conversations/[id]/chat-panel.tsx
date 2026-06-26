@@ -9,17 +9,26 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AskAnything } from "@/components/chat/ask-anything";
 import { ChatComposer } from "@/components/chat/chat-composer";
-import { CitationChip } from "@/components/chat/citation-chip";
 import { LiveReasoningTrace } from "@/components/chat/live-reasoning-trace";
+import { Markdown } from "@/components/chat/markdown";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { NoAnswer } from "@/components/chat/no-answer";
-import { type ReasoningSummary, summarizeReasoning } from "@/components/chat/reasoning";
+import {
+  type ReasoningSummary,
+  summarizeReasoning,
+  summarizeTrace,
+} from "@/components/chat/reasoning";
 import { ReasoningTrace } from "@/components/chat/reasoning-trace";
 import { StreamingStatus } from "@/components/chat/streaming-status";
 import { SupportFooter } from "@/components/chat/support-footer";
 import { CommentButton } from "@/components/comments/comment-button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { parseTraceData, TRACE_PART_ID, type TraceData } from "@/lib/chat/trace";
+import {
+  MESSAGE_ID_PART_ID,
+  parseTraceData,
+  TRACE_PART_ID,
+  type TraceData,
+} from "@/lib/chat/trace";
 import { type DocumentLocation, DocumentLocationSchema } from "@/lib/ingestion/location";
 import { type MessageInsertPayload, useMessageInserts } from "@/lib/realtime/message-sync";
 import { findReconcilableMessageIndex } from "@/lib/realtime/reconcile";
@@ -179,6 +188,25 @@ export function ChatPanel({
     };
   }, [messages]);
 
+  // Reconcile a streamed assistant message's transient id to the persisted
+  // UUID the chat route emits as a `data-messageId` part once the answer is
+  // saved. This finalizes the bubble (citation hydration, collapsed trace,
+  // comments) without waiting on realtime delivery, which may be disabled.
+  useEffect(() => {
+    const rewrites = new Map<string, string>();
+    for (const m of messages) {
+      if (m.role !== "assistant" || PERSISTED_ID.test(m.id)) continue;
+      const persistedId = extractPersistedId(m.parts);
+      if (persistedId && PERSISTED_ID.test(persistedId)) rewrites.set(m.id, persistedId);
+    }
+    if (rewrites.size === 0) return;
+    setMessages((prev) =>
+      prev.some((m) => rewrites.has(m.id))
+        ? prev.map((m) => (rewrites.has(m.id) ? { ...m, id: rewrites.get(m.id)! } : m))
+        : prev,
+    );
+  }, [messages, setMessages]);
+
   const lastMessage = messages.at(-1);
   const failedUserId = error && lastMessage?.role === "user" ? lastMessage.id : undefined;
 
@@ -220,10 +248,18 @@ export function ChatPanel({
               const citations = citationsByMessage.get(m.id) ?? [];
               const hasMarkers = CITATION_MARKER.test(text);
               const hydrating = isPersisted && hasMarkers && !citationsByMessage.has(m.id);
-              const reasoning = reasoningById.get(m.id);
               const liveTrace = extractTrace(m.parts);
               const noAnswer = isPersisted && text.length > 0 && !hasMarkers;
-              const streaming = status === "streaming" && m.id === lastMessage?.id && !isPersisted;
+              const generating =
+                (status === "streaming" || status === "submitted") &&
+                m.id === lastMessage?.id &&
+                !isPersisted;
+              // Collapsed summary: from persisted agentState, else distilled
+              // from the completed live trace (a just-streamed message has no
+              // client-side agentState yet).
+              const reasoning =
+                reasoningById.get(m.id) ??
+                (liveTrace ? (summarizeTrace(liveTrace) ?? undefined) : undefined);
 
               return (
                 <AssistantMessage
@@ -236,7 +272,7 @@ export function ChatPanel({
                   liveTrace={liveTrace}
                   noAnswer={noAnswer}
                   isPersisted={isPersisted}
-                  streaming={streaming}
+                  streaming={generating}
                   currentUserId={currentUserId}
                 />
               );
@@ -337,9 +373,10 @@ function AssistantMessage({
 }) {
   const t = useTranslations("conversation");
 
-  // The live trace streams alongside the answer; once the message is persisted
-  // it falls back to the collapsed static trace built from agentState.
-  const showLiveTrace = !isPersisted && liveTrace != null;
+  // The live trace (full checklist) shows only while generating; once the
+  // answer is in it collapses to the summary chip. The bubble is withheld until
+  // there's text so the trace-only phase doesn't render an empty bubble.
+  const showBubble = noAnswer || text.trim().length > 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -347,7 +384,7 @@ function AssistantMessage({
         <CiteLabel />
         {streaming && <StreamingStatus status="streaming" />}
       </div>
-      {showLiveTrace ? (
+      {streaming && liveTrace != null ? (
         <LiveReasoningTrace trace={liveTrace} />
       ) : (
         reasoning && <ReasoningTrace summary={reasoning} />
@@ -358,35 +395,37 @@ function AssistantMessage({
           {t("citations.linking")}
         </span>
       )}
-      <MessageBubble role="assistant">
-        {noAnswer ? (
-          <NoAnswer text={text} />
-        ) : (
-          <RenderedAssistantText
-            text={text}
-            citations={citations}
-            pending={linking}
-            showCursor={streaming}
-          />
-        )}
-        {linking && (
-          <p className="text-muted-foreground mt-2.5 text-[11px] leading-relaxed">
-            {t("citations.pendingNote")}
-          </p>
-        )}
-        {!noAnswer && isPersisted && (
-          <div className="mt-3 flex items-center gap-3 border-t pt-2.5">
-            <SupportFooter citations={citations} />
-            <div className="ml-auto">
-              <CommentButton
-                targetType="MESSAGE"
-                targetId={messageId}
-                currentUserId={currentUserId}
-              />
+      {showBubble && (
+        <MessageBubble role="assistant">
+          {noAnswer ? (
+            <NoAnswer text={text} />
+          ) : (
+            <RenderedAssistantText
+              text={text}
+              citations={citations}
+              pending={linking}
+              showCursor={streaming}
+            />
+          )}
+          {linking && (
+            <p className="text-muted-foreground mt-2.5 text-[11px] leading-relaxed">
+              {t("citations.pendingNote")}
+            </p>
+          )}
+          {!noAnswer && isPersisted && (
+            <div className="mt-3 flex items-center gap-3 border-t pt-2.5">
+              <SupportFooter citations={citations} />
+              <div className="ml-auto">
+                <CommentButton
+                  targetType="MESSAGE"
+                  targetId={messageId}
+                  currentUserId={currentUserId}
+                />
+              </div>
             </div>
-          </div>
-        )}
-      </MessageBubble>
+          )}
+        </MessageBubble>
+      )}
     </div>
   );
 }
@@ -402,42 +441,11 @@ function RenderedAssistantText({
   pending: boolean;
   showCursor: boolean;
 }) {
-  // Replace [n] (and [n, m]) markers with chips. Splits the string into a
-  // sequence of plain-text fragments and CitationChip nodes. Robust to
-  // streaming partial markers — anything that doesn't match a complete
-  // [digits] pattern renders as plain text.
-  const re = /\[(\d+(?:\s*,\s*\d+)*)\]/g;
-  const out: React.ReactNode[] = [];
-  let cursor = 0;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(text)) !== null) {
-    if (match.index > cursor) {
-      out.push(<span key={`t-${cursor}`}>{text.slice(cursor, match.index)}</span>);
-    }
-    const numbers = match[1]!.split(",").map((s) => Number(s.trim()));
-    out.push(
-      <span key={`c-${match.index}`} className="inline-flex flex-wrap gap-0.5 align-baseline">
-        {numbers.map((n, i) => {
-          const citation = citations.find((c) => c.displayIndex === n);
-          return (
-            <CitationChip
-              key={`${n}-${i}`}
-              displayIndex={n}
-              citation={citation ?? undefined}
-              pending={pending}
-            />
-          );
-        })}
-      </span>,
-    );
-    cursor = match.index + match[0].length;
-  }
-  if (cursor < text.length) {
-    out.push(<span key={`t-${cursor}`}>{text.slice(cursor)}</span>);
-  }
+  // Markdown rendering (react-markdown + remark-gfm) with `[n]` markers turned
+  // into inline citation chips by the Markdown component's rehype plugin.
   return (
-    <div className="leading-relaxed whitespace-pre-wrap">
-      {out}
+    <div>
+      <Markdown text={text} citations={citations} pending={pending} />
       {showCursor && (
         <span className="bg-primary animate-cite-blink ml-0.5 inline-block h-[1em] w-px align-text-bottom" />
       )}
@@ -454,6 +462,15 @@ function extractTrace(parts: { type: string }[]): TraceData | undefined {
   );
   if (!part) return undefined;
   return parseTraceData(part.data) ?? undefined;
+}
+
+// Pulls the persisted assistant message UUID from the `data-messageId` part the
+// chat route emits once the answer is saved.
+function extractPersistedId(parts: { type: string }[]): string | undefined {
+  const part = parts.find(
+    (p): p is { type: string; data?: { id?: string } } => p.type === `data-${MESSAGE_ID_PART_ID}`,
+  );
+  return part?.data?.id;
 }
 
 interface RawCitation {
