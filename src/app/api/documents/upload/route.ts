@@ -3,22 +3,10 @@ import { z } from "zod";
 
 import { requireSessionApi } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
+import { ALLOWED_UPLOAD_MIME, MAX_UPLOAD_BYTES } from "@/lib/documents/upload-constraints";
 import { matchesDeclaredType } from "@/lib/ingestion/magic-bytes";
 import { documentUploaded, inngest } from "@/lib/inngest/client";
 import { buildStoragePath, uploadDocumentBuffer } from "@/lib/storage/documents";
-
-const ALLOWED_FORMATS: Record<string, "PDF" | "DOCX" | "HTML" | "MD"> = {
-  "application/pdf": "PDF",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
-  "text/html": "HTML",
-  "text/markdown": "MD",
-  "text/plain": "MD",
-};
-
-// Vercel Functions cap the incoming request body at ~4.5MB; anything larger is
-// rejected by the platform before this handler runs, so advertising more fails
-// in production. Direct-to-storage upload would lift this but is out of scope.
-const MAX_SIZE_BYTES = 4.5 * 1024 * 1024;
 
 const Body = z.object({
   collectionId: z.string().uuid(),
@@ -29,7 +17,7 @@ export async function POST(request: Request) {
   if (session instanceof NextResponse) return session;
 
   const contentLength = Number(request.headers.get("content-length"));
-  if (Number.isFinite(contentLength) && contentLength > MAX_SIZE_BYTES) {
+  if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ error: "File too large" }, { status: 413 });
   }
 
@@ -43,11 +31,11 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
-  if (file.size > MAX_SIZE_BYTES) {
+  if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ error: "File too large" }, { status: 413 });
   }
 
-  const format = ALLOWED_FORMATS[file.type];
+  const format = ALLOWED_UPLOAD_MIME[file.type];
   if (!format) {
     return NextResponse.json(
       { error: `Unsupported mime type: ${file.type || "unknown"}` },
