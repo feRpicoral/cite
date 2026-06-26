@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 
+import { OfflineIndicator } from "@/components/system/offline-indicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { resolveLocale } from "@/lib/i18n/resolve-locale";
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <OfflineIndicator />
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
