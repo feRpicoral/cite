@@ -233,73 +233,88 @@
   }
 }
 
-/* Markdown answer rendering (react-markdown). Tailwind's preflight strips
-   element styling, so restore readable prose spacing scoped to .cite-prose. */
-.cite-prose {
+/* Prose rendering shared by the LLM answer (react-markdown, .cite-prose) and the
+   document viewer (HTML/DOCX/MD from stored sanitized HTML, .cite-doc) so a
+   rendered document reads exactly like an answer. Tailwind's preflight strips
+   element styling and the typography plugin is not installed, so spacing and
+   headings are restored here. Tables differ per context (see below). */
+.cite-prose,
+.cite-doc {
   font-size: 0.875rem;
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
-.cite-prose > :first-child {
+.cite-prose > :first-child,
+.cite-doc > :first-child {
   margin-top: 0;
 }
-.cite-prose > :last-child {
+.cite-prose > :last-child,
+.cite-doc > :last-child {
   margin-bottom: 0;
 }
-.cite-prose p {
+.cite-prose p,
+.cite-doc p {
   margin: 0.75em 0;
 }
-.cite-prose h1,
-.cite-prose h2,
-.cite-prose h3,
-.cite-prose h4 {
+.cite-prose :is(h1, h2, h3, h4),
+.cite-doc :is(h1, h2, h3, h4) {
   margin: 1.2em 0 0.5em;
   font-weight: 600;
   line-height: 1.3;
 }
-.cite-prose h1 {
+.cite-prose h1,
+.cite-doc h1 {
   font-size: 1.3em;
 }
-.cite-prose h2 {
+.cite-prose h2,
+.cite-doc h2 {
   font-size: 1.15em;
 }
-.cite-prose h3 {
+.cite-prose h3,
+.cite-doc h3 {
   font-size: 1.05em;
 }
-.cite-prose ul,
-.cite-prose ol {
+.cite-prose :is(ul, ol),
+.cite-doc :is(ul, ol) {
   margin: 0.75em 0;
   padding-left: 1.4em;
 }
-.cite-prose ul {
+.cite-prose ul,
+.cite-doc ul {
   list-style: disc;
 }
-.cite-prose ol {
+.cite-prose ol,
+.cite-doc ol {
   list-style: decimal;
 }
-.cite-prose li {
+.cite-prose li,
+.cite-doc li {
   margin: 0.3em 0;
 }
-.cite-prose li > ul,
-.cite-prose li > ol {
+.cite-prose li > :is(ul, ol),
+.cite-doc li > :is(ul, ol) {
   margin: 0.3em 0;
 }
-.cite-prose a {
+.cite-prose a,
+.cite-doc a {
   color: var(--primary);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.cite-prose strong {
+.cite-prose strong,
+.cite-doc strong {
   font-weight: 600;
 }
-.cite-prose code {
+.cite-prose code,
+.cite-doc code {
   background: var(--muted);
   border-radius: var(--radius-sm);
   padding: 0.1em 0.35em;
   font-family: var(--font-mono);
   font-size: 0.85em;
 }
-.cite-prose pre {
+.cite-prose pre,
+.cite-doc pre {
   background: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -307,21 +322,26 @@
   margin: 0.75em 0;
   overflow-x: auto;
 }
-.cite-prose pre code {
+.cite-prose pre code,
+.cite-doc pre code {
   background: transparent;
   padding: 0;
 }
-.cite-prose blockquote {
+.cite-prose blockquote,
+.cite-doc blockquote {
   border-left: 2px solid var(--border);
   padding-left: 0.9em;
   margin: 0.75em 0;
   color: var(--muted-foreground);
 }
-.cite-prose hr {
+.cite-prose hr,
+.cite-doc hr {
   border: 0;
   border-top: 1px solid var(--border);
   margin: 1.2em 0;
 }
+
+/* Chat bubbles are narrow, so an answer's table scrolls within its own width. */
 .cite-prose table {
   display: block;
   width: max-content;
@@ -343,10 +363,8 @@
   font-weight: 600;
 }
 
-/* Document viewer content (HTML/DOCX/MD rendered from stored sanitized HTML).
-   The typography plugin is not installed, so GFM tables, task lists, and
-   strikethrough render with no user-agent styling; give them just enough to
-   be legible. Scoped to the viewer so it can't leak into chat or UI chrome. */
+/* The document viewer is wide, so its tables fill the column. Task lists and
+   strikethrough are GFM extras with no user-agent styling. */
 .cite-doc table {
   width: 100%;
   border-collapse: collapse;
