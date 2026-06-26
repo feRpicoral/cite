@@ -96,6 +96,41 @@
       }
     }
   },
+  "conversationsList": {
+    "title": "Conversas",
+    "newConversation": "Nova conversa",
+    "searchPlaceholder": "Buscar conversas",
+    "allCollections": "Todas as coleções",
+    "total": "{count} no total",
+    "messageCount": "{count, plural, one {# mensagem} other {# mensagens}}",
+    "loadMore": "Carregar mais",
+    "clearSearch": "Limpar busca",
+    "noneYet": {
+      "title": "Nenhuma conversa ainda",
+      "description": "Inicie uma para fazer perguntas embasadas sobre uma coleção — cada resposta vem com citações verificáveis."
+    },
+    "noResults": {
+      "title": "Nenhuma conversa corresponde",
+      "description": "Nada para \"{query}\". Tente outra busca ou limpe o filtro.",
+      "descriptionFiltered": "Nenhuma conversa nesta coleção ainda. Tente outro filtro."
+    },
+    "noCollections": {
+      "title": "Crie uma coleção primeiro",
+      "description": "Você precisa de ao menos uma coleção com documentos indexados antes de iniciar uma conversa.",
+      "createCollection": "Criar coleção"
+    },
+    "dialog": {
+      "title": "Nova conversa",
+      "description": "Escolha uma coleção para embasar suas respostas.",
+      "documentCount": "{count, plural, one {# documento} other {# documentos}}",
+      "indexed": "indexado",
+      "embedding": "{count} indexando",
+      "empty": "indexando",
+      "cancel": "Cancelar",
+      "start": "Iniciar conversa",
+      "error": "Não foi possível criar a conversa"
+    }
+  },
   "errors": {
     "generic": "Algo deu errado. Tente novamente.",
     "notFound": "Página não encontrada.",
