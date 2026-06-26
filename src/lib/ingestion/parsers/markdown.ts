@@ -1,4 +1,5 @@
 import rehypeStringify from "rehype-stringify";
+import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
@@ -22,6 +23,7 @@ export class MarkdownParser implements DocumentParser {
     const md = buffer.toString("utf-8");
     const html = await unified()
       .use(remarkParse)
+      .use(remarkGfm)
       .use(remarkRehype)
       .use(rehypeStringify)
       .process(md);
