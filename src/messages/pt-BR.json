@@ -196,6 +196,75 @@
       "step3Body": "Toda resposta vem com citações clicáveis no texto."
     }
   },
+  "conversation": {
+    "cite": "Cite",
+    "empty": {
+      "title": "Pergunte qualquer coisa sobre {collection}",
+      "description": "As respostas são fundamentadas nos documentos desta coleção, cada afirmação ligada à sua fonte exata.",
+      "suggestion1": "Qual é o prazo de aviso de rescisão nos nossos MSAs?",
+      "suggestion2": "Resuma os limites de responsabilidade."
+    },
+    "reasoning": {
+      "classified": "Classificada como {shape}",
+      "shapeSimple": "simples",
+      "shapeDecompose": "decomposta",
+      "subQueries": "{count, plural, one {# subconsulta} other {# subconsultas}}",
+      "reranked": "reordenada",
+      "sufficiencyMet": "suficiência atingida",
+      "sufficiencyShort": "suficiência limitada",
+      "ariaExpand": "Mostrar como esta resposta foi construída",
+      "ariaCollapse": "Ocultar como esta resposta foi construída"
+    },
+    "support": {
+      "supported": "{count} confirmadas",
+      "partial": "{count} parciais",
+      "unsupported": "{count} sem suporte"
+    },
+    "citations": {
+      "linking": "Vinculando citações às fontes…",
+      "pendingNote": "As citações ficarão clicáveis assim que forem verificadas na fonte."
+    },
+    "streaming": {
+      "synthesizing": "Sintetizando resposta…",
+      "searching": "Buscando documentos…",
+      "generating": "Gerando resposta…",
+      "stop": "Parar"
+    },
+    "noAnswer": {
+      "title": "Não encontrei suporte suficiente para responder com confiança",
+      "body": "Nenhum trecho indexado respondeu bem à sua pergunta. Não vou adivinhar sem uma fonte."
+    },
+    "composer": {
+      "placeholder": "Faça uma pergunta de acompanhamento sobre {collection}…",
+      "placeholderNew": "Pergunte sobre {collection}…",
+      "hint": "Enter para enviar · Shift+Enter para nova linha",
+      "counter": "{count} / {max}",
+      "tooLong": "A mensagem é longa demais — corte {count, plural, one {# caractere} other {# caracteres}} para enviar.",
+      "send": "Enviar",
+      "deliveryFailed": "Não entregue · conexão perdida",
+      "retry": "Tentar novamente"
+    },
+    "comments": {
+      "title": "Comentários",
+      "indicator": "{count, plural, one {# comentário} other {# comentários}}",
+      "empty": "Nenhum comentário ainda",
+      "emptyHint": "Inicie a conversa para discutir esta resposta com seu time.",
+      "resolve": "Resolver",
+      "reopen": "Reabrir",
+      "reply": "Responder",
+      "delete": "Excluir",
+      "replyPlaceholder": "Responder…",
+      "addPlaceholder": "Adicionar um comentário…",
+      "you": "Você",
+      "addFailed": "Falha ao publicar comentário",
+      "updateFailed": "Falha ao atualizar",
+      "deleteFailed": "Falha ao excluir",
+      "replyFailed": "Falha ao responder"
+    },
+    "viewer": {
+      "backToChat": "Chat"
+    }
+  },
   "settings": {
     "title": "Configurações",
     "workspaceDescription": "Gerencie {orgName} e suas preferências pessoais.",
