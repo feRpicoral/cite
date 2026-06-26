@@ -66,9 +66,8 @@ const CITATION_MARKER = /\[(\d+(?:\s*,\s*\d+)*)\]/;
 // Auto-scroll only when the reader is already within this many px of the
 // bottom, so scrolling up to read mid-stream isn't yanked back down.
 const AUTOSCROLL_THRESHOLD_PX = 120;
-// Citation verdicts are written by the async audit job after the answer
-// persists, so the first hydration sees them null. Re-poll a bounded number
-// of times to fill the support footer and chip previews without a reload.
+// Bounded re-poll for verdicts the async audit writes after persist; see the
+// back-fill effect for the rationale.
 const VERDICT_POLL_INTERVAL_MS = 4_000;
 const MAX_VERDICT_POLLS = 10;
 
@@ -157,12 +156,19 @@ export function ChatPanel({
   useEffect(() => {
     const viewport = bottomRef.current?.closest<HTMLElement>('[data-slot="scroll-area-viewport"]');
     if (!viewport) return;
-    const onScroll = () => {
+    // Track stickiness off user gestures only. Listening to "scroll" would also
+    // fire during the auto-scroll's own smooth animation and, on a large content
+    // jump, briefly read as "scrolled up" and stop following mid-stream.
+    const onUserScroll = () => {
       const distance = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
       stickToBottomRef.current = distance < AUTOSCROLL_THRESHOLD_PX;
     };
-    viewport.addEventListener("scroll", onScroll, { passive: true });
-    return () => viewport.removeEventListener("scroll", onScroll);
+    viewport.addEventListener("wheel", onUserScroll, { passive: true });
+    viewport.addEventListener("touchmove", onUserScroll, { passive: true });
+    return () => {
+      viewport.removeEventListener("wheel", onUserScroll);
+      viewport.removeEventListener("touchmove", onUserScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -223,30 +229,48 @@ export function ChatPanel({
 
   // Verdict back-fill: the citation audit runs asynchronously after the answer
   // persists, so a freshly-hydrated message has citations with null verdicts.
-  // Re-poll (bounded) until every citation carries a verdict, so the support
-  // footer and chip previews fill in without a manual reload.
+  // Poll (bounded) until every citation carries a verdict, so the support footer
+  // and chip previews fill in without a manual reload. The effect keys on the
+  // set of pending message ids — not the whole message list — so a follow-up
+  // answer's token stream doesn't keep resetting the poll timer.
   const verdictPollsRef = useRef<Map<string, number>>(new Map());
+  const pendingVerdictIds = useMemo(
+    () =>
+      messages
+        .filter((m) => m.role === "assistant" && PERSISTED_ID.test(m.id))
+        .filter((m) => {
+          const citations = citationsByMessage.get(m.id);
+          return (
+            citations != null && citations.length > 0 && citations.some((c) => c.verdict == null)
+          );
+        })
+        .map((m) => m.id),
+    [messages, citationsByMessage],
+  );
+  const pendingVerdictKey = pendingVerdictIds.join(",");
+
   useEffect(() => {
-    const pending = messages.filter((m) => {
-      if (m.role !== "assistant" || !PERSISTED_ID.test(m.id)) return false;
-      const citations = citationsByMessage.get(m.id);
-      if (!citations || citations.length === 0) return false;
-      if (!citations.some((c) => c.verdict == null)) return false;
-      return (verdictPollsRef.current.get(m.id) ?? 0) < MAX_VERDICT_POLLS;
-    });
-    if (pending.length === 0) return;
+    const ids = pendingVerdictKey ? pendingVerdictKey.split(",") : [];
+    if (ids.length === 0) return;
 
     let cancelled = false;
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       void (async () => {
+        const active = ids.filter(
+          (id) => (verdictPollsRef.current.get(id) ?? 0) < MAX_VERDICT_POLLS,
+        );
+        if (active.length === 0) {
+          clearInterval(timer);
+          return;
+        }
         const results = await Promise.all(
-          pending.map(async (m) => {
-            verdictPollsRef.current.set(m.id, (verdictPollsRef.current.get(m.id) ?? 0) + 1);
+          active.map(async (id) => {
+            verdictPollsRef.current.set(id, (verdictPollsRef.current.get(id) ?? 0) + 1);
             try {
-              const res = await fetch(`/api/messages/${m.id}/citations`);
+              const res = await fetch(`/api/messages/${id}/citations`);
               if (!res.ok) return null;
               const data = (await res.json()) as { citations: RawCitation[] };
-              return [m.id, parseCitations(data.citations)] as const;
+              return [id, parseCitations(data.citations)] as const;
             } catch {
               return null;
             }
@@ -267,9 +291,9 @@ export function ChatPanel({
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      clearInterval(timer);
     };
-  }, [messages, citationsByMessage]);
+  }, [pendingVerdictKey]);
 
   // Reconcile a streamed assistant message's transient id to the persisted
   // UUID the chat route emits as a `data-messageId` part once the answer is
