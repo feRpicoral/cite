@@ -100,5 +100,35 @@
     "generic": "Algo deu errado. Tente novamente.",
     "notFound": "Página não encontrada.",
     "unauthorized": "Você não tem acesso a esta página."
+  },
+  "system": {
+    "notFound": {
+      "code": "404",
+      "title": "Página não encontrada",
+      "description": "A página que você procura não existe ou pode ter sido movida.",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "error": {
+      "title": "Algo deu errado",
+      "description": "Ocorreu um erro inesperado e nossa equipe foi avisada. Tente recarregar — seu trabalho está salvo.",
+      "reference": "error_ref · {ref}",
+      "reload": "Recarregar",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "forbidden": {
+      "title": "Você não tem acesso",
+      "description": "Esta página é restrita a administradores do workspace. Fale com um administrador se acha que deveria ter acesso.",
+      "backToDashboard": "Voltar ao painel"
+    },
+    "offline": {
+      "title": "Você está offline",
+      "description": "Verifique sua conexão. O Cite vai reconectar automaticamente e retomar de onde você parou.",
+      "reconnecting": "Reconectando…"
+    },
+    "removed": {
+      "title": "Você foi removido deste workspace",
+      "description": "Um administrador removeu seu acesso a este workspace. Você ainda pode usar qualquer outro workspace ao qual pertença.",
+      "continue": "Continuar"
+    }
   }
 }
