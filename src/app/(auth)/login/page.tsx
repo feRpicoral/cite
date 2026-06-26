@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { AuthCard } from "../auth-card";
 import { LoginForm } from "./login-form";
 
 interface LoginPageProps {
@@ -12,18 +13,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const t = await getTranslations("auth.login");
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
-      </div>
-      <LoginForm next={next} />
+    <div className="space-y-4">
+      <AuthCard title={t("title")} subtitle={t("subtitle")}>
+        <LoginForm next={next} />
+      </AuthCard>
       <p className="text-muted-foreground text-center text-sm">
         {t("noAccount")}{" "}
-        <Link
-          href="/signup"
-          className="text-foreground font-medium underline-offset-4 hover:underline"
-        >
+        <Link href="/signup" className="text-primary font-semibold hover:underline">
           {t("signUpLink")}
         </Link>
       </p>
