@@ -47,7 +47,8 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "haveAccount": "Already have an account?",
-      "signInLink": "Sign in"
+      "signInLink": "Sign in",
+      "nameLabel": "Name"
     },
     "checkEmail": {
       "title": "Check your email",
@@ -307,7 +308,9 @@
       "readOnlyBadge": "Read-only",
       "readOnlyHint": "Only admins can edit workspace details.",
       "saved": "Workspace updated.",
-      "nameRequired": "Workspace name can't be empty."
+      "nameRequired": "Workspace name can't be empty.",
+      "slugRequired": "Enter a workspace URL.",
+      "slugHint": "Lowercase letters, numbers and hyphens. Changing it breaks existing links."
     },
     "preferences": {
       "title": "Preferences",
@@ -374,6 +377,21 @@
         "title": "You can't remove the last admin",
         "description": "Promote another member to admin before removing or demoting yourself."
       }
+    },
+    "account": {
+      "title": "Account",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "emailHint": "Changing your email sends a confirmation link to the new address.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "New password",
+      "passwordConfirmPlaceholder": "Confirm new password",
+      "save": "Save",
+      "nameSaved": "Name updated.",
+      "emailSaved": "Confirmation sent to your new email.",
+      "passwordSaved": "Password updated.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords don’t match."
     }
   },
   "conversationsList": {

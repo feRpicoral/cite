@@ -47,7 +47,8 @@
       "submit": "Criar conta",
       "submitting": "Criando conta…",
       "haveAccount": "Já tem uma conta?",
-      "signInLink": "Entrar"
+      "signInLink": "Entrar",
+      "nameLabel": "Nome"
     },
     "checkEmail": {
       "title": "Verifique seu e-mail",
@@ -307,7 +308,9 @@
       "readOnlyBadge": "Somente leitura",
       "readOnlyHint": "Apenas administradores podem editar os detalhes da workspace.",
       "saved": "Workspace atualizada.",
-      "nameRequired": "O nome da workspace não pode ficar vazio."
+      "nameRequired": "O nome da workspace não pode ficar vazio.",
+      "slugRequired": "Informe uma URL do espaço.",
+      "slugHint": "Letras minúsculas, números e hífens. Alterar quebra links existentes."
     },
     "preferences": {
       "title": "Preferências",
@@ -374,6 +377,21 @@
         "title": "Você não pode remover o último administrador",
         "description": "Promova outro membro a administrador antes de remover ou rebaixar você mesmo."
       }
+    },
+    "account": {
+      "title": "Conta",
+      "nameLabel": "Nome",
+      "emailLabel": "E-mail",
+      "emailHint": "Alterar o e-mail envia um link de confirmação para o novo endereço.",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Nova senha",
+      "passwordConfirmPlaceholder": "Confirmar nova senha",
+      "save": "Salvar",
+      "nameSaved": "Nome atualizado.",
+      "emailSaved": "Confirmação enviada para o novo e-mail.",
+      "passwordSaved": "Senha atualizada.",
+      "passwordTooShort": "A senha deve ter ao menos 8 caracteres.",
+      "passwordMismatch": "As senhas não coincidem."
     }
   },
   "conversationsList": {
