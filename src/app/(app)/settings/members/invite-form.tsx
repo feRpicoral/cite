@@ -65,24 +65,26 @@ export function InviteMemberForm() {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end">
-          <div className="space-y-2">
-            <Label htmlFor="invite-email">{t("emailLabel")}</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              placeholder={t("emailPlaceholder")}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={pending}
-              autoComplete="off"
-              data-1p-ignore
-              data-lpignore="true"
-              data-form-type="other"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="invite-role">{t("roleLabel")}</Label>
+        {/* Two explicit rows (labels, then controls) so labels stay aligned and
+            controls hug them even if a password manager inflates the email
+            input's height — column-level item heights can't bleed across. */}
+        <div className="grid grid-cols-1 items-start gap-x-3 gap-y-2 sm:grid-cols-[1fr_9rem_auto]">
+          <Label htmlFor="invite-email" className="sm:col-start-1 sm:row-start-1">
+            {t("emailLabel")}
+          </Label>
+          <Input
+            id="invite-email"
+            type="email"
+            value={email}
+            placeholder={t("emailPlaceholder")}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={pending}
+            className="self-start sm:col-start-1 sm:row-start-2"
+          />
+          <Label htmlFor="invite-role" className="sm:col-start-2 sm:row-start-1">
+            {t("roleLabel")}
+          </Label>
+          <div className="self-start sm:col-start-2 sm:row-start-2">
             <Select
               value={role}
               onValueChange={(v) => setRole(v as "ADMIN" | "MEMBER")}
@@ -97,7 +99,11 @@ export function InviteMemberForm() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={submit} disabled={pending}>
+          <Button
+            onClick={submit}
+            disabled={pending}
+            className="self-start sm:col-start-3 sm:row-start-2"
+          >
             {pending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
             {t("generate")}
           </Button>
