@@ -9,19 +9,12 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   const session = await requireSession();
   const t = await getTranslations("settings");
   const tTabs = await getTranslations("settings.tabs");
-  const isAdmin = session.role === "ADMIN";
 
   const tabs: SettingsTabItem[] = [
     { href: "/settings", label: tTabs("organization") },
     { href: "/settings/preferences", label: tTabs("preferences") },
+    { href: "/settings/members", label: tTabs("members") },
   ];
-  if (isAdmin) {
-    tabs.push({
-      href: "/settings/members",
-      label: tTabs("members"),
-      badge: tTabs("adminBadge"),
-    });
-  }
 
   return (
     <div className="flex flex-1 flex-col">

@@ -1,7 +1,3 @@
-import { Lock } from "lucide-react";
-import { getTranslations } from "next-intl/server";
-
-import { EmptyState } from "@/components/cite/empty-state";
 import { requireSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/with-org";
 
@@ -10,17 +6,7 @@ import { MembersTable } from "./members-table";
 
 export default async function MembersPage() {
   const session = await requireSession();
-
-  if (session.role !== "ADMIN") {
-    const t = await getTranslations("settings.members");
-    return (
-      <EmptyState
-        icon={<Lock />}
-        title={t("permissionDeniedTitle")}
-        description={t("permissionDeniedDescription")}
-      />
-    );
-  }
+  const isAdmin = session.role === "ADMIN";
 
   const db = getDb(session.orgId);
 
@@ -32,16 +18,19 @@ export default async function MembersPage() {
     orderBy: { createdAt: "asc" },
   });
 
-  const invites = await db.invite.findMany({
-    where: { acceptedAt: null, expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-  });
+  // Pending invites are an admin concern; members see only the roster.
+  const invites = isAdmin
+    ? await db.invite.findMany({
+        where: { acceptedAt: null, expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
 
   const adminCount = memberships.filter((m) => m.role === "ADMIN").length;
 
   return (
     <div className="space-y-6">
-      <InviteMemberForm />
+      {isAdmin && <InviteMemberForm />}
       <MembersTable
         memberships={memberships.map((m) => ({
           id: m.id,
@@ -58,6 +47,7 @@ export default async function MembersPage() {
         }))}
         currentUserId={session.userId}
         adminCount={adminCount}
+        isAdmin={isAdmin}
       />
     </div>
   );
