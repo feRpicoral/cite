@@ -64,6 +64,51 @@
       "uploadCta": "Enviar documento"
     }
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Bom dia, {name}",
+      "afternoon": "Boa tarde, {name}",
+      "evening": "Boa noite, {name}"
+    },
+    "greetingContext": " — veja o que está acontecendo em <org>workspace</org>.",
+    "stats": {
+      "collections": "Coleções",
+      "documents": "Documentos",
+      "conversations": "Conversas",
+      "accuracy": "Precisão",
+      "adminBadge": "ADMIN",
+      "documentsSubtext": "{embedding} indexando · {failed} com falha",
+      "accuracySubtext": "com suporte · {audited} auditadas"
+    },
+    "recentConversations": {
+      "title": "Conversas recentes",
+      "viewAll": "Ver todas",
+      "empty": "Nenhuma conversa ainda."
+    },
+    "recentlyIndexed": {
+      "title": "Indexados recentemente",
+      "empty": "Nada indexado ainda."
+    },
+    "accuracyCard": {
+      "title": "Precisão das citações",
+      "openAudit": "Abrir auditoria",
+      "supported": "Com suporte {pct}%",
+      "partial": "Parcial {pct}%",
+      "unsupported": "Sem suporte {pct}%",
+      "empty": "Nenhuma citação auditada ainda."
+    },
+    "onboarding": {
+      "title": "Seu workspace está pronto",
+      "body": "O Cite transforma seus documentos em respostas que você pode defender. Adicione fontes, faça perguntas e receba respostas fundamentadas em trechos exatos e verificáveis.",
+      "step1Title": "Crie uma coleção",
+      "step1Body": "Agrupe documentos relacionados — um caso, produto ou conjunto de políticas.",
+      "step1Cta": "Criar",
+      "step2Title": "Envie suas fontes",
+      "step2Body": "PDF, DOCX, HTML ou Markdown — até 100 MB cada.",
+      "step3Title": "Faça uma pergunta fundamentada",
+      "step3Body": "Toda resposta vem com citações clicáveis no texto."
+    }
+  },
   "settings": {
     "title": "Configurações",
     "workspaceDescription": "Gerencie {orgName} e suas preferências pessoais.",
