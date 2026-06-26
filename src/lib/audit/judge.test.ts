@@ -101,4 +101,18 @@ describe("judgeAuditTarget", () => {
     expect(judgeCitation).toHaveBeenCalledTimes(1);
     expect(judgment.result).toEqual(verdictResult("SUPPORTED", 0.42));
   });
+
+  it("keeps a high-confidence support score bound to the supported verdict", async () => {
+    vi.mocked(judgeCitation).mockResolvedValueOnce(verdictResult("SUPPORTED", 0.99));
+
+    const judgment = await judgeAuditTarget({
+      displayIndex: 4,
+      claims: ["strongly supported claim [4]."],
+      passage: "passage",
+      documentName: "doc",
+    });
+
+    expect(judgment.result.verdict).toBe("SUPPORTED");
+    expect(judgment.result.confidence).toBe(0.99);
+  });
 });

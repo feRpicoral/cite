@@ -21,7 +21,7 @@ export default async function AuditPage({
   const suspenseKey = `${params.verdict ?? ""}|${params.sort ?? ""}|${params.search ?? ""}`;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-w-0 flex-1 flex-col">
       <header className="flex items-center justify-between gap-4 border-b px-6 py-4">
         <div>
           <h1 className="font-heading text-lg font-semibold tracking-tight">{t("title")}</h1>
