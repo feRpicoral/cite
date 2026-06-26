@@ -10,15 +10,13 @@ export default async function MembersPage() {
 
   const db = getDb(session.orgId);
 
-  // Memberships join `user.email` which lives on a non-tenant table. The
-  // include is allowed because the parent membership row is already filtered
-  // to this org.
+  // The user include is allowed: the parent membership row is already
+  // org-filtered, so it can't leak rows from other tenants.
   const memberships = await db.membership.findMany({
     include: { user: { select: { id: true, email: true, name: true } } },
     orderBy: { createdAt: "asc" },
   });
 
-  // Pending invites are an admin concern; members see only the roster.
   const invites = isAdmin
     ? await db.invite.findMany({
         where: { acceptedAt: null, expiresAt: { gt: new Date() } },

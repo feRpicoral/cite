@@ -1,10 +1,6 @@
 /**
- * Extracts inline citation markers like [1], [2,5], [3, 7, 9] from a
- * synthesis string. The synthesis prompt instructs the LLM to use this
- * exact format; the parser is forgiving of optional whitespace inside the
- * brackets.
- *
- * Returns the unique sorted list of marker numbers actually used.
+ * Extracts inline citation markers like [1], [2,5], [3, 7, 9], tolerating
+ * whitespace inside the brackets, and returns the unique sorted marker numbers.
  */
 export function extractCitationMarkers(text: string): number[] {
   const re = /\[(\d+(?:\s*,\s*\d+)*)\]/g;
@@ -21,9 +17,8 @@ export function extractCitationMarkers(text: string): number[] {
 }
 
 /**
- * Returns an array of citation marker numbers in document order, including
- * duplicates (so [1][1] yields [1, 1]). Useful when computing how many
- * times the model cited each source.
+ * Returns citation marker numbers in document order, including duplicates
+ * (so [1][1] yields [1, 1]).
  */
 export function listCitationMarkersInOrder(text: string): number[] {
   const re = /\[(\d+(?:\s*,\s*\d+)*)\]/g;

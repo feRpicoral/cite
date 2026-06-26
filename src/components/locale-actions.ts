@@ -11,11 +11,9 @@ import { createServerSupabase } from "@/lib/supabase/server";
 const LocaleSchema = z.enum(locales);
 
 /**
- * Persists the locale choice on both layers:
- *   1. NEXT_LOCALE cookie — read by the proxy and next-intl resolver on every
- *      request, so the change applies immediately, even before the DB write
- *      lands.
- *   2. User.locale in Postgres — survives logout / new devices.
+ * Persists the locale on both layers: the cookie is read by the proxy and
+ * next-intl resolver on every request so the change applies before the DB
+ * write lands, while User.locale survives logout and new devices.
  */
 export async function setUserLocaleAction(locale: Locale): Promise<void> {
   const parsed = LocaleSchema.safeParse(locale);

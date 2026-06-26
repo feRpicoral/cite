@@ -9,9 +9,8 @@ import { CitationChip } from "@/components/chat/citation-chip";
 
 const CITATION_RE = /\[(\d+(?:\s*,\s*\d+)*)\]/g;
 
-// rehype plugin: split `[n]` / `[n, m]` markers inside text nodes into <cite>
-// elements so react-markdown renders them as interactive citation chips
-// (mapped below) while everything else renders as normal markdown.
+// Splits `[n]` / `[n, m]` markers in text nodes into <cite> elements so
+// react-markdown renders them as interactive citation chips.
 function rehypeCitations() {
   return (tree: Root) => walk(tree);
 }

@@ -3,12 +3,9 @@ import type { TraceData, TracePhase } from "@/lib/chat/trace";
 
 /**
  * Accumulates agent progress events into the ordered phase list the chat UI
- * renders. The latest known phase is `active`; finished phases flip to `done`.
- * `snapshot()` returns the current list so each progress event can be written
- * to the UI message stream as a single replace-in-place data part.
- *
- * Starts with classify already active so the trace appears the moment the
- * agent begins, before the first node returns.
+ * renders, with the latest phase `active` and finished phases flipped to `done`.
+ * Starts with classify already active so the trace appears before the first
+ * node returns.
  */
 export function buildTrace(): {
   apply: (event: AgentProgress) => void;
@@ -65,16 +62,16 @@ export function buildTrace(): {
     }
   }
 
-  // Re-retrieval rounds can reopen retrieve/sufficiency; mark them done and
-  // hand off to the synthesis phase once the text stream is about to start.
+  // Re-retrieval rounds can leave retrieve/sufficiency active, so force them
+  // done before handing off to synthesis.
   function beginSynthesis(): void {
     if (retrieve) retrieve = { ...retrieve, status: "done" };
     if (sufficiency) sufficiency = { ...sufficiency, status: "done" };
     synthesize = { kind: "synthesize", status: "active" };
   }
 
-  // Called once the synthesis text stream completes so the final phase flips
-  // from spinner to done instead of appearing stuck.
+  // Flip synthesis to done when the text stream completes, else its spinner
+  // appears stuck.
   function finishSynthesis(): void {
     if (synthesize) synthesize = { ...synthesize, status: "done" };
   }

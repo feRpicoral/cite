@@ -9,11 +9,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 const ThemePreferenceSchema = z.enum(["LIGHT", "DARK", "SYSTEM"]);
 
 /**
- * Persists the user's theme choice to the DB so it follows them across
- * devices. Local UI state (next-themes localStorage) is updated by the
- * toggle directly; this just makes sure the layout server component
- * reads back the same value on the next render — otherwise `ThemeSync`
- * would clobber the user's choice with the stale DB value.
+ * Persists the theme choice so it follows the user across devices. The toggle
+ * updates next-themes localStorage directly; this keeps the DB in sync so the
+ * next layout render doesn't let `ThemeSync` clobber the choice with a stale
+ * value.
  */
 export async function setUserThemeAction(preference: ThemePreference): Promise<void> {
   const parsed = ThemePreferenceSchema.safeParse(preference);

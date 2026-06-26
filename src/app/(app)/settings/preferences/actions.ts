@@ -13,12 +13,10 @@ import type { Result } from "@/lib/types/result";
 const LocaleSchema = z.object({ locale: z.enum(locales) });
 
 /**
- * Persist the user's UI locale to both layers:
- *   1. `NEXT_LOCALE` cookie so the next request hits the cookie tier with
- *      the matching value (before the DB lookup runs in the (app) layout).
- *   2. `User.locale` in Postgres so the choice survives logout / new devices.
- *
- * The DB write is unscoped because locale belongs to the user, not the org.
+ * Writes the locale to both the `NEXT_LOCALE` cookie (so the next request
+ * resolves it before the DB lookup in the (app) layout) and `User.locale`
+ * (so it survives logout and new devices). The DB write is unscoped because
+ * locale belongs to the user, not the org.
  */
 export async function setLocalePreferenceAction(
   input: z.infer<typeof LocaleSchema>,

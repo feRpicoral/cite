@@ -24,9 +24,7 @@ export async function setupIntegrationDb(): Promise<{
     );
   }
 
-  // Apply the post-migrate SQL (pgvector + RLS triggers). Idempotent.
-  // We run this with a one-shot client so the migration steps don't share a
-  // transaction with the test queries.
+  // One-shot client so the setup SQL doesn't share a transaction with test queries.
   const setupSql = readFileSync(SETUP_SQL_PATH, "utf-8");
   const admin = new Client({ connectionString: url });
   await admin.connect();
@@ -48,8 +46,7 @@ export async function setupIntegrationDb(): Promise<{
 }
 
 /**
- * Truncates every tenant table so each test starts from a clean slate.
- * Faster than dropping and re-migrating between tests.
+ * Truncates every tenant table. Faster than dropping and re-migrating between tests.
  */
 export async function truncateAllTenantTables(prisma: PrismaClient): Promise<void> {
   await prisma.$executeRawUnsafe(`

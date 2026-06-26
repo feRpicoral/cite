@@ -107,7 +107,6 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
     } catch (err) {
       lastErr = err;
       const status = (err as { status?: number }).status ?? 0;
-      // Don't retry 4xx other than 429.
       if (status >= 400 && status < 500 && status !== 429) throw err;
       const delay = 250 * 2 ** i;
       await new Promise((r) => setTimeout(r, delay));

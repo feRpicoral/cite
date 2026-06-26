@@ -7,13 +7,12 @@ import {
   SufficiencyVerdictSchema,
 } from "@/lib/agents/state";
 
-// Stable id for the streamed trace data part. Reusing one id lets each phase
-// update overwrite the previous payload in place rather than appending parts.
+// Shared id so each phase update overwrites the trace part in place rather
+// than appending a new part.
 export const TRACE_PART_ID = "trace";
 
-// Data part carrying the persisted assistant message UUID, emitted once the
-// answer is saved. The client uses it to finalize the bubble (clickable
-// citations, collapsed trace) without depending on realtime delivery.
+// Carries the persisted assistant message UUID so the client can finalize the
+// bubble without depending on realtime delivery.
 export const MESSAGE_ID_PART_ID = "messageId";
 
 export type TracePhaseStatus = "active" | "done";
@@ -64,9 +63,8 @@ const TracePhaseSchema: z.ZodType<TracePhase> = z.discriminatedUnion("kind", [
 const TraceDataSchema = z.object({ phases: z.array(TracePhaseSchema) });
 
 /**
- * Parses a streamed `data-trace` part defensively. The part data crosses the
- * wire as untrusted JSON, so a malformed payload yields null and the live
- * trace is hidden rather than throwing.
+ * Parses a streamed `data-trace` part. The payload is untrusted JSON, so a
+ * malformed one yields null and the live trace is hidden rather than throwing.
  */
 export function parseTraceData(data: unknown): TraceData | null {
   const parsed = TraceDataSchema.safeParse(data);

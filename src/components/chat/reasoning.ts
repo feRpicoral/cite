@@ -17,10 +17,9 @@ export interface ReasoningSummary {
 }
 
 /**
- * Distills a persisted assistant message's `agentState` JSON into the values
- * the reasoning-trace chip renders. The column is untrusted DB JSON, so it's
- * parsed defensively — a malformed or absent state yields null and the chip
- * is hidden rather than throwing.
+ * Distills a persisted message's `agentState` into the reasoning-trace chip's
+ * values. The column is untrusted DB JSON, so a malformed or absent state
+ * yields null (chip hidden) rather than throwing.
  */
 export function summarizeReasoning(agentState: unknown): ReasoningSummary | null {
   const parsed = AgentStateShape.safeParse(agentState);
@@ -35,9 +34,9 @@ export function summarizeReasoning(agentState: unknown): ReasoningSummary | null
 }
 
 /**
- * Builds the same summary from a completed live trace, so a just-streamed
- * message (which has no client-side agentState) collapses to the same chip the
- * server-loaded one shows. Returns null until classification is known.
+ * Builds the same summary from a live trace so a just-streamed message (which
+ * has no client-side agentState) shows the same chip as a server-loaded one.
+ * Returns null until classification is known.
  */
 export function summarizeTrace(trace: TraceData): ReasoningSummary | null {
   const find = <K extends TracePhase["kind"]>(kind: K) =>

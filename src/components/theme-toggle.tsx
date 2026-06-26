@@ -18,8 +18,7 @@ export function ThemeToggle() {
   const toggle = () => {
     const next = isDark ? "light" : "dark";
     setTheme(next);
-    // Persist before the layout re-renders so ThemeSync sees the new value
-    // and doesn't reset the toggle.
+    // Persist before the layout re-renders so ThemeSync doesn't reset the toggle.
     startTransition(() => {
       void setUserThemeAction(next === "dark" ? "DARK" : "LIGHT");
     });

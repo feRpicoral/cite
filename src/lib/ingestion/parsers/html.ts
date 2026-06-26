@@ -92,10 +92,8 @@ function splitIntoSections(tree: Root): Section[] {
 }
 
 /**
- * Walks a section's nodes and emits one TextSegment per block-level
- * element (p, li, h1, etc). Each segment's selector pins it to a stable
- * structural path the viewer can resolve at click time, scoped to the
- * part via partIndex.
+ * One TextSegment per block-level element. The selector is a stable
+ * structural path the viewer resolves at click time, scoped to the part.
  */
 function extractSegments(nodes: RootContent[], basePath: string, partIndex: number): TextSegment[] {
   const out: TextSegment[] = [];

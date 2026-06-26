@@ -9,10 +9,9 @@ interface Context {
 }
 
 /**
- * Returns the saved citation list for an assistant message. Used by the
- * chat panel to hydrate fresh streaming responses — the inline `[n]` chips
- * are emitted by the model as text, but the citation rows are only written
- * server-side in the chat route's `onFinish`, so the client refetches them
+ * Returns the saved citation list for an assistant message. The inline `[n]`
+ * chips are emitted by the model as text, but the citation rows are written
+ * server-side after the stream completes, so the chat panel refetches them
  * once the message lands.
  */
 export async function GET(_request: Request, context: Context) {

@@ -30,8 +30,8 @@ interface SynthesizeInput {
    */
   onProgress?: (event: AgentProgress) => void;
   /**
-   * Aborts the synthesis stream when the client stops generation. The agent
-   * phases run before this point; this only bounds the text stream.
+   * Aborts the text stream only; the agent phases run before this point and
+   * are not bounded by it.
    */
   abortSignal?: AbortSignal;
 }
@@ -42,12 +42,9 @@ export interface SynthesizeResult {
 }
 
 /**
- * Runs the agent to gather retrieved chunks, then streams an Anthropic
- * Sonnet synthesis grounded in those chunks. The caller hooks
- * `stream.toUIMessageStreamResponse()` or persists tokens as they arrive.
- *
- * Citations are emitted inline by the model in `[n]` format; the n maps
- * 1-indexed into `state.finalChunks`.
+ * Runs the agent to gather retrieved chunks, then streams a synthesis grounded
+ * in them. Citations are emitted inline as `[n]`, where n maps 1-indexed into
+ * `state.finalChunks`.
  */
 export async function synthesize(input: SynthesizeInput): Promise<SynthesizeResult> {
   const state = await runAgent({
