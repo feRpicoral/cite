@@ -232,3 +232,39 @@
     animation: none;
   }
 }
+
+/* Document viewer content (HTML/DOCX/MD rendered from stored sanitized HTML).
+   The typography plugin is not installed, so GFM tables, task lists, and
+   strikethrough render with no user-agent styling; give them just enough to
+   be legible. Scoped to the viewer so it can't leak into chat or UI chrome. */
+.cite-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.95em;
+}
+.cite-doc :is(th, td) {
+  border: 1px solid var(--border);
+  padding: 0.4em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+.cite-doc thead th {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+.cite-doc del {
+  text-decoration: line-through;
+}
+.cite-doc .contains-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+.cite-doc .task-list-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+.cite-doc .task-list-item input[type="checkbox"] {
+  margin: 0;
+}
