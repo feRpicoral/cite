@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { asCollectionId, asOrgId } from "@/lib/db/types";
 import type { RetrievedChunk } from "@/lib/retrieval/types";
 
-import { runAgent } from "./runner";
+import { type AgentProgress, runAgent } from "./runner";
 
 function chunk(id: string, score: number): RetrievedChunk {
   return {
@@ -148,6 +148,59 @@ describe("runAgent", () => {
     expect(retrieverOverride).toHaveBeenCalledTimes(2);
     expect(sufficiency).toHaveBeenCalledTimes(1);
     expect(state.rounds).toHaveLength(2);
+  });
+
+  it("emits node-level progress in order for a decomposed query", async () => {
+    const retrieverOverride = vi
+      .fn()
+      .mockResolvedValueOnce([chunk("a", 0.9), chunk("c", 0.7)])
+      .mockResolvedValueOnce([chunk("b", 0.8)]);
+    const classify = vi.fn().mockResolvedValue({ shape: "decompose", reasoning: "" });
+    const decompose = vi.fn().mockResolvedValue({ subQueries: ["q1", "q2"] });
+    const sufficiency = vi.fn().mockResolvedValue({ verdict: "sufficient", reasoning: "" });
+    const events: AgentProgress[] = [];
+
+    await runAgent({
+      orgId,
+      collectionId,
+      query: "compare X and Y",
+      retrieverOverride,
+      llmOverride: { classify, decompose, sufficiency },
+      onProgress: (event) => events.push(event),
+    });
+
+    expect(events.map((e) => e.phase)).toEqual([
+      "classify",
+      "decompose",
+      "subQueries",
+      "retrieved",
+      "sufficiency",
+    ]);
+    const retrieved = events.find((e) => e.phase === "retrieved");
+    expect(retrieved).toMatchObject({ candidates: 3, reranked: 3 });
+  });
+
+  it("omits the decompose progress event for a simple query", async () => {
+    const retrieverOverride = vi.fn().mockResolvedValue([chunk("a", 0.9)]);
+    const classify = vi.fn().mockResolvedValue({ shape: "simple", reasoning: "" });
+    const sufficiency = vi.fn().mockResolvedValue({ verdict: "sufficient", reasoning: "" });
+    const events: AgentProgress[] = [];
+
+    await runAgent({
+      orgId,
+      collectionId,
+      query: "what is X",
+      retrieverOverride,
+      llmOverride: { classify, sufficiency },
+      onProgress: (event) => events.push(event),
+    });
+
+    expect(events.map((e) => e.phase)).toEqual([
+      "classify",
+      "subQueries",
+      "retrieved",
+      "sufficiency",
+    ]);
   });
 
   it("widens topK on later rounds so a second round can surface new chunks", async () => {
