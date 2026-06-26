@@ -163,7 +163,6 @@
       "documents": "Documents",
       "conversations": "Conversations",
       "accuracy": "Accuracy",
-      "adminBadge": "ADMIN",
       "documentsSubtext": "{embedding} embedding · {failed} failed",
       "accuracySubtext": "supported · {audited} audited"
     },
@@ -287,8 +286,7 @@
     "tabs": {
       "organization": "Organization",
       "preferences": "Preferences",
-      "members": "Members",
-      "adminBadge": "Admin"
+      "members": "Members"
     },
     "role": {
       "ADMIN": "Admin",
@@ -330,8 +328,6 @@
       }
     },
     "members": {
-      "permissionDeniedTitle": "Admins only",
-      "permissionDeniedDescription": "Only workspace admins can manage members and invites. Ask an admin if you need access.",
       "invite": {
         "title": "Invite a teammate",
         "description": "Generate a one-time link. Add an email to pin it to that address, or share an open link.",

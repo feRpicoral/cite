@@ -4,14 +4,12 @@ import { Loader2 } from "lucide-react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import { tabsListVariants } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 export interface SettingsTabItem {
   href: string;
   label: string;
-  badge?: string;
 }
 
 function TabPending() {
@@ -42,11 +40,6 @@ export function SettingsTabs({ tabs }: { tabs: SettingsTabItem[] }) {
             )}
           >
             {tab.label}
-            {tab.badge && (
-              <Badge variant="secondary" className="px-1 py-0 font-mono text-[10px] uppercase">
-                {tab.badge}
-              </Badge>
-            )}
             <TabPending />
           </Link>
         );

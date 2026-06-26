@@ -71,7 +71,14 @@ export function AuditRow({ group }: { group: MessageGroup }) {
               >
                 {audit.displayIndex}
               </span>
-              <p className="text-foreground/80 flex-1 text-xs leading-relaxed">{audit.reasoning}</p>
+              <div className="flex-1 space-y-2">
+                {audit.quote && (
+                  <p className="border-highlight-border bg-highlight/40 text-highlight-foreground rounded-r border-l-2 px-2.5 py-1.5 text-xs leading-relaxed">
+                    “{audit.quote}”
+                  </p>
+                )}
+                <p className="text-foreground/80 text-xs leading-relaxed">{audit.reasoning}</p>
+              </div>
               <div className="w-full shrink-0 space-y-2 sm:w-36">
                 <VerdictBadge verdict={audit.verdict} />
                 <ConfidenceBar value={audit.confidence} verdict={audit.verdict} />

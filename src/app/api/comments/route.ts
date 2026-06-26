@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { requireSessionApi } from "@/lib/auth/session";
+import { getPrisma } from "@/lib/db/client";
 import { getDb } from "@/lib/db/with-org";
 import { DocumentLocationSchema } from "@/lib/ingestion/location";
 
@@ -119,5 +120,30 @@ export async function GET(request: Request) {
       replies: { orderBy: { createdAt: "asc" } },
     },
   });
-  return NextResponse.json({ comments });
+
+  // Authors live on the non-tenant User table (a user can belong to many orgs),
+  // so resolve names in one unscoped lookup over the ids referenced by comments
+  // the caller can already see.
+  const userIds = new Set<string>();
+  for (const c of comments) {
+    userIds.add(c.authorUserId);
+    for (const r of c.replies) userIds.add(r.authorUserId);
+  }
+  const users = await getPrisma().user.findMany({
+    where: { id: { in: Array.from(userIds) } },
+    select: { id: true, name: true, email: true },
+  });
+  const userById = new Map(users.map((u) => [u.id, u]));
+  const authorOf = (id: string) => {
+    const u = userById.get(id);
+    return u ? { name: u.name, email: u.email } : null;
+  };
+
+  return NextResponse.json({
+    comments: comments.map((c) => ({
+      ...c,
+      author: authorOf(c.authorUserId),
+      replies: c.replies.map((r) => ({ ...r, author: authorOf(r.authorUserId) })),
+    })),
+  });
 }

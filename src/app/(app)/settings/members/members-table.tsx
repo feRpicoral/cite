@@ -44,6 +44,7 @@ interface MembersTableProps {
   invites: InviteRow[];
   currentUserId: string;
   adminCount: number;
+  isAdmin: boolean;
 }
 
 const AVATAR_TONES = [
@@ -72,6 +73,7 @@ export function MembersTable({
   invites,
   currentUserId,
   adminCount,
+  isAdmin,
 }: MembersTableProps) {
   const t = useTranslations("settings.members.table");
 
@@ -88,6 +90,7 @@ export function MembersTable({
               member={m}
               currentUserId={currentUserId}
               adminCount={adminCount}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
@@ -102,10 +105,12 @@ function MemberRowItem({
   member,
   currentUserId,
   adminCount,
+  isAdmin,
 }: {
   member: MemberRow;
   currentUserId: string;
   adminCount: number;
+  isAdmin: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations("settings.members.table");
@@ -121,7 +126,8 @@ function MemberRowItem({
   // this and we mirror it in the UI by locking the controls and showing an
   // inline alert.
   const isLastAdmin = member.role === "ADMIN" && adminCount <= 1;
-  const locked = isSelf || isLastAdmin;
+  // Non-admins can view the roster and everyone's role, but never mutate it.
+  const locked = !isAdmin || isSelf || isLastAdmin;
 
   function changeRole(role: Role) {
     if (role === member.role) return;
@@ -202,7 +208,7 @@ function MemberRowItem({
         )}
       </div>
 
-      {isLastAdmin && (
+      {isAdmin && isLastAdmin && (
         <div className="bg-warning/8 border-warning/30 text-warning flex w-full items-center gap-2.5 rounded-lg border px-3 py-2">
           <TriangleAlert className="size-4 shrink-0" />
           <div className="text-sm">

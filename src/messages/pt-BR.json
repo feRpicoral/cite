@@ -163,7 +163,6 @@
       "documents": "Documentos",
       "conversations": "Conversas",
       "accuracy": "Precisão",
-      "adminBadge": "ADMIN",
       "documentsSubtext": "{embedding} indexando · {failed} com falha",
       "accuracySubtext": "com suporte · {audited} auditadas"
     },
@@ -287,8 +286,7 @@
     "tabs": {
       "organization": "Organização",
       "preferences": "Preferências",
-      "members": "Membros",
-      "adminBadge": "Admin"
+      "members": "Membros"
     },
     "role": {
       "ADMIN": "Administrador",
@@ -330,8 +328,6 @@
       }
     },
     "members": {
-      "permissionDeniedTitle": "Apenas administradores",
-      "permissionDeniedDescription": "Apenas administradores da workspace podem gerenciar membros e convites. Peça acesso a um administrador.",
       "invite": {
         "title": "Convidar um colega",
         "description": "Gere um link de uso único. Adicione um e-mail para vinculá-lo a esse endereço ou compartilhe um link aberto.",

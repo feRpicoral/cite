@@ -12,6 +12,7 @@ function auditRow(overrides: Partial<AuditRow> & Pick<AuditRow, "id" | "messageI
     reasoning: "",
     confidence: 0.9,
     createdAt: new Date("2026-01-01T00:00:00Z"),
+    quote: null,
     message: {
       id: overrides.messageId,
       content: "",

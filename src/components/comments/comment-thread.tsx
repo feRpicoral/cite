@@ -9,9 +9,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+interface Author {
+  name: string | null;
+  email: string;
+}
+
 interface CommentReply {
   id: string;
   authorUserId: string;
+  author?: Author | null;
   body: string;
   createdAt: string;
 }
@@ -21,6 +27,7 @@ interface Comment {
   targetType: "MESSAGE" | "DOCUMENT_REGION";
   targetId: string;
   authorUserId: string;
+  author?: Author | null;
   body: string;
   resolvedAt: string | null;
   createdAt: string;
@@ -307,7 +314,12 @@ function CommentItem({
 
   return (
     <div className={cn(resolved && "opacity-70")}>
-      <CommentRow authorUserId={comment.authorUserId} isOwn={isOwn} createdAt={comment.createdAt}>
+      <CommentRow
+        authorUserId={comment.authorUserId}
+        author={comment.author}
+        isOwn={isOwn}
+        createdAt={comment.createdAt}
+      >
         {resolved ? (
           <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed line-through">
             {comment.body}
@@ -350,6 +362,7 @@ function CommentItem({
             <CommentRow
               key={r.id}
               authorUserId={r.authorUserId}
+              author={r.author}
               isOwn={r.authorUserId === currentUserId}
               createdAt={r.createdAt}
             >
@@ -392,28 +405,27 @@ function CommentItem({
 
 function CommentRow({
   authorUserId,
+  author,
   isOwn,
   createdAt,
   children,
 }: {
   authorUserId: string;
+  author?: Author | null;
   isOwn: boolean;
   createdAt: string;
   children: React.ReactNode;
 }) {
   const t = useTranslations("conversation.comments");
+  const name = displayName(author, isOwn, authorUserId, t("you"));
   return (
     <div className="flex gap-2.5">
       <Avatar className="size-6 shrink-0">
-        <AvatarFallback className="text-[9px] font-semibold">
-          {shortId(authorUserId)}
-        </AvatarFallback>
+        <AvatarFallback className="text-[9px] font-semibold">{initialsOf(name)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-foreground text-[12.5px] font-semibold">
-            {shortId(authorUserId)}
-          </span>
+          <span className="text-foreground truncate text-[12.5px] font-semibold">{name}</span>
           {isOwn && (
             <span className="bg-primary/12 text-primary rounded px-1.5 py-0.5 text-[9px] font-semibold">
               {t("you")}
@@ -429,8 +441,27 @@ function CommentRow({
   );
 }
 
-function shortId(uuid: string): string {
-  return uuid.slice(0, 6);
+function displayName(
+  author: Author | null | undefined,
+  isOwn: boolean,
+  authorUserId: string,
+  youLabel: string,
+): string {
+  if (author?.name) return author.name;
+  const local = author?.email?.split("@")[0];
+  if (local) return local;
+  if (isOwn) return youLabel;
+  return authorUserId.slice(0, 6);
+}
+
+function initialsOf(name: string): string {
+  return (
+    name
+      .split(/[\s.@_-]+/)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .slice(0, 2)
+      .join("") || "?"
+  );
 }
 
 const MINUTE_MS = 60_000;
