@@ -51,6 +51,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <AppSidebar
             user={{ email: membership.user.email, name: membership.user.name }}
             org={{ name: membership.organization.name }}
+            isAdmin={membership.role === "ADMIN"}
           />
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>

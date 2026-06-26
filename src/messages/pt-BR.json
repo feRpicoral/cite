@@ -50,7 +50,12 @@
       "dashboard": "Painel",
       "documents": "Documentos",
       "conversations": "Conversas",
-      "settings": "Configurações"
+      "settings": "Configurações",
+      "admin": "Admin",
+      "citationAccuracy": "Precisão das citações",
+      "workspace": "Espaço de trabalho",
+      "switchWorkspace": "Trocar de espaço",
+      "signOut": "Sair"
     },
     "dashboard": {
       "title": "Painel",
