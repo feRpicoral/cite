@@ -144,6 +144,7 @@ function Rendered({
         location={target.location}
         currentUserId={currentUserId}
         displayIndex={target.displayIndex}
+        quote={target.quote}
       />
     );
   }

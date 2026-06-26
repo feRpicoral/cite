@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { DocumentLocation } from "@/lib/ingestion/location";
 import { cn } from "@/lib/utils";
 import { bboxToViewportRect } from "@/lib/viewer/coords";
+import { findQuoteRange } from "@/lib/viewer/locate-text";
 
 interface PdfViewerProps {
   url: string;
@@ -19,6 +20,7 @@ interface PdfViewerProps {
   location: Extract<DocumentLocation, { kind: "pdf" }>;
   currentUserId: string;
   displayIndex?: number;
+  quote?: string;
 }
 
 const BASE_SCALE = 1.4;
@@ -87,6 +89,7 @@ export function PdfViewer({
   location,
   currentUserId,
   displayIndex,
+  quote,
 }: PdfViewerProps) {
   const t = useTranslations("documentViewer");
   const isMobile = useIsMobile();
@@ -223,23 +226,38 @@ export function PdfViewer({
           overlay.style.width = `${pageViewport.width}px`;
           overlay.style.height = `${pageViewport.height}px`;
           if (page === location.page + 1) {
-            const rect = bboxToViewportRect(location.bbox, pageViewport);
-            const hl = document.createElement("div");
-            hl.className =
-              "bg-highlight/40 ring-highlight-border pointer-events-none absolute rounded-sm shadow-[-3px_0_0_0_var(--highlight-border)] ring-1 transition-opacity";
-            hl.style.left = `${rect.left}px`;
-            hl.style.top = `${rect.top}px`;
-            hl.style.width = `${rect.width}px`;
-            hl.style.height = `${rect.height}px`;
-            if (displayIndex != null) {
-              const badge = document.createElement("span");
-              badge.className =
-                "bg-highlight-border absolute -top-2 -left-2 flex h-[17px] items-center rounded-[5px] px-1.5 font-mono text-[10px] font-semibold text-white";
-              badge.textContent = String(displayIndex);
-              hl.appendChild(badge);
+            // Prefer highlighting the exact cited text in the text layer; the
+            // chunk bbox is a whole paragraph/block, so it would cover far too
+            // much. Fall back to the bbox only when the quote can't be located.
+            const layer = textLayerRef.current;
+            const range = layer && quote ? findQuoteRange(layer, quote) : null;
+            const rects =
+              range && range.getClientRects().length > 0
+                ? rectsRelativeTo(range, layer!)
+                : [bboxToViewportRect(location.bbox, pageViewport)];
+
+            let first: HTMLElement | null = null;
+            for (const rect of rects) {
+              const hl = document.createElement("div");
+              hl.className =
+                "bg-highlight/40 ring-highlight-border pointer-events-none absolute rounded-[2px] ring-1";
+              hl.style.left = `${rect.left}px`;
+              hl.style.top = `${rect.top}px`;
+              hl.style.width = `${rect.width}px`;
+              hl.style.height = `${rect.height}px`;
+              if (!first) {
+                first = hl;
+                if (displayIndex != null) {
+                  const badge = document.createElement("span");
+                  badge.className =
+                    "bg-highlight-border absolute -top-2 -left-2 flex h-[17px] items-center rounded-[5px] px-1.5 font-mono text-[10px] font-semibold text-white";
+                  badge.textContent = String(displayIndex);
+                  hl.appendChild(badge);
+                }
+              }
+              overlay.appendChild(hl);
             }
-            overlay.appendChild(hl);
-            hl.scrollIntoView({ behavior: "smooth", block: "center" });
+            first?.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }
 
@@ -262,7 +280,7 @@ export function PdfViewer({
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [docReady, page, zoom, location.bbox, location.page, displayIndex]);
+  }, [docReady, page, zoom, location.bbox, location.page, displayIndex, quote]);
 
   const refreshPins = useCallback(async () => {
     const res = await fetch(`/api/comments?targetType=DOCUMENT_REGION&targetId=${documentId}`);
@@ -468,6 +486,19 @@ function ToolbarButton({ className, ...props }: React.ComponentProps<typeof Butt
       {...props}
     />
   );
+}
+
+function rectsRelativeTo(
+  range: Range,
+  layer: HTMLElement,
+): { left: number; top: number; width: number; height: number }[] {
+  const layerRect = layer.getBoundingClientRect();
+  return Array.from(range.getClientRects()).map((r) => ({
+    left: r.left - layerRect.left,
+    top: r.top - layerRect.top,
+    width: r.width,
+    height: r.height,
+  }));
 }
 
 function pinsForCurrentPage(
